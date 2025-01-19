@@ -1,9 +1,5 @@
 import io
-import picamera
-import logging
-import socketserver
-from threading import Condition
-from http import server
+import picamera2
 import numpy
 from PIL import Image
 import flask
@@ -35,7 +31,7 @@ def process_frame(frame: numpy.array):
     return numpy.array(changed_image)
 
 #captures images and streams to web
-def generate_frames():
+'''def generate_frames():
     with picamera.PiCamera(resolution='640x480', framerate=24) as camera:
         stream = io.BytesIO()
         for _ in camera.capture_continuous(stream, format="jpeg", use_video_port=True):
@@ -52,8 +48,17 @@ def generate_frames():
             stream.truncate()  # Clear the stream for the next frame
             stream.seek(0)
             if(dataStore.runMode == False): 
-                break
+                break'''
 
+def Generate_Frames():
+    with picamera2.Picamera2() as cam:
+        stream = io.BytesIO()
+        while True:
+            frame = cam.capture_image() #capture_array()
+            yield (b'--frame\r\n'
+                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+            stream.truncate()  # Clear the stream for the next frame
+            stream.seek(0)
 
 
 @app.route('/')
@@ -62,7 +67,7 @@ def send_html():
 
 @app.route('/stream.mjpg')
 def video_feed():
-    return flask.Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+    return flask.Response(Generate_Frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/stopStream')
 def stop_stream():
