@@ -1,4 +1,5 @@
 import flask
+from flask import jsonify, make_response
 import threading
 from StreamingOutput import StreamingOutput
 
@@ -19,15 +20,20 @@ class FlaskServer:
     def _define_routes(self):
         """Define Flask routes using add_url_rule."""
         self.app.add_url_rule('/', 'serve_page', self.serve_page)
-        self.app.add_url_rule('/stream', 'start_stream', self.start_stream)
-        self.app.add_url_rule('/stopStream', 'stop_stream', self.stopStream())
+        self.app.add_url_rule('/stream', 'start_stream', self.startStream)
+        self.app.add_url_rule('/stopStream', 'stopStream', self.stopStream)
 
+    def stopStream(self):
+        """Stop streaming frames"""
+        print("setting stop event")
+        return "Stream stopped"
 
     #Endpoint methods for flask endpoints
     def serve_page(self):
         return flask.render_template("Picamera2Page.html")
     
-    def start_stream(self):
+    def startStream(self):
+        print("Starting stream")
         self.stopStreamEvent.clear()
         return flask.Response(self.gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
     
@@ -35,6 +41,7 @@ class FlaskServer:
         """Stop streaming frames"""
         print("setting stop event")
         self.stopStreamEvent.set()
+        return "OkeY DoKEy", 200
 
     #Helper methods to endpoint methods
     def gen_frames(self):

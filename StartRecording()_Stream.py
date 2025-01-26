@@ -9,7 +9,6 @@ from StreamingOutput import StreamingOutput
 
 import ImageGenerator
 
-from StepperMotorControl import StepperMotorControl 
 from AimingControl import AimingControl
 
 #Create class to handle image generation (and modification)
