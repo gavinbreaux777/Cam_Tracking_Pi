@@ -22,8 +22,11 @@
                 <img src="/stream" id="stream_img" style="display:block; margin:0 auto; height: 100%; border-width: 2; border-color: black; border-style:solid;"/>
             </div>
             <div style="grid-row: 1; grid-column: 1; border-style: dotted; border-color: green;">
-                <button onclick="stopStream()" id="start_stop_stream" style="margin: 0 auto;  width: 100%; height: 75%;">
+                <button onclick="stopStream()" id="start_stop_stream" style="margin: 0 auto 10%; width: 100%; height: 50%; font-size: 12;">
                     Stop Stream
+                </button>
+                <button onclick="stopImgMod()" id="start_stop_img_mod" style="margin: 0 auto; width: 100%; height: 50%; font-size: 12;">
+                    Stop Image Modificaiton
                 </button>
             </div>
             
@@ -74,6 +77,50 @@
                     console.error(error)
                 })
             }
+
+            function stopImgMod(){
+                const btn = document.getElementById("start_stop_img_mod")
+                fetch('/stopImgMod', {
+                    method: 'GET'
+                    })
+                    .then(response => {
+                        if (response.status === 200){
+                            console.log("Image mod stopped. Server response = " + response.body);
+                        }
+                        else{
+                            console.log("Failure to stop image mod. Server response: " + response.status);
+                        }
+                    })
+                    .then(data => {
+                        btn.innerHTML = "Start Image Mod"
+                        btn.onclick = startImgMod
+                    })
+                    .catch(error => {
+                        console.error(error)
+                    })
+                }
+
+            function startImgMod(){
+                const btn = document.getElementById("start_stop_img_mod")
+                fetch('/startImgMod', {
+                    method: 'GET'
+                    })
+                    .then(response => {
+                        if (response.status === 200){
+                            console.log("Image mod started. Server response = " + response.body);
+                        }
+                        else{
+                            console.log("Failure to start image mod. Server response: " + response.status);
+                        }
+                    })
+                    .then(data => {
+                        btn.innerHTML = "Stop Image Mod"
+                        btn.onclick = stopImgMod
+                    })
+                    .catch(error => {
+                        console.error(error)
+                    })
+                }
         </script>
 
     </body>

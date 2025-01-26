@@ -2,31 +2,36 @@ import flask
 from flask import jsonify, make_response
 import threading
 from StreamingOutput import StreamingOutput
+from ImageGenerator import ImageGenerator
+from AimingControl import AimingControl
 
 class FlaskServer:    
     '''Handles serving pages and image streams via Flask'''
-    def __init__(self, streamImageSource: StreamingOutput):
+    def __init__(self, streamImageSource: StreamingOutput, stopProcessingImagesEvent: threading.Event, aimingControl: AimingControl):
         '''
         Initialize FlaskServer
         
         Args:
             streamImageSource (StreamingOutput): The source of images to be streamed (this image will be streamed each time it is updated)
+            imageGenerator (ImageGenerator): Class controlling camera and creating images
+            aimingControl (AimingControl): Class controlling aiming motors
         '''
         self.app = flask.Flask(__name__)
         self.imageSource = streamImageSource
+        self.stopProcessingEvent = stopProcessingImagesEvent
+        self.aimingControl = aimingControl
         self.stopStreamEvent = threading.Event()
         self._define_routes()
+
 
     def _define_routes(self):
         """Define Flask routes using add_url_rule."""
         self.app.add_url_rule('/', 'serve_page', self.serve_page)
         self.app.add_url_rule('/stream', 'start_stream', self.startStream)
         self.app.add_url_rule('/stopStream', 'stopStream', self.stopStream)
+        self.app.add_url_rule("/stopImgMod", 'stopImgMod', self.stopImageModification)
+        self.app.add_url_rule("/startImgMod", 'startImgMod', self.startImageModification)
 
-    def stopStream(self):
-        """Stop streaming frames"""
-        print("setting stop event")
-        return "Stream stopped"
 
     #Endpoint methods for flask endpoints
     def serve_page(self):
@@ -41,6 +46,14 @@ class FlaskServer:
         """Stop streaming frames"""
         print("setting stop event")
         self.stopStreamEvent.set()
+        return "OkeY DoKEy", 200
+    
+    def stopImageModification(self):
+        self.stopProcessingEvent.set()
+        return "OkeY DoKEy", 200
+
+    def startImageModification(self):
+        self.stopProcessingEvent.clear()
         return "OkeY DoKEy", 200
 
     #Helper methods to endpoint methods
