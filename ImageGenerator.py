@@ -9,6 +9,7 @@ import picamera2.outputs
 
 
 class ImageGenerator():
+    ''''''
     def __init__(self, picam2: picamera2):
         ''''''
         self.picam2 = picam2
@@ -49,7 +50,7 @@ class ImageGenerator():
                 print("processed image not available")
     
 
-    def CaptureAndProcessImage(self):
+    def CaptureAndProcessImage(self): #once we add real code, move the processing out of this class
         """Captures individual image buffer and applies processing. The post_callback method should reference the output of this method"""
         while True:
             self.currentImg = self.picam2.capture_array()
