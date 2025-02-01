@@ -121,6 +121,16 @@
                         console.error(error)
                     })
                 }
+            
+            const eventSource = new EventSource('/dataEventSoruce');
+            eventSource.onmessage = function(event) {
+                console.log("time:" + JSON.parse(event.data).time);//event.data)
+            };
+            eventSource.onerror = function() {
+                console.error("EventSource failed.");
+            };
+
+            
         </script>
 
     </body>

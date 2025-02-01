@@ -25,7 +25,6 @@ try:
     output = StreamingOutput()
     
     #Start the camera recording
-    #imageGenerator.StartRecording(output)
     detector.StartRecording(output)
 
     #start Flask server with output from camera recording

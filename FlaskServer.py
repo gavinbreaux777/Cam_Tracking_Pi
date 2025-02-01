@@ -1,9 +1,10 @@
 import flask
-from flask import jsonify, make_response
+from flask import jsonify, make_response, json
 import threading
 from StreamingOutput import StreamingOutput
 from ImageGenerator import ImageGenerator
 from AimingControl import AimingControl
+import time
 
 class FlaskServer:    
     '''Handles serving pages and image streams via Flask'''
@@ -31,6 +32,7 @@ class FlaskServer:
         self.app.add_url_rule('/stopStream', 'stopStream', self.stopStream)
         self.app.add_url_rule("/stopImgMod", 'stopImgMod', self.stopImageModification)
         self.app.add_url_rule("/startImgMod", 'startImgMod', self.startImageModification)
+        self.app.add_url_rule("/dataEventSoruce", 'events', self.sendData)
 
 
     #Endpoint methods for flask endpoints
@@ -64,6 +66,21 @@ class FlaskServer:
                 self.imageSource.condition.wait() #Waits for the imageSource to be renewed
                 yield (b'--frame\r\n' 
                 b'Content-Type: image/jpeg\r\n\r\n' + self.imageSource.frame + b'\r\n') 
+
+    def generate_data(self):
+        while True:
+            data = {
+                'time': time.ctime()
+            }
+            json_data = json.dumps(data)
+            yield f"data: {json_data}\n\n"
+            time.sleep(5)
+
+
+
+    def sendData(self):
+        return flask.Response(self.generate_data(), content_type='text/event-stream')
+
 
     #App control methods
     def startServer(self):

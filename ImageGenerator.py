@@ -50,9 +50,12 @@ class ImageGenerator():
         """
         with picamera2.MappedArray(request, "main") as mapArr:
             if (not self.processImgStopEvent.is_set() and self.processedImg.size != 0): 
+                if len(self.processedImg.shape) == 2:  # If it's a single-channel image
+                    self.processedImg = numpy.stack([self.processedImg] * 3, axis=-1) #this converts it to a 3d array if its a 2d (grayscale)
                 mapArr.array[:] = self.processedImg #replace the output image to be streamed with the processed image created in this class
             else:
-                print("processed image not available")
+                pass
+                #print("processed image not available")
     
 
     def CaptureAndProcessImage(self): 
