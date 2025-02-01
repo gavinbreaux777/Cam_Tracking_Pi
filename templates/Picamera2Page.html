@@ -5,12 +5,35 @@
             .grid-container {
                 display: grid;
                 height: 90vh;
-                grid-template-columns: 10% 1fr 10%; /*repeat(3, 1fr);*/
-                grid-template-rows: 10% 1fr 20%;
+                grid-template-columns: 10% 1fr 1fr 1fr 1fr 10%; /*repeat(3, 1fr);*/
+                grid-template-rows: 10% 1fr 1fr 1fr 20%;
                 grid-gap: 10px; 
                 padding: 10px;
                 border: 2px solid green;
                 place-items: center;
+            }
+            .grid-item{
+                margin: 0px;
+            }
+            .btn-style{
+                margin: 0 auto 10%; width: 100%; height: 50%; font-size: 12;
+            }
+            .mot-control-grid{
+                display: grid;
+                height: 100%;
+                grid-template-columns: 1fr 1fr 1fr;
+                grid-template-rows: 1fr 1fr 1fr;
+                border: 5px solid purple;
+            }
+            .mot-control-button{
+                height: 100%;
+                width: 100%;
+            }
+            .mot-control-button-container{
+                display: flex; 
+                justify-content: center; 
+                align-items: center;
+                border: 2px dashed orange;
             }
         </style>
     </head>
@@ -18,19 +41,74 @@
     <body>
         <h1 style="justify-content: center; text-align: center;">Cool Shit</h1>
         <div class="grid-container">
-            <div style="grid-row: 2; grid-column: 2;  border: 5px dotted red; height: auto; width: 100%">
-                <img src="/stream" id="stream_img" style="display:block; margin:0 auto; height: 100%; border-width: 2; border-color: black; border-style:solid;"/>
-            </div>
-            <div style="grid-row: 1; grid-column: 1; border-style: dotted; border-color: green;">
-                <button onclick="stopStream()" id="start_stop_stream" style="margin: 0 auto 10%; width: 100%; height: 50%; font-size: 12;">
+            <div class="grid-item" style="grid-row: 2; grid-column: 1; border-style: dotted; border-color: green;">
+                <button onclick="stopStream()" id="start_stop_stream" class="btn-style">
                     Stop Stream
                 </button>
-                <button onclick="stopImgMod()" id="start_stop_img_mod" style="margin: 0 auto; width: 100%; height: 50%; font-size: 12;">
+                <button onclick="stopImgMod()" id="start_stop_img_mod" class="btn-style">
                     Stop Image Modificaiton
                 </button>
             </div>
-            
+            <div class="grid-item" id="center-page" style="grid-row: 2 / 5; grid-column: 2 / 6;  border: 5px dotted red; height: auto; width: 100%">
+            </div>
+            <div class="grid-item" style="grid-row: 1; grid-column: 2; border: 5px dashed blue; height: 100%; width: 100%;">
+                <button onclick="toggleMotControl()" id="mot_ctrl_btn" class="btn-style" >
+                Motor Control
+                </button>
+            </div>
+            <div class="grid-item" style="grid-row: 1; grid-column: 3; border: 5px dashed cyan; height: 100%; width: 100%;">
+                <button onclick="toggleMainPage()" id="main_page_btn" class="btn-style" >
+                Main Page
+                </button>
+            </div>
+
+    <div class="mot-control-grid" style="grid-row: 5; grid-column: 3 / 5; height: 100%; width: 100%">
+        <div class="mot-control-button-container" style="grid-row: 1; grid-column: 2;">
+            <button class="mot-control-button">
+                top button
+            </button>
+        </div>
+        <div class="mot-control-button-container" style="grid-row: 3; grid-column: 2;">
+            <button class="mot-control-button">
+                bottom button
+            </button>
+        </div>
+        <div class="mot-control-button-container" style="grid-row: 2; grid-column: 1;">
+            <button class="mot-control-button">
+                left button
+            </button>
+        </div>
+        <div class="mot-control-button-container" style="grid-row: 2; grid-column: 3;">
+            <button class="mot-control-button">
+                right button
+            </button>
+        </div>
+    </div>
+
+</div>
+
+        </div>
+        
+        <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+        <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
         <script>
+            //React HTML components
+            const motorControlSection = () => {
+                return (
+                    React.createElement('div', null, 
+                    React.createElement('h1', null, 'Hello from React!'),
+                    React.createElement('p', null, 'This is embedded React code.')
+                    )
+                );
+            }
+            const streamImageSection = () => {
+                return (
+                    React.createElement('img', {src: "/stream", id: "stream_img", style: {display:"block", margin: "0 auto", height: "100%", borderwidth: "2", bordercolor: "black", borderstyle: "solid"}})
+                )
+            }
+        </script>
+        <script>
+            //Button functions
             function stopStream(){
                 const btn = document.getElementById("start_stop_stream")
                 fetch('/stopStream', {
@@ -122,6 +200,20 @@
                     })
                 }
             
+            function toggleMotControl(){
+                const centerPage = document.getElementById("center-page");
+                ReactDOM.render(React.createElement(motorControlSection), centerPage);
+            }
+
+            function toggleMainPage(){
+                const centerPage = document.getElementById("center-page");
+                ReactDOM.render(React.createElement(streamImageSection), centerPage);
+            }
+
+            
+        </script>
+        <script>
+            //Server Sent Events
             const eventSource = new EventSource('/dataEventSoruce');
             eventSource.onmessage = function(event) {
                 console.log("time:" + JSON.parse(event.data).time);//event.data)
@@ -130,8 +222,10 @@
                 console.error("EventSource failed.");
             };
 
-            
+            //Embedded functions
+            window.onload = function() {
+                ReactDOM.render(React.createElement(streamImageSection), document.getElementById("center-page"));
+        }
         </script>
-
     </body>
 </html>
