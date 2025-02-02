@@ -64,24 +64,30 @@
 
     <div class="mot-control-grid" style="grid-row: 5; grid-column: 3 / 5; height: 100%; width: 100%">
         <div class="mot-control-button-container" style="grid-row: 1; grid-column: 2;">
-            <button class="mot-control-button">
-                top button
+            <button class="mot-control-button" onmousedown="startJog('up')" onmouseup="stopMotors()">
+                up button
             </button>
         </div>
         <div class="mot-control-button-container" style="grid-row: 3; grid-column: 2;">
-            <button class="mot-control-button">
-                bottom button
+            <button class="mot-control-button" onmousedown="startJog('down')" onmouseup="stopMotors()">
+                down button
             </button>
         </div>
         <div class="mot-control-button-container" style="grid-row: 2; grid-column: 1;">
-            <button class="mot-control-button">
+            <button class="mot-control-button" onmousedown="startJog('left')" onmouseup="stopMotors()">
                 left button
             </button>
         </div>
         <div class="mot-control-button-container" style="grid-row: 2; grid-column: 3;">
-            <button class="mot-control-button">
+            <button class="mot-control-button" onmousedown="startJog('right')" onmouseup="stopMotors()">
                 right button
             </button>
+        </div>
+        <div style="grid-row: 2; grid-column: 2; display: flex; justify-content: center; align-items: center;">
+            <label for="speedInput" style="margin-right: 10px;">
+                Jog Speed
+            </label>
+            <input type="text" id="speedInput" style="width: 50%">
         </div>
     </div>
 
@@ -210,13 +216,49 @@
                 ReactDOM.render(React.createElement(streamImageSection), centerPage);
             }
 
+            function startJog(direction){
+                console.log("Starting jog")
+                const speed = document.getElementById("speedInput").value;
+                fetch(`/motorControl/${direction}/${speed}`, {
+                    method: 'GET'
+                })
+                .then(response => {
+                    if (response.status == 200){
+                        console.log("Server moving motor. Response: " + response.body);
+                    }
+                    else{
+                        console.log("Error while requesting motor move. Response: " + response.status);
+                    }
+                })
+                .catch(error => {
+                    console.error(error)
+                })
+            }
+
+            function stopMotors(){
+                console.log("Stopping motors")
+                fetch("/stopMotors",{
+                    method: 'GET'
+                })
+                .then(response => {
+                    if (response.status == 200){
+                        console.log("Server stopping motor. Response: " + response.body);
+                    }
+                    else{
+                        console.log("Error while requesting motor stop. Response: " + response.status);
+                    }
+                })
+                .catch(error => {
+                    console.error(error)
+                })
+            }
             
         </script>
         <script>
             //Server Sent Events
             const eventSource = new EventSource('/dataEventSoruce');
             eventSource.onmessage = function(event) {
-                console.log("time:" + JSON.parse(event.data).time);//event.data)
+                console.log("time:" + JSON.parse(event.data).time);
             };
             eventSource.onerror = function() {
                 console.error("EventSource failed.");

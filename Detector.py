@@ -12,7 +12,7 @@ from ImageGenerator import ImageGenerator
 '''This class contains camera and image processing control - together they output detection results'''
 class Detector():
     '''Init detector objects'''
-    def __init__(self, picam2: picamera2):
+    def __init__(self, picam2: picamera2.Picamera2):
         self._detected = False
         self._detectedLocation = [0,0]
 

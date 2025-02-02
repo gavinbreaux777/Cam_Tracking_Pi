@@ -2,13 +2,12 @@ import flask
 from flask import jsonify, make_response, json
 import threading
 from StreamingOutput import StreamingOutput
-from ImageGenerator import ImageGenerator
-from AimingControl import AimingControl
+from MotorControl import MotorControl
 import time
 
 class FlaskServer:    
     '''Handles serving pages and image streams via Flask'''
-    def __init__(self, streamImageSource: StreamingOutput, stopProcessingImagesEvent: threading.Event, aimingControl: AimingControl):
+    def __init__(self, streamImageSource: StreamingOutput, stopProcessingImagesEvent: threading.Event, motorControl: MotorControl):
         '''
         Initialize FlaskServer
         
@@ -20,7 +19,7 @@ class FlaskServer:
         self.app = flask.Flask(__name__)
         self.imageSource = streamImageSource
         self.stopProcessingEvent = stopProcessingImagesEvent
-        self.aimingControl = aimingControl
+        self.motorControl = motorControl
         self.stopStreamEvent = threading.Event()
         self._define_routes()
 
@@ -33,12 +32,16 @@ class FlaskServer:
         self.app.add_url_rule("/stopImgMod", 'stopImgMod', self.stopImageModification)
         self.app.add_url_rule("/startImgMod", 'startImgMod', self.startImageModification)
         self.app.add_url_rule("/dataEventSoruce", 'events', self.sendData)
+        self.app.add_url_rule("/motorControl/<direction>/<speed>", 'motorControl', self.jogMotor)
+        self.app.add_url_rule("/stopMotors", 'stopMotors', self.stopMotors)
 
 
     #Endpoint methods for flask endpoints
     def serve_page(self):
         return flask.render_template("Picamera2Page.html")
     
+    
+    #Stream control
     def startStream(self):
         print("Starting stream")
         self.stopStreamEvent.clear()
@@ -50,6 +53,8 @@ class FlaskServer:
         self.stopStreamEvent.set()
         return "OkeY DoKEy", 200
     
+
+    #Image processing control
     def stopImageModification(self):
         self.stopProcessingEvent.set()
         return "OkeY DoKEy", 200
@@ -57,6 +62,41 @@ class FlaskServer:
     def startImageModification(self):
         self.stopProcessingEvent.clear()
         return "OkeY DoKEy", 200
+    
+    #Data transfer
+    def sendData(self):
+        return flask.Response(self.generate_data(), content_type='text/event-stream')
+
+
+    #Motor control
+    def moveMotorRel(self, direction: str, distance: str):
+        distanceInt = int(distance)
+        if(direction == "left"):
+            distanceInt *= -1
+            self.motorControl.MoveXRel(distanceInt)
+        elif(direction == "right"):
+            self.motorControl.MoveXRel(distanceInt)
+        else:
+            print("Invalid direction parameter received: " + direction)
+        return "Okey Dokey", 200
+    
+    def jogMotor(self, direction: str, speed: str):
+        speedInt = int(speed)
+        if(direction == "left"):
+            self.motorControl.JogX(speedInt, True)
+        elif(direction == "right"):
+            self.motorControl.JogX(speedInt, False)
+        elif(direction == "up"):
+            self.motorControl.JogY(speedInt, True)
+        elif(direction == "down"):
+            self.motorControl.JogY(speedInt, False)
+        else:
+            print("Invalid direction parameter received: " + direction)
+        return "Okey Dokey", 200
+    
+    def stopMotors(self):
+        self.motorControl.StopMotors()
+        return "okeY DokeY", 200
 
     #Helper methods to endpoint methods
     def gen_frames(self):
@@ -76,10 +116,6 @@ class FlaskServer:
             yield f"data: {json_data}\n\n"
             time.sleep(5)
 
-
-
-    def sendData(self):
-        return flask.Response(self.generate_data(), content_type='text/event-stream')
 
 
     #App control methods
