@@ -3,22 +3,25 @@ from flask import jsonify, make_response, json
 import threading
 from StreamingOutput import StreamingOutput
 from MotorControl import MotorControl
+from Detector import Detector
 import time
+from typing import Any
 
 class FlaskServer:    
     '''Handles serving pages and image streams via Flask'''
-    def __init__(self, streamImageSource: StreamingOutput, stopProcessingImagesEvent: threading.Event, motorControl: MotorControl):
+    def __init__(self, detector: Detector, motorControl: MotorControl):
         '''
         Initialize FlaskServer
         
         Args:
             streamImageSource (StreamingOutput): The source of images to be streamed (this image will be streamed each time it is updated)
-            imageGenerator (ImageGenerator): Class controlling camera and creating images
-            aimingControl (AimingControl): Class controlling aiming motors
+            stopProcessingImagesEvent (threading.Event): Event to raise when client requests stop of image processing
+            motorControl (MotorControl): Class to pass client motor-control commands to
         '''
         self.app = flask.Flask(__name__)
-        self.imageSource = streamImageSource
-        self.stopProcessingEvent = stopProcessingImagesEvent
+        self.imageSource = detector.output
+        #self.stopProcessingEvent = stopProcessingImagesEvent
+        self.detector = detector
         self.motorControl = motorControl
         self.stopStreamEvent = threading.Event()
         self._define_routes()
@@ -34,9 +37,10 @@ class FlaskServer:
         self.app.add_url_rule("/dataEventSoruce", 'events', self.sendData)
         self.app.add_url_rule("/motorControl/<direction>/<speed>", 'motorControl', self.jogMotor)
         self.app.add_url_rule("/stopMotors", 'stopMotors', self.stopMotors)
+        self.app.add_url_rule("/modSetting/<settingName>/<settingValue>", 'modSetting', self.setImageProcessSetting)
 
 
-    #Endpoint methods for flask endpoints
+#Endpoint methods for flask endpoints
     def serve_page(self):
         return flask.render_template("Picamera2Page.html")
     
@@ -56,13 +60,17 @@ class FlaskServer:
 
     #Image processing control
     def stopImageModification(self):
-        self.stopProcessingEvent.set()
+        self.detector.processImage = False
         return "OkeY DoKEy", 200
 
     def startImageModification(self):
-        self.stopProcessingEvent.clear()
+        self.detector.processImage = True
         return "OkeY DoKEy", 200
     
+    def setImageProcessSetting(self, settingName: str, settingValue: Any):
+        self.detector.ModifyImageProcessorSetting(settingName, settingValue)
+        return "okey dokey then", 200
+
     #Data transfer
     def sendData(self):
         return flask.Response(self.generate_data(), content_type='text/event-stream')
@@ -98,7 +106,7 @@ class FlaskServer:
         self.motorControl.StopMotors()
         return "okeY DokeY", 200
 
-    #Helper methods to endpoint methods
+#Helper methods to endpoint methods
     def gen_frames(self):
         """Stream method that returns processed jpeg images in html response format"""
         while not self.stopStreamEvent.is_set():

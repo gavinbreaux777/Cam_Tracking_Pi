@@ -5,20 +5,20 @@ import concurrent.futures
 from StepperMotorControlInterface import StepperMotorControlInterface
 import threading
 
-gpio.setmode(gpio.BCM)
-gpio.setup(18, gpio.OUT)
+#gpio.setmode(gpio.BCM)
+#gpio.setup(18, gpio.OUT)
 #gpio.output(18, gpio.HIGH)
 #time.sleep(2)
 #gpio.output(18, gpio.LOW)
 
 #for i in range(200):
 #    gpio.output(18, gpio.HIGH)
-#    time.sleep(0.01)
+#    time.sleep(0#.01)
 #    gpio.output(18, gpio.LOW)
 
 #myMotor = RpiMotLib.A4988Nema(1, 18, (-1,-1,-1), "A4988")
 
-#myMotor.motor_go()
+##myMotor.motor_go()
 
 #threadPool = concurrent.futures.ThreadPoolExecutor()
 #future1 = threadPool.submit(myMotor.motor_go, 0, "Full", 200, 0.005, False, .1)
@@ -28,6 +28,9 @@ gpio.setup(18, gpio.OUT)
 class StepperMotorControl(StepperMotorControlInterface):
     def __init__(self, stepPin: int, dirPin: int = 1, stepResPins: tuple[int, int, int] = (-1,-1,-1), ):
         ''''''
+        gpio.setmode(gpio.BCM)
+        gpio.setup(stepPin, gpio.OUT)
+        gpio.setup(dirPin, gpio.OUT)
         self.motor = RpiMotLib.A4988Nema(dirPin, stepPin, stepResPins, "A4988")
         self.stepFraction = 1
         self.motorResolution = 200
@@ -35,6 +38,7 @@ class StepperMotorControl(StepperMotorControlInterface):
         self._speed = 120 
         self.timeout = 10 #setting really high right now because we're not using rn. (client *should resend jog command before shorter timeout but currently only sending 1 start and 1 stop command from client)
         self._jogTimer = threading.Timer(self.timeout, self.StopMotors)
+
 
     @property
     def position(self) -> int:

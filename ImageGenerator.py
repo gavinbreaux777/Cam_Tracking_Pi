@@ -1,5 +1,5 @@
 import numpy
-import picamera2
+from picamera2 import Picamera2
 import threading
 import StreamingOutput
 import picamera2.encoders
@@ -9,18 +9,18 @@ import time
 
 class ImageGenerator():
     ''''''
-    def __init__(self, picam2: picamera2, imageProcessor: ProcessImage):
+    def __init__(self, picam2: Picamera2, imageProcessor: ProcessImage):
         ''''''
         self.picam2 = picam2
         self.configureCam()
 
         self.imageProcessor = imageProcessor
-        self.processImgStopEvent = threading.Event()
+        self.processImage = True
 
         self.processedImg = numpy.array([]) #image that has had processing applied to it, ready to be streamed
         self.currentImg = numpy.array([]) #last image that was captured from camera, processing gets applied to this image, then copied
 
-        self.imageProcessThread = threading.Thread(target=self.CaptureAndProcessImage)
+        self.imageProcessThread = threading.Thread(target=self.CaptureBufferAndProcessImage)
 
     def configureCam(self):
         self.picam2.configure(self.picam2.create_video_configuration(main={"size": (640, 480), "format":"RGB888"}))
@@ -49,7 +49,7 @@ class ImageGenerator():
             request (picamera2 post/pre-callback request): Automatically supplied by picamera2's post_callback event - represents a single frame capture
         """
         with picamera2.MappedArray(request, "main") as mapArr:
-            if (not self.processImgStopEvent.is_set() and self.processedImg.size != 0): 
+            if (self.processImage and self.processedImg.size != 0): 
                 if len(self.processedImg.shape) == 2:  # If it's a single-channel image
                     self.processedImg = numpy.stack([self.processedImg] * 3, axis=-1) #this converts it to a 3d array if its a 2d (grayscale)
                 mapArr.array[:] = self.processedImg #replace the output image to be streamed with the processed image created in this class
@@ -58,10 +58,10 @@ class ImageGenerator():
                 #print("processed image not available")
     
 
-    def CaptureAndProcessImage(self): 
+    def CaptureBufferAndProcessImage(self): 
         """Captures individual image buffer and triggers image processor, writing over self.processedImg. The post_callback method should reference the output of this method"""
         while True: #always leaving thread running, stop event below with time.sleep is our pause mechanism
-            while not self.processImgStopEvent.is_set():
+            while self.processImage:
                 self.currentImg = self.picam2.capture_array()
                 self.processedImg = self.imageProcessor.ProcessImage(self.currentImg)
             

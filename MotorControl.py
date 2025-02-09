@@ -1,8 +1,10 @@
 from AimingControl import AimingControl
+from FiringControl import FiringControl
 class MotorControl():
     def __init__(self):
         #Create class to control aiming steppers
         self.aimingControl = AimingControl()
+        self.firingControl = FiringControl()
 
     def AimXYRel(self, xDegrees: float, yDegrees: float):
         self.aimingControl.AimXYRel(xDegrees, yDegrees)

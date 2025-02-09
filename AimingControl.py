@@ -4,8 +4,8 @@ import threading
 
 class AimingControl():
     def __init__(self):
-        self.xMotor = StepperMotorControl(18) 
-        self.yMotor = StepperMotorControl(17)
+        self.xMotor = StepperMotorControl(18, 17) 
+        self.yMotor = StepperMotorControl(15)
 
     @property
     def motorSpeed(self) ->tuple[float, float]: 

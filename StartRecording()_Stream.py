@@ -1,16 +1,13 @@
 import picamera2
 
 from FlaskServer import FlaskServer
+
 from StreamingOutput import StreamingOutput
-
-from AimingControl import AimingControl
 from Detector import Detector
-
 from MotorControl import MotorControl
 
-#Create class to handle image generation (and modification)
+#Create class to handle camera and image processing
 picam2 = picamera2.Picamera2()
-#imageGenerator = ImageGenerator(picam2)
 detector = Detector(picam2)
 
 try:
@@ -18,17 +15,14 @@ try:
 
     #Create class to control all motors, aiming and projection
     motorControl = MotorControl()
-
-    #Create stream output object to share between camera and server
-    output = StreamingOutput()
     
     #Start the camera recording
-    detector.StartRecording(output)
+    detector.StartRecording()#output)
 
     #start Flask server with output from camera recording
-    server = FlaskServer(output, detector.imgGen.processImgStopEvent, motorControl)
+    server = FlaskServer(detector, motorControl)
     server.startServer()
 
 finally:
-    detector.imgGen.Stop()
+    detector.StopRecording()
 
