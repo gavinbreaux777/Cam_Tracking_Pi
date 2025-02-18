@@ -55,15 +55,17 @@ class ImageGenerator():
                 mapArr.array[:] = self.processedImg #replace the output image to be streamed with the processed image created in this class
             else:
                 pass
-                #print("processed image not available")
     
 
     def CaptureBufferAndProcessImage(self): 
         """Captures individual image buffer and triggers image processor, writing over self.processedImg. The post_callback method should reference the output of this method"""
+        lock = threading.Lock() #added because images sometimes being multiple-processed when processing takes too long
         while True: #always leaving thread running, stop event below with time.sleep is our pause mechanism
             while self.processImage:
-                self.currentImg = self.picam2.capture_array()
-                self.processedImg = self.imageProcessor.ProcessImage(self.currentImg)
+                with lock:
+                    self.currentImg = self.picam2.capture_array()
+                    print("Self.currentImg = " + str(self.currentImg))
+                    self.processedImg = self.imageProcessor.ProcessImage(self.currentImg)
             
             time.sleep(1) #delay to ease processing use while not running
         

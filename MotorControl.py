@@ -1,6 +1,10 @@
 from AimingControl import AimingControl
 from FiringControl import FiringControl
-class MotorControl():
+from Observer import DetectionObserver
+import time
+import threading 
+from typing import Tuple, Callable
+class MotorControl(DetectionObserver):
     def __init__(self):
         #Create class to control aiming steppers
         self.aimingControl = AimingControl()
@@ -24,3 +28,19 @@ class MotorControl():
 
     def StopMotors(self):
         self.aimingControl.StopMotors()
+
+    def OnMotionFound(self, location, acknowledgeCallback):
+        '''Start thread to handle firing so image generation/processing can continue'''
+        searchAndDestroyThread = threading.Thread(target=lambda: self.FindAndFire(location, acknowledgeCallback))
+        searchAndDestroyThread.start()
+
+    def FindAndFire(self, location: Tuple[int, int], callback: Callable[[bool], None]):
+        '''
+            Aim motors, fire projectile, and finally call callback to notify Detector that we've finished the sequence
+        '''
+        self.AimXYRel(location[0], location[1])
+        #Spool motors and firing here
+        #Notify detector that firing sequence finished
+        callback(True)
+
+        
