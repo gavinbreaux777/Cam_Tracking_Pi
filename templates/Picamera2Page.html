@@ -36,6 +36,13 @@
                 align-items: center;
                 border: 2px dashed orange;
             }
+            .stream-and-base-img-grid{
+                display: grid;
+                height: 100%;
+                width: 100%;
+                grid-template-columns: 1fr 1fr;
+                border: 5px solid green;
+            }
         </style>
     </head>
 
@@ -50,7 +57,7 @@
                     Stop Image Modificaiton
                 </button>
             </div>
-            <div class="grid-item" id="center-page" style="grid-row: 2 / 5; grid-column: 2 / 6;  border: 5px dotted red; height: auto; width: 100%">
+            <div id="center-page" class="grid-item" style="grid-row: 2 / 5; grid-column: 2 / 6;  border: 5px dotted red; height: auto; width: 100%">
             </div>
             <div class="grid-item" style="grid-row: 1; grid-column: 3; border: 5px dashed blue; height: 100%; width: 100%;">
                 <button onclick="toggleMotControl()" id="mot_ctrl_btn" class="btn-style" >
@@ -62,11 +69,18 @@
                 Main Page
                 </button>
             </div>
+            <div class="grid-item" style="grid-row: 1; grid-column: 4; border: 5px solid magenta; height: 100%; width: 100%;">
+                <button onclick="toggleStreamAndBaseImg()" id="show_base_img_btn" class="btn-style" >
+                    Show Base Image
+                </button>
+            </div>
             <div id="bottom-center-section" style="grid-row: 5; grid-column: 3 / 5; height: 100%; width: 100%"></div>
             <div id="imageParams" style="grid-row: 2 / 5; grid-column: 6; border: 5px solid pink; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center;">
                 <div style="border: 2px dashed black;">
                     <label for="objSizeInput">Required Object Size</label>
-                    <input oninput="changeSetting('requiredObjectSize', this.value)" id="objSizeInput" type="number" value="2500" style="width: 50%;">
+                    <input oninput="changeImgProcSetting('requiredObjectSize', this.value)" id="objSizeInput" type="number" value="2500" style="width: 50%;"/>
+                    <label for="gainInput" style="display:block; margin-top: 10">Analogue Gain</label>
+                    <input oninput="changeCamSetting('AnalogueGain', this.value)" id="gainInput" type="number" value="10.0" style="width: 50%;"/>
                 </div>
             </div>
         </div>
@@ -79,19 +93,63 @@
         //HTML dynamic components
             function createStreamImage(htmlElementToAppendTo){
                 //create image element
-                const img = document.createElement('img')
-                img.src = '/stream'
-                img.id = 'stream_img'
-                img.style.display = 'block'
-                img.style.margin = '0 auto'
-                img.style.height = '100%'
-                img.style.borderwidth = '2'
-                img.style.borderColor = 'black'
-                img.style.borderstyle = 'solid'
+                const img = document.createElement('img');
+                img.src = '/stream';
+                img.id = 'stream_img';
+                img.style.display = 'block';
+                img.style.margin = '0 auto';
+                img.style.maxHeight = '100%'
+                img.style.maxWidth = '100%'
+                img.style.borderwidth = '2';
+                img.style.borderColor = 'black';
+                img.style.borderstyle = 'solid';
 
                 //clear the specified element and append the image
                 htmlElementToAppendTo.innerHTML = ""
                 htmlElementToAppendTo.appendChild(img)
+            }
+
+            function createBaseImg(htmlElementToAppendTo){
+                const img = document.createElement('img');
+                img.src = '/base-img?cache_buster=' + new Date().getTime();
+                img.id = 'base_img';
+                img.style.display = 'block';
+                img.style.margin = '0 auto';
+                img.style.maxHeight = '100%'
+                img.style.maxWidth = '100%'
+                img.style.borderWidth = '2';
+                img.style.borderColor = 'blue';
+                img.style.borderstyle = 'solid';
+
+                //clear the specified element and append the image
+                htmlElementToAppendTo.innerHTML = "";
+                htmlElementToAppendTo.appendChild(img);
+            }
+
+            function createStreamAndBaseImage(htmlElementToAppendTo){
+                const container = document.createElement('div');
+                container.className = 'stream-and-base-img-grid';
+
+                //Create live stream image
+                const streamContainer = document.createElement('div');
+                streamContainer.className = 'mot-control-button-container'
+                streamContainer.style.gridColumn = '1';
+                streamContainer.style.width = '100%';
+                createStreamImage(streamContainer)
+
+                container.appendChild(streamContainer);
+
+                //Create static base image
+                const baseImgContainer = document.createElement('div');
+                baseImgContainer.className = 'mot-control-button-container'
+                baseImgContainer.style.gridColumn = '2';
+                baseImgContainer.style.height = '100%';
+                createBaseImg(baseImgContainer)
+
+                container.appendChild(baseImgContainer);
+
+                htmlElementToAppendTo.innerHTML = "";
+                htmlElementToAppendTo.appendChild(container);
             }
 
             function createMotControlGrid(htmlElementToAppendTo){
@@ -296,6 +354,11 @@
                 bottomCenterPage.innerHTML = ""
             }
 
+            function toggleStreamAndBaseImg(){
+                const centerPage = document.getElementById("center-page");
+                createStreamAndBaseImage(centerPage);
+            }
+
             function startJog(direction){
                 console.log("Starting jog")
                 const speed = document.getElementById("speedInput").value;
@@ -333,8 +396,25 @@
                 })
             }
             
-            function changeSetting(settingName, settingValue){
-                fetch(`/modSetting/${settingName}/${settingValue}`, {
+            function changeImgProcSetting(settingName, settingValue){
+                fetch(`/modImgProcSetting/${settingName}/${settingValue}`, {
+                    method: 'GET'
+                })
+                .then(response => {
+                    if (response.status == 200){
+                        console.log("Server is modifying setting. Response: " + response.text());
+                    }
+                    else{
+                        console.log("Error while requesting setting modification. Response: " + response.status);
+                    }
+                })
+                .catch(error => {
+                    console.error(error)
+                })
+            }
+
+            function changeCamSetting(settingName, settingValue){
+                fetch(`/modCamSetting/${settingName}/${settingValue}`, {
                     method: 'GET'
                 })
                 .then(response => {

@@ -9,6 +9,8 @@ class MotorControl(DetectionObserver):
         #Create class to control aiming steppers
         self.aimingControl = AimingControl()
         self.firingControl = FiringControl()
+        self.xCaliFactor = 1
+        self.yCaliFactor = 1
 
     def AimXYRel(self, xDegrees: float, yDegrees: float):
         self.aimingControl.AimXYRel(xDegrees, yDegrees)
@@ -35,10 +37,10 @@ class MotorControl(DetectionObserver):
         searchAndDestroyThread.start()
 
     def FindAndFire(self, location: Tuple[int, int], callback: Callable[[bool], None]):
-        '''
-            Aim motors, fire projectile, and finally call callback to notify Detector that we've finished the sequence
-        '''
-        self.AimXYRel(location[0], location[1])
+        '''Aim motors, fire projectile, and finally call callback to notify Detector that we've finished the sequence'''
+        xAdjustment = location[0] * self.xCaliFactor
+        yAdjustment = location[1] * self.yCaliFactor
+        self.AimXYRel(xAdjustment, yAdjustment)
         #Spool motors and firing here
         #Notify detector that firing sequence finished
         callback(True)

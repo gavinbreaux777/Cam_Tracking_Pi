@@ -57,7 +57,6 @@ class Detector():
         def _observerDone(observer):
             nonlocal _completedObserverCount
             _completedObserverCount += 1
-            print(f"observer #{_completedObserverCount} has completed its task")
             if(_completedObserverCount == len(self.observers)):
                 print("All observers finished")
                 self.processImage = True
@@ -78,3 +77,6 @@ class Detector():
     def ModifyImageProcessorSetting(self, settingName: str, settingValue: Any) -> None:
         if(settingName == "requiredObjectSize"):
             self._imgProcessor.requiredObjectSize = int(settingValue)
+
+    def ModifyCameraSetting(self, settingName: str, settingValue: Any) -> None:
+        self._imgGenerator.ModifyCameraControls(settingName, settingValue)

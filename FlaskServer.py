@@ -6,6 +6,8 @@ from MotorControl import MotorControl
 from Detector import Detector
 import time
 from typing import Any
+from PIL import Image
+from io import BytesIO
 
 class FlaskServer:    
     '''Handles serving pages and image streams via Flask'''
@@ -20,7 +22,7 @@ class FlaskServer:
         '''
         self.app = flask.Flask(__name__)
         self.imageSource = detector.output
-        #self.stopProcessingEvent = stopProcessingImagesEvent
+        self.baseImage = detector._imgProcessor._baseImg
         self.detector = detector
         self.motorControl = motorControl
         self.stopStreamEvent = threading.Event()
@@ -31,13 +33,15 @@ class FlaskServer:
         """Define Flask routes using add_url_rule."""
         self.app.add_url_rule('/', 'serve_page', self.serve_page)
         self.app.add_url_rule('/stream', 'start_stream', self.startStream)
+        self.app.add_url_rule('/base-img', 'base_img', self.returnBaseImg)
         self.app.add_url_rule('/stopStream', 'stopStream', self.stopStream)
         self.app.add_url_rule("/stopImgMod", 'stopImgMod', self.stopImageModification)
         self.app.add_url_rule("/startImgMod", 'startImgMod', self.startImageModification)
         self.app.add_url_rule("/dataEventSoruce", 'events', self.sendData)
         self.app.add_url_rule("/motorControl/<direction>/<speed>", 'motorControl', self.jogMotor)
         self.app.add_url_rule("/stopMotors", 'stopMotors', self.stopMotors)
-        self.app.add_url_rule("/modSetting/<settingName>/<settingValue>", 'modSetting', self.setImageProcessSetting)
+        self.app.add_url_rule("/modImgProcSetting/<settingName>/<settingValue>", 'modImgProcSetting', self.setImageProcessSetting)
+        self.app.add_url_rule("/modCamSetting/<settingName>/<settingValue>", 'modCamSetting', self.setCameraSetting)
 
 
 #Endpoint methods for flask endpoints
@@ -57,6 +61,13 @@ class FlaskServer:
         self.stopStreamEvent.set()
         return "OkeY DoKEy", 200
     
+    def returnBaseImg(self):
+        print("returning base img")
+        pilImg = Image.fromarray(self.detector._imgProcessor._baseImg)
+        ioImg = BytesIO()
+        pilImg.save(ioImg, 'JPEG')
+        ioImg.seek(0)
+        return flask.send_file(ioImg, mimetype='image/jpeg')
 
     #Image processing control
     def stopImageModification(self):
@@ -70,6 +81,11 @@ class FlaskServer:
     def setImageProcessSetting(self, settingName: str, settingValue: Any):
         self.detector.ModifyImageProcessorSetting(settingName, settingValue)
         return "okey dokey then", 200
+
+    #Camera controls
+    def setCameraSetting(self, settingName: str, settingValue: Any):
+        self.detector.ModifyCameraSetting(settingName, settingValue)
+        return "oKeY DoKEy thEN", 200
 
     #Data transfer
     def sendData(self):
