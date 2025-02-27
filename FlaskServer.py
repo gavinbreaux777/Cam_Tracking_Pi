@@ -1,15 +1,15 @@
 import flask
 from flask import jsonify, make_response, json
 import threading
-from StreamingOutput import StreamingOutput
 from MotorControl import MotorControl
 from Detector import Detector
+from Observer import DetectionObserver
 import time
-from typing import Any
+from typing import Any, Callable, Tuple
 from PIL import Image
 from io import BytesIO
 
-class FlaskServer:    
+class FlaskServer(DetectionObserver):    
     '''Handles serving pages and image streams via Flask'''
     def __init__(self, detector: Detector, motorControl: MotorControl):
         '''
@@ -26,7 +26,13 @@ class FlaskServer:
         self.detector = detector
         self.motorControl = motorControl
         self.stopStreamEvent = threading.Event()
+        self.newDetectedImageAvailable = threading.Event() #set this event to notify webpage that a new detection has occured (so it can detect new detection image)
+        self.motionStarted = threading.Event()
+        self.motionEnded = threading.Event()
+        motorControl.motionStartedEvent.Subscribe(self.OnMotorStarted)
+        motorControl.motionEndedEvent.Subscribe(self.OnMotorEnded)
         self._define_routes()
+
 
 
     def _define_routes(self):
@@ -34,15 +40,18 @@ class FlaskServer:
         self.app.add_url_rule('/', 'serve_page', self.serve_page)
         self.app.add_url_rule('/stream', 'start_stream', self.startStream)
         self.app.add_url_rule('/base-img', 'base_img', self.returnBaseImg)
+        self.app.add_url_rule('/detect-img', 'detect_img', self.returnDetectImg)
         self.app.add_url_rule('/stopStream', 'stopStream', self.stopStream)
         self.app.add_url_rule("/stopImgMod", 'stopImgMod', self.stopImageModification)
         self.app.add_url_rule("/startImgMod", 'startImgMod', self.startImageModification)
-        self.app.add_url_rule("/dataEventSoruce", 'events', self.sendData)
+        self.app.add_url_rule("/dataEventSoruce", 'event1', self.sendDataSSE)
+        self.app.add_url_rule("/detectNotifySource", 'event2', self.detectedImageSSE)
         self.app.add_url_rule("/motorControl/<direction>/<speed>", 'motorControl', self.jogMotor)
         self.app.add_url_rule("/stopMotors", 'stopMotors', self.stopMotors)
         self.app.add_url_rule("/modImgProcSetting/<settingName>/<settingValue>", 'modImgProcSetting', self.setImageProcessSetting)
         self.app.add_url_rule("/modCamSetting/<settingName>/<settingValue>", 'modCamSetting', self.setCameraSetting)
-
+        self.app.add_url_rule("/motorLocation", 'sendMotorLocation', self.sendMotorLocation)
+        self.app.add_url_rule("/calibrateMotors/<xDegreesToPercentChange>/<yDegreesToPercentChange>", 'calibMotor', self.CalibrateMotors)
 
 #Endpoint methods for flask endpoints
     def serve_page(self):
@@ -68,6 +77,14 @@ class FlaskServer:
         pilImg.save(ioImg, 'JPEG')
         ioImg.seek(0)
         return flask.send_file(ioImg, mimetype='image/jpeg')
+    
+    def returnDetectImg(self):
+        print("returning detect img")
+        pilImg = Image.fromarray(self.detector._imgProcessor.detectImg)
+        ioImg = BytesIO()
+        pilImg.save(ioImg, 'JPEG')
+        ioImg.seek(0)
+        return flask.send_file(ioImg, mimetype='image/jpeg')
 
     #Image processing control
     def stopImageModification(self):
@@ -87,11 +104,6 @@ class FlaskServer:
         self.detector.ModifyCameraSetting(settingName, settingValue)
         return "oKeY DoKEy thEN", 200
 
-    #Data transfer
-    def sendData(self):
-        return flask.Response(self.generate_data(), content_type='text/event-stream')
-
-
     #Motor control
     def moveMotorRel(self, direction: str, distance: str):
         distanceInt = int(distance)
@@ -107,9 +119,9 @@ class FlaskServer:
     def jogMotor(self, direction: str, speed: str):
         speedInt = int(speed)
         if(direction == "left"):
-            self.motorControl.JogX(speedInt, True)
-        elif(direction == "right"):
             self.motorControl.JogX(speedInt, False)
+        elif(direction == "right"):
+            self.motorControl.JogX(speedInt, True)
         elif(direction == "up"):
             self.motorControl.JogY(speedInt, True)
         elif(direction == "down"):
@@ -121,6 +133,22 @@ class FlaskServer:
     def stopMotors(self):
         self.motorControl.StopMotors()
         return "okeY DokeY", 200
+
+    def CalibrateMotors(self, xDegreesToPercentChange: float, yDegreesToPercentChange: float):
+        self.motorControl.xDegreesPerPercentChange = xDegreesToPercentChange
+        self.motorControl.yDegreesPerPercentChange = yDegreesToPercentChange
+        print(str(xDegreesToPercentChange) + " , " + str(yDegreesToPercentChange))
+        return "Okey Dokey", 200
+
+    #server sent events
+    def sendDataSSE(self): #Periodic data transfer
+        return flask.Response(self.generate_data(), content_type='text/event-stream')
+
+    def detectedImageSSE(self):
+        return flask.Response(self.detectionNotificationStream(), content_type='text/event-stream')
+
+    def sendMotorLocation(self):
+        return flask.Response(self.getMotorPosition(), content_type='text/event-stream')
 
 #Helper methods to endpoint methods
     def gen_frames(self):
@@ -140,7 +168,37 @@ class FlaskServer:
             yield f"data: {json_data}\n\n"
             time.sleep(5)
 
+    def detectionNotificationStream(self):
+        while True:
+            self.newDetectedImageAvailable.wait()
+            self.newDetectedImageAvailable.clear()
+            print("notifying client")
+            yield f"data: detected\n\n"
 
+    def getMotorPosition(self):
+        while True:
+            #self.motionEnded.wait()
+            #self.motionEnded.clear()
+            data = {
+                'xPosition': self.motorControl.xPosition,
+                'yPosition': self.motorControl.yPosition
+            }
+            json_data = json.dumps(data)
+            yield f"data: {json_data}\n\n"
+            time.sleep(5)
+
+    def OnMotionFound(self, location: tuple[int,int], callback: Callable[[bool], None]): 
+        self.newDetectedImageAvailable.set()
+        print("Set newDetectedImage event")
+        callback(True)
+
+    def OnMotorStarted(self):
+        self.motionStarted.set()
+
+    def OnMotorEnded(self):
+        self.motionEnded.set()
+
+    
 
     #App control methods
     def startServer(self):

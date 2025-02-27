@@ -13,11 +13,15 @@ class ProcessImage():
     '''
     def __init__(self, updateDetectedLocationFunc: Callable[[tuple[int,int]], None]):
         self._baseImg = numpy.array([], dtype=numpy.uint8)
+        self.detectImg = numpy.array([], dtype=numpy.uint8)
         self.unprocessedImg = numpy.array([])
         self.processedImg = numpy.array([])
         self._setDetectedLocation = updateDetectedLocationFunc
         self.requiredObjectSize = 2500
-        self.baseRenewImageDelay = 0
+        self._baseRenewImageDelay = 0
+        self._consecutiveDetections = 0
+        self.showDelta = False #Return binary image representing pixels different than base past the threshold
+        self.showContours = False #Draw difference contours on selected image
         
     def ProcessImage(self, imgToProcess: numpy.ndarray[tuple[int,int,int]]) -> numpy.ndarray[tuple[int, int, int]]:
         #convert image to grayscale and numpy uint8 array
@@ -26,10 +30,10 @@ class ProcessImage():
 
         #Ensure there is a base image
         if(self._baseImg.size == 0):
-            self.baseRenewImageDelay += 1 
-            if(grayed[0][0] != 0 and grayed[0][0] != 255 and self.baseRenewImageDelay > 2): #Added this check because when image processing is stopped via Detector setting ProcessImage = False directly after motion found, the first captured image buffer from the cam is invalid (all 0's/255s) or it is old image with processing overlay still on it
+            self._baseRenewImageDelay += 1 
+            if(self._baseRenewImageDelay > 2): #Added this check because when image processing is stopped via Detector setting ProcessImage = False directly after motion found, the first few captured image buffer from the cam is invalid (all 0's/255s) or it is old image with processing overlay still on it
                 self._baseImg = grayed
-                self.baseRenewImageDelay = 0
+                self._baseRenewImageDelay = 0
             return self._baseImg
         
         #Find difference between base image and current image
@@ -49,32 +53,50 @@ class ProcessImage():
             rotBox = numpy.int0(rotBox)
             selected_contours.append(contour)
 
+        #Select which image to draw on and return to stream
+        if(self.showDelta == True):
+            selectedImage = delta
+        else:
+            selectedImage = grayed
+
         #Combine all contours into one output contour and find center point
         if(len(selected_contours) > 0):
+            #Find bounding box
             all_selected_contours = numpy.concatenate(selected_contours, axis=0)
             rotRect = cv2.minAreaRect(all_selected_contours)
             rotBox = cv2.boxPoints(rotRect)
             rotBox = numpy.int0(rotBox)
-            cv2.drawContours(grayed, [rotBox],0,(255,255,255),2)
+            #Draw bounding box
+            cv2.drawContours(selectedImage, [rotBox],0,(255,255,255),2)
+            #Conditionally draw contours if chosen
+            if(self.showContours == True):
+                cv2.drawContours(selectedImage, selected_contours,0,(255,255,255),2)
             #find center of bounding box
             numPoints = rotBox.shape[0]
             xSum = numpy.sum(rotBox, axis=0)[0]
             ySum = numpy.sum(rotBox, axis=0)[1]
             xCenter = numpy.int0(xSum/numPoints)
             yCenter = numpy.int0(ySum/numPoints)
-            cv2.circle(grayed, (xCenter, yCenter),5,(255,255,255),2)
+            cv2.circle(selectedImage, (xCenter, yCenter),5,(255,255,255),2)
             
             #Only report motion found if not at edge of image
             if(xCenter > 640 * 0.1 and xCenter < 640 * .9) and (yCenter > 480 * 0.1 and yCenter < 480 * 0.9):
-                #report detected location
-                self._setDetectedLocation([xCenter, yCenter])
-                print(f"Detected center at {xCenter, yCenter}")
-                #after reporting detected location, clear base image so a new one will be created on next round of detection (after aim and fire sequence)
-                self._baseImg = numpy.array([], dtype=numpy.uint8)
+                #Wait for motion to be found several times in a row
+                self._consecutiveDetections += 1
+                if (self._consecutiveDetections > 10):
+                    self._consecutiveDetections = 0
+                    #report detected location
+                    self._setDetectedLocation([xCenter, yCenter])
+                    print(f"Detected center at {xCenter, yCenter}")
+                    #after reporting detected location, clear base image so a new one will be created on next round of detection (after aim and fire sequence)
+                    self._baseImg = numpy.array([], dtype=numpy.uint8)
+                    self.detectImg = selectedImage
+        else: 
+            self._consecutiveDetections = 0 #motion not detected, reset detection count
     
 
         # Append timestamp to image
         curTime = time.strftime("%Y-%m-%d %X")
-        cv2.putText(grayed, curTime, (0, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+        cv2.putText(selectedImage, curTime, (0, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
-        return grayed
+        return selectedImage

@@ -4,6 +4,7 @@ import RpiMotorLib.RpiMotorLib as RpiMotLib
 import concurrent.futures 
 from StepperMotorControlInterface import StepperMotorControlInterface
 import threading
+from Event import Event
 
 #gpio.setmode(gpio.BCM)
 #gpio.setup(18, gpio.OUT)
@@ -42,11 +43,11 @@ class StepperMotorControl(StepperMotorControlInterface):
 
 
     @property
-    def position(self) -> int:
+    def position(self) -> float:
         '''In degrees'''
         return self._position
     @position.setter
-    def position(self, value: int):
+    def position(self, value: float):
         self._position = value
 
     @property

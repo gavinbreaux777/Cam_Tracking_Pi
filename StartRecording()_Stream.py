@@ -16,10 +16,13 @@ try:
 
     #Create class to control all motors, aiming and projection
     motorControl = MotorControl()
-    detector.RegisterObserver(motorControl)
 
     #start Flask server with output from camera recording
     server = FlaskServer(detector, motorControl)
+
+    detector.RegisterObserver(motorControl)
+    detector.RegisterObserver(server)
+
     server.startServer()
 
 finally:

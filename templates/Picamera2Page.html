@@ -16,7 +16,7 @@
                 margin: 0px;
             }
             .btn-style{
-                margin: 0 auto 10%; width: 100%; height: 50%; font-size: 12;
+                margin: 0 auto 10%; width: 100%; height: auto; font-size: 12;
             }
             .mot-control-grid{
                 display: grid;
@@ -36,7 +36,7 @@
                 align-items: center;
                 border: 2px dashed orange;
             }
-            .stream-and-base-img-grid{
+            .two-img-grid{
                 display: grid;
                 height: 100%;
                 width: 100%;
@@ -49,7 +49,7 @@
     <body>
         <h1 style="justify-content: center; text-align: center;">Cool Shit</h1>
         <div class="grid-container">
-            <div class="grid-item" style="grid-row: 2; grid-column: 1; border-style: dotted; border-color: green;">
+            <div id="left_strip" class="grid-item" style="grid-row: 2; grid-column: 1; border-style: dotted; border-color: green;">
                 <button onclick="stopStream()" id="start_stop_stream" class="btn-style">
                     Stop Stream
                 </button>
@@ -57,25 +57,34 @@
                     Stop Image Modificaiton
                 </button>
             </div>
-            <div id="center-page" class="grid-item" style="grid-row: 2 / 5; grid-column: 2 / 6;  border: 5px dotted red; height: auto; width: 100%">
+            <div id="center_page" class="grid-item" style="grid-row: 2 / 5; grid-column: 2 / 6;  border: 5px dotted red; height: auto; width: 100%">
             </div>
-            <div class="grid-item" style="grid-row: 1; grid-column: 3; border: 5px dashed blue; height: 100%; width: 100%;">
-                <button onclick="toggleMotControl()" id="mot_ctrl_btn" class="btn-style" >
-                Motor Control
-                </button>
+            <div id="top_strip" class="grid-item" style="grid-row: 1; grid-column: 2 / 6; border: 6px dashed burlywood; height: 100%; width: 100%; display: flex; flex-direction: row;">
+                <div style="border: 5px dashed cyan;">
+                    <button onclick="toggleMainPage()" id="main_page_btn" class="btn-style" >
+                    Main Page
+                    </button>
+                </div>
+                <div style="border: 5px dashed blue;">
+                    <button onclick="toggleMotControl()" id="mot_ctrl_btn" class="btn-style" >
+                    Motor Control
+                    </button>
+                </div>
+                <div style="border: 5px solid magenta;">
+                    <button onclick="toggleStreamAndBaseImg()" id="show_base_img_btn" class="btn-style" >
+                        Show Base Image
+                    </button>
+                </div>
+                <div style="border: 5px dotted darkorange">
+                    <button onclick="toggleCalibration()" id="toggle_calibration" class="btn-style">
+                        Calibrate Motors
+                    </button>
+                </div>
             </div>
-            <div class="grid-item" style="grid-row: 1; grid-column: 2; border: 5px dashed cyan; height: 100%; width: 100%;">
-                <button onclick="toggleMainPage()" id="main_page_btn" class="btn-style" >
-                Main Page
-                </button>
-            </div>
-            <div class="grid-item" style="grid-row: 1; grid-column: 4; border: 5px solid magenta; height: 100%; width: 100%;">
-                <button onclick="toggleStreamAndBaseImg()" id="show_base_img_btn" class="btn-style" >
-                    Show Base Image
-                </button>
-            </div>
+            
+            
             <div id="bottom-center-section" style="grid-row: 5; grid-column: 3 / 5; height: 100%; width: 100%"></div>
-            <div id="imageParams" style="grid-row: 2 / 5; grid-column: 6; border: 5px solid pink; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center;">
+            <div id="right-strip" style="grid-row: 2 / 5; grid-column: 6; border: 5px solid pink; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center;">
                 <div style="border: 2px dashed black;">
                     <label for="objSizeInput">Required Object Size</label>
                     <input oninput="changeImgProcSetting('requiredObjectSize', this.value)" id="objSizeInput" type="number" value="2500" style="width: 50%;"/>
@@ -126,12 +135,30 @@
                 htmlElementToAppendTo.appendChild(img);
             }
 
+            function createDetectedImage(htmlElementToAppendTo){
+                const img = document.createElement('img');
+                img.src = '/detect-img?cache_buster=' + new Date().getTime();
+                img.id = 'detect_img';
+                img.style.display = 'block';
+                img.style.margin = '0 auto';
+                img.style.maxHeight = '100%'
+                img.style.maxWidth = '100%'
+                img.style.borderWidth = '2';
+                img.style.borderColor = 'blue';
+                img.style.borderstyle = 'solid';
+
+                //clear the specified element and append the image
+                htmlElementToAppendTo.innerHTML = "";
+                htmlElementToAppendTo.appendChild(img);
+            }
+
             function createStreamAndBaseImage(htmlElementToAppendTo){
                 const container = document.createElement('div');
-                container.className = 'stream-and-base-img-grid';
+                container.className = 'two-img-grid';
 
                 //Create live stream image
                 const streamContainer = document.createElement('div');
+                streamContainer.id = "img_div_one"
                 streamContainer.className = 'mot-control-button-container'
                 streamContainer.style.gridColumn = '1';
                 streamContainer.style.width = '100%';
@@ -141,6 +168,7 @@
 
                 //Create static base image
                 const baseImgContainer = document.createElement('div');
+                baseImgContainer.id = "img_div_two"
                 baseImgContainer.className = 'mot-control-button-container'
                 baseImgContainer.style.gridColumn = '2';
                 baseImgContainer.style.height = '100%';
@@ -248,8 +276,61 @@
                 htmlElementToAppendTo.appendChild(container)
             }
 
+            function createCalibrationPage(htmlElementToAppendTo){
+                createStreamAndBaseImage(htmlElementToAppendTo)
+
+                const imgDivTwo = document.getElementById("img_div_two");
+                imgDivTwo.innerHTML = "";
+                imgDivTwo.innerText = "Click in the image to save coordinates"
+                imgDivTwo.style.fontWeight = "bold"
+
+                const streamImg = document.getElementById("stream_img");
+                streamImg.style.cursor = "crosshair";
+                streamImg.addEventListener('click', function(event) {
+                    saveLocation(event, streamImg.width, streamImg.height)
+                });
+            }
+
+            function saveLocation(clickEvent, imgWidth, imgHeight){
+                
+                xClickRatio = (clickEvent.offsetX - (imgWidth/2)) / imgWidth;
+                yClickRatio = ((imgHeight/2) - clickEvent.offsetY) / imgHeight;
+                
+                motorCalibrationStartX = currentXMotorLocation;
+                motorCalibrationStartY = currentYMotorLocation 
+
+                const saveCalibrationBtn = document.createElement("button");
+                saveCalibrationBtn.textContent = "Save Calibration";
+                saveCalibrationBtn.onclick = function(){
+                    calculateAndPushCalibration(xClickRatio, yClickRatio)
+                };
+
+                const imgDivTwo = document.getElementById("img_div_two");
+                imgDivTwo.innerHTML = "";
+                imgDivTwo.appendChild(saveCalibrationBtn);
+            }
+
+            function calculateAndPushCalibration(xClickRatio, yClickRatio){
+                motorXDelta = motorCalibrationStartX - currentXMotorLocation
+                motorYDelta = motorCalibrationStartY - currentYMotorLocation
+
+                xDegreesPerDetectDistanceRatio = motorXDelta / xClickRatio
+                yDegreesPerDetectDistanceRatio = motorYDelta / yClickRatio
+                console.log("motorCalibrationStart = " + motorCalibrationStartX + " , " + motorCalibrationStartY)
+                console.log("currentMotorLocation = " + currentXMotorLocation + " , " + currentYMotorLocation)
+                console.log("motorDelta = " + motorXDelta + " , " + motorYDelta)
+                console.log("clickLocationRatio = " + xClickRatio + " , " + yClickRatio)
+                console.log("steps to pixel ratio = " + xDegreesPerDetectDistanceRatio + " , " + yDegreesPerDetectDistanceRatio)
+                //Push calibration to server
+                sendMotorCalibrationFactors(xDegreesPerDetectDistanceRatio, yDegreesPerDetectDistanceRatio)
+            }
+
         </script>
         <script>
+            var motorCalibrationStartX = 0
+            var motorCalibrationStartY = 0
+            var currentXMotorLocation = 0
+            var currentYMotorLocation = 0
             //Button functions
             function stopStream(){
                 const btn = document.getElementById("start_stop_stream")
@@ -348,15 +429,25 @@
             }
 
             function toggleMainPage(){
-                const centerPage = document.getElementById("center-page");
+                const centerPage = document.getElementById("center_page");
                 createStreamImage(centerPage)
                 const bottomCenterPage = document.getElementById("bottom-center-section")
                 bottomCenterPage.innerHTML = ""
             }
 
             function toggleStreamAndBaseImg(){
-                const centerPage = document.getElementById("center-page");
+                const centerPage = document.getElementById("center_page");
                 createStreamAndBaseImage(centerPage);
+            }
+
+            function toggleCalibration(){
+                const centerPage = document.getElementById("center_page");
+                createCalibrationPage(centerPage);
+            }
+
+            function displayDetectImg(){
+                const bottomCenterPage = document.getElementById('bottom-center-section')
+                createDetectedImage(bottomCenterPage)
             }
 
             function startJog(direction){
@@ -429,16 +520,50 @@
                     console.error(error)
                 })
             }
+
+            function sendMotorCalibrationFactors(xCalibration, yCalibration){
+                fetch(`/calibrateMotors/${xCalibration}/${yCalibration}`, {
+                    method: 'GET'
+                })
+                .then(response => {
+                    if (response.status == 200){
+                        console.log("Server is setting calibration factors. Response: " + response.text());
+                    }
+                    else{
+                        console.log("Error while requesting setting modification. Response: " + response.status);
+                    }
+                })
+                .catch(error => {
+                    console.error(error)
+                })
+            }
+        
         </script>
         <script>
             //Server Sent Events
-            const eventSource = new EventSource('/dataEventSoruce');
-            eventSource.onmessage = function(event) {
+            const dataEventSource = new EventSource('/dataEventSoruce');
+            dataEventSource.onmessage = function(event) {
                 console.log("time:" + JSON.parse(event.data).time);
             };
-            eventSource.onerror = function() {
+            dataEventSource.onerror = function() {
                 console.error("EventSource failed.");
             };
+
+            const newDetectEventSource = new EventSource('/detectNotifySource');
+            newDetectEventSource.onmessage = function(event) {
+                console.log("new detection");
+                displayDetectImg();
+            }
+            newDetectEventSource.onerror = function() {
+                console.error("EventSource failed");
+            }
+
+            const motorLocationSource = new EventSource('/motorLocation');
+            motorLocationSource.onmessage = function(event){
+                console.log("Current motor location: " + JSON.parse(event.data).xPosition + ", " + JSON.parse(event.data).yPosition);
+                currentXMotorLocation = JSON.parse(event.data).xPosition;
+                currentYMotorLocation = JSON.parse(event.data).yPosition;
+            }
 
             //Embedded functions
             window.onload = function() {

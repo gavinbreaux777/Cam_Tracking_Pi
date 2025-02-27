@@ -53,7 +53,7 @@ class ImageGenerator():
         """
         with picamera2.MappedArray(request, "main") as mapArr:
             #potentially split image off here (write un modified image to separate stream)
-            if (self.processedImg.size != 0): #self.processImage and 
+            if (self.processImage and self.processedImg.size != 0):  
                 if len(self.processedImg.shape) == 2:  # If it's a single-channel image (gray)
                     self.processedImg = numpy.stack([self.processedImg] * 3, axis=-1) #this converts it to a 3d array if its a 2d (grayscale)
                 mapArr.array[:] = self.processedImg #replace the output image to be streamed with the processed image created in this class

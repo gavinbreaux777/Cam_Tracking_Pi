@@ -22,20 +22,33 @@ class Detector():
 
         self.output = StreamingOutput()
 
-        self._processImage = True
-
         self.observers: list[DetectionObserver] = []
 
 
 
     @property
     def processImage(self):
-        return self._processImage
+        return self._imgGenerator.processImage
     
     @processImage.setter
     def processImage(self, value: bool):
-        self._processImage = value
         self._imgGenerator.processImage = value #This update starts/stops img processing in child class 
+
+    @property
+    def showDelta(self):
+        return self._imgProcessor.showDelta
+
+    @showDelta.setter
+    def showDelta(self, value: bool):
+        self._imgProcessor.showDelta = value
+
+    @property
+    def showContours(self):
+        return self._imgProcessor.showContours
+    
+    @showContours.setter
+    def showContours(self, value: bool):
+        self._imgProcessor.showContours = value
 
 
     def _getDetectedLocation(self) -> tuple[int, int]:
@@ -59,7 +72,7 @@ class Detector():
             _completedObserverCount += 1
             if(_completedObserverCount == len(self.observers)):
                 print("All observers finished")
-                self.processImage = True
+                ###self.processImage = True #auto restart image processing
 
         for observer in self.observers:
              threading.Thread(target=observer.OnMotionFound, args=(self._getDetectedLocation(), _observerDone,)).start() 

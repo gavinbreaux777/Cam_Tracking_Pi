@@ -1,6 +1,7 @@
 from StepperMotorControl import StepperMotorControl
 from concurrent import futures
 import threading
+from typing import Tuple
 
 class AimingControl():
     def __init__(self):
@@ -8,7 +9,15 @@ class AimingControl():
         self.yMotor = StepperMotorControl(23, 22)
 
     @property
-    def motorSpeed(self) ->tuple[float, float]: 
+    def yPosition(self) -> float:
+        return self.yMotor.position
+    
+    @property
+    def xPosition(self) -> float:
+        return self.xMotor.position
+
+    @property
+    def motorSpeed(self) ->Tuple[float, float]: 
         '''Speed for both motors in degPerSec'''
         return tuple[self.xMotor.speed, self.yMotor.speed]
     
@@ -16,7 +25,6 @@ class AimingControl():
     def motorSpeed(self, xSpeed: float, ySpeed: float):
         self.xMotor.speed(xSpeed)
         self.yMotor.speed(ySpeed)
-
 
     def AimXYRel(self, xDegrees: float, yDegrees: float):
         '''Move motors relative in x and y'''
