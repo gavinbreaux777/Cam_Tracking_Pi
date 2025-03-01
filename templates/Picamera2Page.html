@@ -258,6 +258,7 @@
                 input.type = 'text';
                 input.id = 'speedInput';
                 input.style.width = '50%';
+                input.value = "10";
                 
                 speedContainer.appendChild(label);
                 speedContainer.appendChild(input);
@@ -308,6 +309,45 @@
                 const imgDivTwo = document.getElementById("img_div_two");
                 imgDivTwo.innerHTML = "";
                 imgDivTwo.appendChild(saveCalibrationBtn);
+
+                const streamImg = document.getElementById("stream_img")
+
+                const clickCanvas = document.createElement('canvas');
+                const ctx = clickCanvas.getContext('2d');
+                clickCanvas.width = streamImg.width;
+                clickCanvas.height = streamImg.height;
+                ctx.drawImage(streamImg, 0, 0, clickCanvas.width, clickCanvas.height);
+                
+                ctx.strokeStyle = 'red';
+                ctx.lineWidth = 2;
+                xCenter = clickEvent.offsetX
+                yCenter = clickEvent.offsetY
+                length = 50
+                
+                //draw crosshair on clicked location
+                drawCrosshair(ctx, clickEvent.offsetX, clickEvent.offsetY, length, 'red', 2)
+
+                const clickImage = new Image();
+                clickImage.src = clickCanvas.toDataURL();
+
+                clickImage.onload = () => {
+                    imgDivTwo.appendChild(clickImage);
+                }
+            }
+
+            function drawCrosshair(canvasContext, xCenter, yCenter, length, color, width){
+                canvasContext.strokeStyle = color;
+                canvasContext.lineWidth = width;
+                
+                canvasContext.beginPath()
+                canvasContext.moveTo(xCenter - length/2, yCenter)
+                canvasContext.lineTo(xCenter + length/2, yCenter)
+                canvasContext.stroke();
+
+                canvasContext.beginPath()
+                canvasContext.moveTo(xCenter, yCenter - length/2)
+                canvasContext.lineTo(xCenter, yCenter + length/2)
+                canvasContext.stroke();
             }
 
             function calculateAndPushCalibration(xClickRatio, yClickRatio){

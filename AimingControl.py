@@ -1,12 +1,12 @@
 from StepperMotorControl import StepperMotorControl
 from concurrent import futures
-import threading
 from typing import Tuple
+from StepMode import StepMode
 
 class AimingControl():
     def __init__(self):
-        self.xMotor = StepperMotorControl(18, 17) 
-        self.yMotor = StepperMotorControl(23, 22)
+        self.xMotor = StepperMotorControl(18, 17, StepMode.Sixteenth) 
+        self.yMotor = StepperMotorControl(23, 22, StepMode.Full)
 
     @property
     def yPosition(self) -> float:
@@ -22,15 +22,16 @@ class AimingControl():
         return tuple[self.xMotor.speed, self.yMotor.speed]
     
     @motorSpeed.setter
-    def motorSpeed(self, xSpeed: float, ySpeed: float):
-        self.xMotor.speed(xSpeed)
-        self.yMotor.speed(ySpeed)
+    def motorSpeed(self, xySpeeds: Tuple[float, float]):
+        print("Speed set from AIming control = " + str(xySpeeds))
+        self.xMotor.speed = xySpeeds[0]
+        self.yMotor.speed = xySpeeds[1]
 
     def AimXYRel(self, xDegrees: float, yDegrees: float):
         '''Move motors relative in x and y'''
         threadPool = futures.ThreadPoolExecutor()
         xMove = threadPool.submit(self.xMotor.RotateRel, xDegrees)
-        yMove = threadPool.submit(self.yMotor.RotateRel,yDegrees)
+        yMove = threadPool.submit(self.yMotor.RotateRel, yDegrees)
         futures.wait([xMove, yMove])
     
     def MoveXRel(self, degrees: float):

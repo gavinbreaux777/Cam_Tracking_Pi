@@ -1,11 +1,10 @@
 import RPi.GPIO as gpio
 import time
-import RpiMotorLib.RpiMotorLib as RpiMotLib
 import concurrent.futures 
 from StepperMotorControlInterface import StepperMotorControlInterface
 import threading
-from Event import Event
-
+from RawStepperControl import RawStepperControl
+from StepMode import StepMode
 #gpio.setmode(gpio.BCM)
 #gpio.setup(18, gpio.OUT)
 #gpio.output(18, gpio.HIGH)
@@ -27,42 +26,45 @@ from Event import Event
 #done, not_done = concurrent.futures.wait([future1, future2], timeout=0.01)
 
 
+#from RawServoControl import RawServoControl
+#servo = RawServoControl(12, 50)
+#servo.SetAngle(180)
+#time.sleep(2)
+
 class StepperMotorControl(StepperMotorControlInterface):
-    def __init__(self, stepPin: int, dirPin: int = 1, stepResPins: tuple[int, int, int] = (-1,-1,-1), ):
+    def __init__(self, stepPin: int, dirPin: int = 1, stepMode: StepMode = StepMode.Full):
         ''''''
         gpio.setmode(gpio.BCM)
         gpio.setup(stepPin, gpio.OUT)
         gpio.setup(dirPin, gpio.OUT)
-        self.motor = RpiMotLib.A4988Nema(dirPin, stepPin, stepResPins, "A4988")
-        self.stepFraction = 1
+        self.motor = RawStepperControl(stepPin, dirPin, stepMode, 200) 
+        self._stepMode = stepMode
         self.motorResolution = 200
-        self._position = 0
-        self._speed = 120 
+        self.speed = 120 
         self.timeout = 10 #setting really high right now because we're not using rn. (client *should resend jog command before shorter timeout but currently only sending 1 start and 1 stop command from client)
         self._jogTimer = threading.Timer(self.timeout, self.StopMotors)
+        print("stepMode = " + str(self._stepMode))
+        print("stepsPerRev = " + str(self._stepsPerRevoluton))
+        print("stepsPerDegree = " + str(self._stepsPerDegree))
+        print("delayBetweenSteps = " + str(self._delayBetweenSteps))
 
 
     @property
     def position(self) -> float:
         '''In degrees'''
-        return self._position
+        return self.motor.position
     @position.setter
     def position(self, value: float):
-        self._position = value
+        self.motor.position = value
 
     @property
     def _stepsPerRevoluton(self):
         ''''''
-        return self.motorResolution * self.stepFraction
+        return self.motorResolution / self._stepMode
     
     @property
     def _stepsPerDegree(self):
         return self._stepsPerRevoluton / 360    
-    
-    @property
-    def stepType(self):
-        if(self.stepFraction == 1):
-            return "Full"
         
     @property
     def speed(self) -> float:
@@ -71,6 +73,7 @@ class StepperMotorControl(StepperMotorControlInterface):
     
     @speed.setter
     def speed(self, degPerSec):
+        print("Setting speed in StepeprMotorControl")
         self._speed = degPerSec
 
     @property
@@ -84,7 +87,11 @@ class StepperMotorControl(StepperMotorControlInterface):
         pass
 
     def CalculateDelayBetweenSteps(self, speedIn_ms):
-        return 1 / speedIn_ms * (self.motorResolution/360)
+        print("speedIn_ms = " + str(speedIn_ms))
+        print("stepsPerDegree = " + str(self._stepsPerDegree))
+        print("delayBetweenSteps = " + str(1 / speedIn_ms / (self._stepsPerDegree)))
+        return 1 / speedIn_ms / (self._stepsPerDegree)
+        #return 1 / speedIn_ms * (self.motorResolution/360)
 
     def RotateRel(self, degrees: float) -> None:
         if(degrees < 0):
@@ -93,9 +100,7 @@ class StepperMotorControl(StepperMotorControlInterface):
             cw = True
         stepsToTake = (int)(degrees * self._stepsPerDegree)
         stepsToTake = abs(stepsToTake)
-        self.motor.motor_go(clockwise=cw, steptype=self.stepType, steps=stepsToTake, stepdelay=self._delayBetweenSteps)
-
-        self.position += degrees
+        self.motor.MotorRotate(cw, stepsToTake, self._delayBetweenSteps)
 
     def RotateAbs(self, targetDegrees: float):
         stepsToTake = targetDegrees - self.position
@@ -104,12 +109,10 @@ class StepperMotorControl(StepperMotorControlInterface):
         else:
             cw = True
         abs(stepsToTake)
-        self.motor.motor_go(clockwise=cw, steptype=self.stepType, steps=stepsToTake, stepdelay=self._delayBetweenSteps )
-
-        self.position = targetDegrees
+        self.motor.MotorRotate(cw, stepsToTake, self._delayBetweenSteps)
 
     def Stop(self):
-        self.motor.motor_stop()
+        self.motor.StopMotor()
 
     def Jog(self, speed: int, cw: bool):
         "Start motor moving clockwise at specified speed"
@@ -117,7 +120,7 @@ class StepperMotorControl(StepperMotorControlInterface):
         delayBetweenSteps = self.CalculateDelayBetweenSteps(speed)
         #Start a thread so the function can return immediately, but start a timer to stop motors if timeout met
         threadPool = concurrent.futures.ThreadPoolExecutor()
-        jogThread = threadPool.submit(self.motor.motor_go, clockwise=cw, steptype=self.stepType, steps=stepsToTake, stepdelay=delayBetweenSteps)
+        threadPool.submit(self.motor.MotorRotate(cw, stepsToTake, delayBetweenSteps))
         self.RestartJogTimer()
 
     def RestartJogTimer(self):
@@ -127,5 +130,4 @@ class StepperMotorControl(StepperMotorControlInterface):
         self._jogTimer.start()
 
     def StopMotors(self):
-        self.Stop()
         self.Stop()

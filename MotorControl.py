@@ -1,5 +1,6 @@
 from AimingControl import AimingControl
 from FiringControl import FiringControl
+from RawServoControl import RawServoControl
 from Observer import DetectionObserver
 import time
 import threading 
@@ -10,10 +11,13 @@ class MotorControl(DetectionObserver):
         #Create class to control aiming steppers
         self.aimingControl = AimingControl()
         self.firingControl = FiringControl()
-        self.xDegreesPerPercentChange = .25 #CalifFactor - degrees motor move per % pixel change (% pixel change = (detect location - center location) / center location
-        self.yDegreesPerPercentChange = .1
+        self.xDegreesPerPercentChange = 50 #CalifFactor - degrees motor move per % pixel change (% pixel change = (detect location - center location) / center location
+        self.yDegreesPerPercentChange = 20
         self.motionStartedEvent = Event()
         self.motionEndedEvent = Event()
+
+        self.aimingControl.motorSpeed = (100, 100)
+        self.firingControl.StopFiring()
 
     @property
     def xPosition(self) -> float:
@@ -49,16 +53,28 @@ class MotorControl(DetectionObserver):
 
     def FindAndFire(self, location: Tuple[int, int], callback: Callable[[bool], None]):
         '''Aim motors, fire projectile, and finally call callback to notify Detector that we've finished the sequence'''
-        xDistanceFromCenter = location[0] - (640/2)
-        yDistanceFromCenter = (480/2) - location[1]
+        self.firingControl.SpoolMotors()
+        spoolStartTime = time.time()
 
-        xAdjustment = xDistanceFromCenter * self.xDegreesPerPercentChange
-        yAdjustment = yDistanceFromCenter * self.yDegreesPerPercentChange
+        #pixel distance from center
+        pixelXDistanceFromCenter = location[0] - (640/2)
+        pixelYDistanceFromCenter = (480/2) - location[1]
+
+        #Percent distance from center (far right, top = 1,1 ; far left and bottom = -1,-1)
+        percentXDistanceFromCenter = pixelXDistanceFromCenter / (640/2)
+        percentYDistanceFromCenter = pixelYDistanceFromCenter / (480/2)
+
+        xAdjustment = percentXDistanceFromCenter * self.xDegreesPerPercentChange
+        yAdjustment = percentYDistanceFromCenter * self.yDegreesPerPercentChange
+        print("Xadjustment = " + str(xAdjustment))
+        print("YAdjustment = " + str(yAdjustment))
         self.AimXYRel(xAdjustment, yAdjustment)
-        #Spool motors and firing here
-        #self.firingControl.SpoolMotors()
-        #time.sleep(1)
-        #self.firingControl.StopMotors()
+        while(time.time() - spoolStartTime < 2):
+            pass
+        
+        self.firingControl.FireSingle()
+        self.firingControl.StopMotors()
+
         #Notify detector that firing sequence finished
         callback(True)
 

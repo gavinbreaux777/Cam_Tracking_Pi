@@ -71,7 +71,6 @@ class FlaskServer(DetectionObserver):
         return "OkeY DoKEy", 200
     
     def returnBaseImg(self):
-        print("returning base img")
         pilImg = Image.fromarray(self.detector._imgProcessor._baseImg)
         ioImg = BytesIO()
         pilImg.save(ioImg, 'JPEG')
@@ -79,7 +78,6 @@ class FlaskServer(DetectionObserver):
         return flask.send_file(ioImg, mimetype='image/jpeg')
     
     def returnDetectImg(self):
-        print("returning detect img")
         pilImg = Image.fromarray(self.detector._imgProcessor.detectImg)
         ioImg = BytesIO()
         pilImg.save(ioImg, 'JPEG')
@@ -135,8 +133,8 @@ class FlaskServer(DetectionObserver):
         return "okeY DokeY", 200
 
     def CalibrateMotors(self, xDegreesToPercentChange: float, yDegreesToPercentChange: float):
-        self.motorControl.xDegreesPerPercentChange = xDegreesToPercentChange
-        self.motorControl.yDegreesPerPercentChange = yDegreesToPercentChange
+        self.motorControl.xDegreesPerPercentChange = float(xDegreesToPercentChange)
+        self.motorControl.yDegreesPerPercentChange = float(yDegreesToPercentChange)
         print(str(xDegreesToPercentChange) + " , " + str(yDegreesToPercentChange))
         return "Okey Dokey", 200
 
@@ -172,7 +170,6 @@ class FlaskServer(DetectionObserver):
         while True:
             self.newDetectedImageAvailable.wait()
             self.newDetectedImageAvailable.clear()
-            print("notifying client")
             yield f"data: detected\n\n"
 
     def getMotorPosition(self):
@@ -189,7 +186,6 @@ class FlaskServer(DetectionObserver):
 
     def OnMotionFound(self, location: tuple[int,int], callback: Callable[[bool], None]): 
         self.newDetectedImageAvailable.set()
-        print("Set newDetectedImage event")
         callback(True)
 
     def OnMotorStarted(self):

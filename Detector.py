@@ -71,7 +71,7 @@ class Detector():
             nonlocal _completedObserverCount
             _completedObserverCount += 1
             if(_completedObserverCount == len(self.observers)):
-                print("All observers finished")
+                pass
                 ###self.processImage = True #auto restart image processing
 
         for observer in self.observers:
