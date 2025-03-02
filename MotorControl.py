@@ -17,7 +17,7 @@ class MotorControl(DetectionObserver):
         self.motionEndedEvent = Event()
 
         self.aimingControl.motorSpeed = (100, 100)
-        self.firingControl.StopFiring()
+        self.firingControl.CloseGate()
 
     @property
     def xPosition(self) -> float:
@@ -26,6 +26,10 @@ class MotorControl(DetectionObserver):
     @property
     def yPosition(self) -> float:
         return self.aimingControl.yPosition
+    
+    @property
+    def servoPosition(self) -> float:
+        return self.firingControl.servoPosition
 
     def AimXYRel(self, xDegrees: float, yDegrees: float):
         self.aimingControl.AimXYRel(xDegrees, yDegrees)
@@ -64,10 +68,9 @@ class MotorControl(DetectionObserver):
         percentXDistanceFromCenter = pixelXDistanceFromCenter / (640/2)
         percentYDistanceFromCenter = pixelYDistanceFromCenter / (480/2)
 
+        #Motor travel distance in degrees
         xAdjustment = percentXDistanceFromCenter * self.xDegreesPerPercentChange
         yAdjustment = percentYDistanceFromCenter * self.yDegreesPerPercentChange
-        print("Xadjustment = " + str(xAdjustment))
-        print("YAdjustment = " + str(yAdjustment))
         self.AimXYRel(xAdjustment, yAdjustment)
         while(time.time() - spoolStartTime < 2):
             pass
@@ -77,5 +80,9 @@ class MotorControl(DetectionObserver):
 
         #Notify detector that firing sequence finished
         callback(True)
+
+    def SetServoAngle(self, angle: float):
+        self.firingControl.SetServoAngle(angle)
+
 
         

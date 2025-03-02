@@ -7,6 +7,7 @@ class RawServoControl():
         self._minDutyCycle = 2
         self._maxDutyCycle = 12
         self._dutyCyclePerDegree = (self._maxDutyCycle - self._minDutyCycle) / (self._maxAngle - self._minAngle)
+        self.position = 0
 
         gpio.setwarnings(False)
         gpio.setmode(gpio.BCM)
@@ -21,3 +22,4 @@ class RawServoControl():
             return
         dutyCycle = (angle * self._dutyCyclePerDegree) + 2
         self._pwm.ChangeDutyCycle(dutyCycle)
+        self.position = angle

@@ -2,6 +2,12 @@ import RPi.GPIO as gpio
 import time
 from RawServoControl import RawServoControl
 
+#servo = RawServoControl(12, 50)
+#servo.SetAngle(165)
+#servo.SetAngle(160)
+#time.sleep(0.1)
+#servo.SetAngle(165)
+
 class FiringControl():
     def __init__(self):
         self.relayOnPin = 21
@@ -9,9 +15,13 @@ class FiringControl():
         gpio.setup(self.relayOnPin, gpio.OUT)
 
         self.servo = RawServoControl(12, 50)
-        self.closedAngle = 180
-        self.openAngle = 90
+        self.closedAngle = 165
+        self.openAngle = 160
         self.servo.SetAngle(self.closedAngle)
+
+    @property
+    def servoPosition(self) -> float:
+        return self.servo.position
 
     def SpoolMotors(self):
         '''Spins up dc motors'''
@@ -24,17 +34,19 @@ class FiringControl():
     def FireSingle(self):
         '''Release single ball. Motors should be spooled already'''
         self.servo.SetAngle(self.openAngle)
-        time.sleep(.5) #Add sensor to allow only 1 ball?
+        time.sleep(0.1) #Add sensor to allow only 1 ball?
         self.servo.SetAngle(self.closedAngle) 
 
-    def FireContinuous(self):
+    def OpenGate(self):
         '''Open gate to release all balls'''
         self.servo.SetAngle(self.openAngle)
 
-    def StopFiring(self):
-        '''Close gat to stop releasing balls'''
+    def CloseGate(self):
+        '''Close gate to stop releasing balls'''
         self.servo.SetAngle(self.closedAngle)
 
+    def SetServoAngle(self, angle: float):
+        self.servo.SetAngle(angle)
 
 
 

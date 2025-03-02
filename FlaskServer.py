@@ -52,6 +52,7 @@ class FlaskServer(DetectionObserver):
         self.app.add_url_rule("/modCamSetting/<settingName>/<settingValue>", 'modCamSetting', self.setCameraSetting)
         self.app.add_url_rule("/motorLocation", 'sendMotorLocation', self.sendMotorLocation)
         self.app.add_url_rule("/calibrateMotors/<xDegreesToPercentChange>/<yDegreesToPercentChange>", 'calibMotor', self.CalibrateMotors)
+        self.app.add_url_rule("/moveServo/<angle>", 'moveServo', self.moveServo)
 
 #Endpoint methods for flask endpoints
     def serve_page(self):
@@ -128,6 +129,12 @@ class FlaskServer(DetectionObserver):
             print("Invalid direction parameter received: " + direction)
         return "Okey Dokey", 200
     
+    def moveServo(self, angle: str):
+        angleInt = int(angle)
+        print("moving servo")
+        self.motorControl.SetServoAngle(angleInt)
+        return "okeY DOkey", 200
+
     def stopMotors(self):
         self.motorControl.StopMotors()
         return "okeY DokeY", 200
@@ -178,11 +185,12 @@ class FlaskServer(DetectionObserver):
             #self.motionEnded.clear()
             data = {
                 'xPosition': self.motorControl.xPosition,
-                'yPosition': self.motorControl.yPosition
+                'yPosition': self.motorControl.yPosition,
+                'servoPosition': self.motorControl.servoPosition
             }
             json_data = json.dumps(data)
             yield f"data: {json_data}\n\n"
-            time.sleep(5)
+            time.sleep(1)
 
     def OnMotionFound(self, location: tuple[int,int], callback: Callable[[bool], None]): 
         self.newDetectedImageAvailable.set()

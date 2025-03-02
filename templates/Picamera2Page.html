@@ -36,6 +36,14 @@
                 align-items: center;
                 border: 2px dashed orange;
             }
+            .servo-control-grid{
+                display: grid;
+                height: 100%;
+                width: 100%;
+                grid-template-columns: 1fr 1fr 1fr;
+                grid-template-rows: 1fr 1fr 1fr 1fr 1fr;
+                border: 5px solid gray
+            }
             .two-img-grid{
                 display: grid;
                 height: 100%;
@@ -84,6 +92,7 @@
             
             
             <div id="bottom-center-section" style="grid-row: 5; grid-column: 3 / 5; height: 100%; width: 100%"></div>
+            <div id="bottom-right-section" style="grid-row: 5; grid-column: 5 / 7; height: 100%; width: 100%;"></div>
             <div id="right-strip" style="grid-row: 2 / 5; grid-column: 6; border: 5px solid pink; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center;">
                 <div style="border: 2px dashed black;">
                     <label for="objSizeInput">Required Object Size</label>
@@ -99,241 +108,413 @@
         <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
         <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
         <script>
+            const pageSections = {
+                center: document.getElementById("center_page"),
+                bottomCenter: document.getElementById("bottom-center-section"),
+                bottomRight: document.getElementById("bottom-right-section"),
+                leftStrip: null,
+                rightStrip: null,
+                topStrip: null
+            }
+            const serverData = {
+                xStepperPosition: 0,
+                yStepperPosition: 0,
+                servoPosition: 0
+            }
         //HTML dynamic components
-            function createStreamImage(htmlElementToAppendTo){
-                //create image element
-                const img = document.createElement('img');
-                img.src = '/stream';
-                img.id = 'stream_img';
-                img.style.display = 'block';
-                img.style.margin = '0 auto';
-                img.style.maxHeight = '100%'
-                img.style.maxWidth = '100%'
-                img.style.borderwidth = '2';
-                img.style.borderColor = 'black';
-                img.style.borderstyle = 'solid';
+            class ImageFactory{
+                constructor(){}
 
-                //clear the specified element and append the image
-                htmlElementToAppendTo.innerHTML = ""
-                htmlElementToAppendTo.appendChild(img)
+                static createStreamImage(htmlElementToAppendTo){
+                    //create image element
+                    const img = document.createElement('img');
+                    img.src = '/stream';
+                    img.id = 'stream_img';
+                    img.style.display = 'block';
+                    img.style.margin = '0 auto';
+                    img.style.maxHeight = '100%'
+                    img.style.maxWidth = '100%'
+                    img.style.borderwidth = '2';
+                    img.style.borderColor = 'black';
+                    img.style.borderstyle = 'solid';
+
+                    //clear the specified element and append the image
+                    htmlElementToAppendTo.innerHTML = ""
+                    htmlElementToAppendTo.appendChild(img)
+                }
+
+                static createBaseImg(htmlElementToAppendTo){
+                    const img = document.createElement('img');
+                    img.src = '/base-img?cache_buster=' + new Date().getTime();
+                    img.id = 'base_img';
+                    img.style.display = 'block';
+                    img.style.margin = '0 auto';
+                    img.style.maxHeight = '100%'
+                    img.style.maxWidth = '100%'
+                    img.style.borderWidth = '2';
+                    img.style.borderColor = 'blue';
+                    img.style.borderstyle = 'solid';
+
+                    //clear the specified element and append the image
+                    htmlElementToAppendTo.innerHTML = "";
+                    htmlElementToAppendTo.appendChild(img);
+                }
+
+                static appendImage(htmlElementToAppendTo, src){
+                    //create image element
+                    const img = document.createElement('img');
+                    img.src = src;
+                    img.id = 'stream_img';
+                    img.style.display = 'block';
+                    img.style.margin = '0 auto';
+                    img.style.maxHeight = '100%'
+                    img.style.maxWidth = '100%'
+                    img.style.borderwidth = '2';
+                    img.style.borderColor = 'black';
+                    img.style.borderstyle = 'solid';
+
+                    //clear the specified element and append the image
+                    htmlElementToAppendTo.innerHTML = ""
+                    htmlElementToAppendTo.appendChild(img)
+                }
+
+                static createDetectedImage(htmlElementToAppendTo){
+                    const img = document.createElement('img');
+                    img.src = '/detect-img?cache_buster=' + new Date().getTime();
+                    img.id = 'detect_img';
+                    img.style.display = 'block';
+                    img.style.margin = '0 auto';
+                    img.style.maxHeight = '100%'
+                    img.style.maxWidth = '100%'
+                    img.style.borderWidth = '2';
+                    img.style.borderColor = 'blue';
+                    img.style.borderstyle = 'solid';
+
+                    //clear the specified element and append the image
+                    htmlElementToAppendTo.innerHTML = "";
+                    htmlElementToAppendTo.appendChild(img);
+                }
+
+                static createStreamAndBaseImage(htmlElementToAppendTo){
+                    const container = document.createElement('div');
+                    container.className = 'two-img-grid';
+
+                    //Create live stream image
+                    const streamContainer = document.createElement('div');
+                    streamContainer.id = "img_div_one"
+                    streamContainer.className = 'mot-control-button-container'
+                    streamContainer.style.gridColumn = '1';
+                    streamContainer.style.width = '100%';
+                    this.createStreamImage(streamContainer)
+                    //appendImage(streamContainer, '/stream'); //This works when tied directly to navigation buttons but not here
+
+                    container.appendChild(streamContainer);
+
+                    //Create static base image
+                    const baseImgContainer = document.createElement('div');
+                    baseImgContainer.id = "img_div_two"
+                    baseImgContainer.className = 'mot-control-button-container'
+                    baseImgContainer.style.gridColumn = '2';
+                    baseImgContainer.style.height = '100%';
+                    this.createBaseImg(baseImgContainer)
+                    //appendImage(streamContainer, '/base-img?cache_buster=' + new Date().getTime());
+
+                    container.appendChild(baseImgContainer);
+
+                    htmlElementToAppendTo.innerHTML = "";
+                    htmlElementToAppendTo.appendChild(container);
+                }
+
             }
 
-            function createBaseImg(htmlElementToAppendTo){
-                const img = document.createElement('img');
-                img.src = '/base-img?cache_buster=' + new Date().getTime();
-                img.id = 'base_img';
-                img.style.display = 'block';
-                img.style.margin = '0 auto';
-                img.style.maxHeight = '100%'
-                img.style.maxWidth = '100%'
-                img.style.borderWidth = '2';
-                img.style.borderColor = 'blue';
-                img.style.borderstyle = 'solid';
+            class StepperControl{
+                constructor(){
+                    this.items = {
+                        jogSpeedElement: null
+                    }
+                }
 
-                //clear the specified element and append the image
-                htmlElementToAppendTo.innerHTML = "";
-                htmlElementToAppendTo.appendChild(img);
-            }
+                createGrid(htmlElementToAppendTo){
+                    //grid container for all buttons
+                    const container = document.createElement('div')
+                    container.className = 'mot-control-grid'
 
-            function createDetectedImage(htmlElementToAppendTo){
-                const img = document.createElement('img');
-                img.src = '/detect-img?cache_buster=' + new Date().getTime();
-                img.id = 'detect_img';
-                img.style.display = 'block';
-                img.style.margin = '0 auto';
-                img.style.maxHeight = '100%'
-                img.style.maxWidth = '100%'
-                img.style.borderWidth = '2';
-                img.style.borderColor = 'blue';
-                img.style.borderstyle = 'solid';
+                    //up button
+                    const upcontainer = document.createElement('div');
+                    upcontainer.className = 'mot-control-button-container';
+                    upcontainer.style.gridRow = '1';
+                    upcontainer.style.gridColumn = '2';
+                    
+                    const upButton = document.createElement('button');
+                    upButton.className = 'mot-control-button';
+                    upButton.onmousedown = () => startJog('up', this.items.jogSpeedElement.value);
+                    upButton.onmouseup = stopMotors;
+                    upButton.textContent = 'up button';
+                    
+                    upcontainer.appendChild(upButton);
 
-                //clear the specified element and append the image
-                htmlElementToAppendTo.innerHTML = "";
-                htmlElementToAppendTo.appendChild(img);
-            }
+                    //down button
+                    const downContainer = document.createElement('div');
+                    downContainer.className = 'mot-control-button-container';
+                    downContainer.style.gridRow = '3';
+                    downContainer.style.gridColumn = '2';
+                    
+                    const downButton = document.createElement('button');
+                    downButton.className = 'mot-control-button';
+                    downButton.onmousedown = () => startJog('down', this.items.jogSpeedElement.value);
+                    downButton.onmouseup = stopMotors;
+                    downButton.textContent = 'down button';
+                    
+                    downContainer.appendChild(downButton);
 
-            function createStreamAndBaseImage(htmlElementToAppendTo){
-                const container = document.createElement('div');
-                container.className = 'two-img-grid';
+                    //left button
+                    const leftContainer = document.createElement('div');
+                    leftContainer.className = 'mot-control-button-container';
+                    leftContainer.style.gridRow = '2';
+                    leftContainer.style.gridColumn = '1';
+                    
+                    const leftButton = document.createElement('button');
+                    leftButton.className = 'mot-control-button';
+                    leftButton.onmousedown = () => startJog('left', this.items.jogSpeedElement.value);
+                    leftButton.onmouseup = stopMotors;
+                    leftButton.textContent = 'left button';
+                    
+                    leftContainer.appendChild(leftButton);
 
-                //Create live stream image
-                const streamContainer = document.createElement('div');
-                streamContainer.id = "img_div_one"
-                streamContainer.className = 'mot-control-button-container'
-                streamContainer.style.gridColumn = '1';
-                streamContainer.style.width = '100%';
-                createStreamImage(streamContainer)
+                    //right button
+                    const rightContainer = document.createElement('div');
+                    rightContainer.className = 'mot-control-button-container';
+                    rightContainer.style.gridRow = '2';
+                    rightContainer.style.gridColumn = '3';
+                    
+                    const rightButton = document.createElement('button');
+                    rightButton.className = 'mot-control-button';
+                    rightButton.onmousedown = () => startJog('right', this.items.jogSpeedElement.value);
+                    rightButton.onmouseup = stopMotors;
+                    rightButton.textContent = 'right button';
+                    
+                    rightContainer.appendChild(rightButton);
 
-                container.appendChild(streamContainer);
+                    //speed setting box
+                    const speedContainer = document.createElement('div');
+                    speedContainer.style.gridRow = '2';
+                    speedContainer.style.gridColumn = '2';
+                    speedContainer.style.display = 'flex';
+                    speedContainer.style.justifyContent = 'center';
+                    speedContainer.style.alignItems = 'center';
+                    
+                    const label = document.createElement('label');
+                    label.setAttribute('for', 'speedInput');
+                    label.style.marginRight = '10px';
+                    label.textContent = 'Jog Speed';
+                    
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.id = 'speedInput';
+                    input.style.width = '50%';
+                    input.value = "10";
+                    this.items.jogSpeedElement = input;
+                    
+                    speedContainer.appendChild(label);
+                    speedContainer.appendChild(input);
 
-                //Create static base image
-                const baseImgContainer = document.createElement('div');
-                baseImgContainer.id = "img_div_two"
-                baseImgContainer.className = 'mot-control-button-container'
-                baseImgContainer.style.gridColumn = '2';
-                baseImgContainer.style.height = '100%';
-                createBaseImg(baseImgContainer)
+                    //combine everything
+                    container.appendChild(upcontainer)
+                    container.appendChild(downContainer)
+                    container.appendChild(leftContainer)
+                    container.appendChild(rightContainer)
+                    container.appendChild(speedContainer)
 
-                container.appendChild(baseImgContainer);
+                    //clear the specified element
+                    htmlElementToAppendTo.innerHTML = ""
 
-                htmlElementToAppendTo.innerHTML = "";
-                htmlElementToAppendTo.appendChild(container);
-            }
+                    //append to specified element
+                    htmlElementToAppendTo.appendChild(container)
+                }
+            }     
 
-            function createMotControlGrid(htmlElementToAppendTo){
-                //grid container for all buttons
-                const container = document.createElement('div')
-                container.className = 'mot-control-grid'
+            class ServoControl{
 
-                //up button
-                const upcontainer = document.createElement('div');
-                upcontainer.className = 'mot-control-button-container';
-                upcontainer.style.gridRow = '1';
-                upcontainer.style.gridColumn = '2';
-                
-                const upButton = document.createElement('button');
-                upButton.className = 'mot-control-button';
-                upButton.onmousedown = () => startJog('up');
-                upButton.onmouseup = stopMotors;
-                upButton.textContent = 'up button';
-                
-                upcontainer.appendChild(upButton);
+                constructor(){
+                    this.items = {
+                        targetPositionElement: null,
+                        currentPositionElement: null
+                    }
+                }
 
-                //down button
-                const downContainer = document.createElement('div');
-                downContainer.className = 'mot-control-button-container';
-                downContainer.style.gridRow = '3';
-                downContainer.style.gridColumn = '2';
-                
-                const downButton = document.createElement('button');
-                downButton.className = 'mot-control-button';
-                downButton.onmousedown = () => startJog('down');
-                downButton.onmouseup = stopMotors;
-                downButton.textContent = 'down button';
-                
-                downContainer.appendChild(downButton);
+                updateData(servoPosition){
+                    this.items.currentPositionElement.textContent = servoPosition;
+                }
 
-                //left button
-                const leftContainer = document.createElement('div');
-                leftContainer.className = 'mot-control-button-container';
-                leftContainer.style.gridRow = '2';
-                leftContainer.style.gridColumn = '1';
-                
-                const leftButton = document.createElement('button');
-                leftButton.className = 'mot-control-button';
-                leftButton.onmousedown = () => startJog('left');
-                leftButton.onmouseup = stopMotors;
-                leftButton.textContent = 'left button';
-                
-                leftContainer.appendChild(leftButton);
+                createGrid(htmlElementToAppendTo){
+                    //grid container for all buttons
+                    const container = document.createElement('div')
+                    container.className = 'servo-control-grid'
 
-                //right button
-                const rightContainer = document.createElement('div');
-                rightContainer.className = 'mot-control-button-container';
-                rightContainer.style.gridRow = '2';
-                rightContainer.style.gridColumn = '3';
-                
-                const rightButton = document.createElement('button');
-                rightButton.className = 'mot-control-button';
-                rightButton.onmousedown = () => startJog('right');
-                rightButton.onmouseup = stopMotors;
-                rightButton.textContent = 'right button';
-                
-                rightContainer.appendChild(rightButton);
+                    //title
+                    const titleContainer = document.createElement('div');
+                    titleContainer.style.gridRow = '1';
+                    titleContainer.style.gridColumn = '1 / 5'
+                    titleContainer.style.textAlign = 'center';
+                    titleContainer.textContent = "Servo Control";
+                    titleContainer.style.margin = '5px';
 
-                //speed setting box
-                const speedContainer = document.createElement('div');
-                speedContainer.style.gridRow = '2';
-                speedContainer.style.gridColumn = '2';
-                speedContainer.style.display = 'flex';
-                speedContainer.style.justifyContent = 'center';
-                speedContainer.style.alignItems = 'center';
-                
-                const label = document.createElement('label');
-                label.setAttribute('for', 'speedInput');
-                label.style.marginRight = '10px';
-                label.textContent = 'Jog Speed';
-                
-                const input = document.createElement('input');
-                input.type = 'text';
-                input.id = 'speedInput';
-                input.style.width = '50%';
-                input.value = "10";
-                
-                speedContainer.appendChild(label);
-                speedContainer.appendChild(input);
+                    container.appendChild(titleContainer);
 
-                //combine everything
-                container.appendChild(upcontainer)
-                container.appendChild(downContainer)
-                container.appendChild(leftContainer)
-                container.appendChild(rightContainer)
-                container.appendChild(speedContainer)
+                    //Current position
+                    const leftContainer = document.createElement('div');
+                    leftContainer.style.display = 'flex';
+                    leftContainer.style.flexDirection = 'column';
+                    leftContainer.style.textAlign = 'center';
+                    leftContainer.style.justifyItems = 'center';
+                    leftContainer.style.alignItems = 'center';
+                    leftContainer.className = 'mot-control-button-container';
+                    leftContainer.style.gridRow = '2 / 6';
+                    leftContainer.style.gridColumn = '1 / 2';
+                    
+                    const currentPosTitle = document.createElement('div');
+                    currentPosTitle.textContent = 'Current Position';
+                    leftContainer.appendChild(currentPosTitle);
 
-                //clear the specified element
-                htmlElementToAppendTo.innerHTML = ""
+                    const currentPosValue = document.createElement('div');
+                    this.items.currentPositionElement = currentPosValue
+                    currentPosValue.id = "servo-pos";
+                    currentPosValue.textContent = serverData.xStepperPosition;
+                    
+                    leftContainer.appendChild(currentPosValue);
+                    
 
-                //append to specified element
-                htmlElementToAppendTo.appendChild(container)
-            }
+                    // Target Position
+                    const targetPositionContainer = document.createElement('div');
+                    targetPositionContainer.className = 'mot-control-button-container';
+                    targetPositionContainer.style.gridRow = '2 / 6';
+                    targetPositionContainer.style.gridColumn = '2 / 5';
+                    targetPositionContainer.style.display = 'flex';
+                    targetPositionContainer.style.flexDirection = 'column';
+                    targetPositionContainer.style.textAlign = 'center';
+                    targetPositionContainer.style.justifyItems = 'center';
+                    targetPositionContainer.style.alignItems = 'center';
+                    
+                    const moveBtn = document.createElement('button')
+                    moveBtn.style.width = '50%';
+                    moveBtn.style.height = '100%';
+                    moveBtn.textContent = 'Move To Target';
 
-            function createCalibrationPage(htmlElementToAppendTo){
-                createStreamAndBaseImage(htmlElementToAppendTo)
+                    targetPositionContainer.appendChild(moveBtn);
+                    
+                    const label = document.createElement('label');
+                    label.setAttribute('for', 'positionInput');
+                    label.style.marginRight = '10px';
+                    label.textContent = 'Target Position';
+                    label.style.marginTop = '5px';
+                    
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.id = 'positionInput';
+                    input.style.width = '50%';
+                    input.value = "10";
+                    this.items.targetPositionElement = input
 
-                const imgDivTwo = document.getElementById("img_div_two");
-                imgDivTwo.innerHTML = "";
-                imgDivTwo.innerText = "Click in the image to save coordinates"
-                imgDivTwo.style.fontWeight = "bold"
+                    moveBtn.onclick = () => {moveServo((this.items.targetPositionElement).value);}
+                    
+                    targetPositionContainer.appendChild(label);
+                    targetPositionContainer.appendChild(input);
 
-                const streamImg = document.getElementById("stream_img");
-                streamImg.style.cursor = "crosshair";
-                streamImg.addEventListener('click', function(event) {
-                    saveLocation(event, streamImg.width, streamImg.height)
-                });
-            }
+                    //combine everything
+                    container.appendChild(leftContainer)
+                    container.appendChild(targetPositionContainer)
 
-            function saveLocation(clickEvent, imgWidth, imgHeight){
-                
-                xClickRatio = (clickEvent.offsetX - (imgWidth/2)) / imgWidth;
-                yClickRatio = ((imgHeight/2) - clickEvent.offsetY) / imgHeight;
-                
-                motorCalibrationStartX = currentXMotorLocation;
-                motorCalibrationStartY = currentYMotorLocation 
+                    //clear the specified element
+                    htmlElementToAppendTo.innerHTML = ""
 
-                const saveCalibrationBtn = document.createElement("button");
-                saveCalibrationBtn.textContent = "Save Calibration";
-                saveCalibrationBtn.onclick = function(){
-                    calculateAndPushCalibration(xClickRatio, yClickRatio)
-                };
+                    //append to specified element
+                    htmlElementToAppendTo.appendChild(container)
+                }
+            }          
 
-                const imgDivTwo = document.getElementById("img_div_two");
-                imgDivTwo.innerHTML = "";
-                imgDivTwo.appendChild(saveCalibrationBtn);
+            class Calibration{
+                constructor(){
+                    this.items = {
+                        xClickRatio: null,
+                        yClickRatio: null,
+                        motorCalibrationStartX: null,
+                        motorCalibrationStartY: null,
+                        crosshairlength: 50
+                    }
+                }
 
-                const streamImg = document.getElementById("stream_img")
+                createCalibrationPage(htmlElementToAppendTo){
+                    ImageFactory.createStreamAndBaseImage(htmlElementToAppendTo)
 
-                const clickCanvas = document.createElement('canvas');
-                const ctx = clickCanvas.getContext('2d');
-                clickCanvas.width = streamImg.width;
-                clickCanvas.height = streamImg.height;
-                ctx.drawImage(streamImg, 0, 0, clickCanvas.width, clickCanvas.height);
-                
-                ctx.strokeStyle = 'red';
-                ctx.lineWidth = 2;
-                xCenter = clickEvent.offsetX
-                yCenter = clickEvent.offsetY
-                length = 50
-                
-                //draw crosshair on clicked location
-                drawCrosshair(ctx, clickEvent.offsetX, clickEvent.offsetY, length, 'red', 2)
+                    const imgDivTwo = document.getElementById("img_div_two");
+                    imgDivTwo.innerHTML = "";
+                    imgDivTwo.innerText = "Click in the image to save coordinates"
+                    imgDivTwo.style.fontWeight = "bold"
 
-                const clickImage = new Image();
-                clickImage.src = clickCanvas.toDataURL();
+                    const streamImg = document.getElementById("stream_img");
+                    console.log("setting cursor to crosshair");
+                    streamImg.style.cursor = "crosshair";
+                    streamImg.addEventListener('click', (event) => {
+                        this.saveLocation(event, streamImg.width, streamImg.height)
+                    });
+                }
 
-                clickImage.onload = () => {
-                    imgDivTwo.appendChild(clickImage);
+                saveLocation(clickEvent, imgWidth, imgHeight){
+                    this.items.xClickRatio = (clickEvent.offsetX - (imgWidth/2)) / imgWidth;
+                    this.items.yClickRatio = ((imgHeight/2) - clickEvent.offsetY) / imgHeight;
+                    
+                    this.items.motorCalibrationStartX = serverData.xStepperPosition;
+                    this.items.motorCalibrationStartY = serverData.yStepperPosition;
+
+                    const saveCalibrationBtn = document.createElement("button");
+                    saveCalibrationBtn.textContent = "Save Calibration";
+                    saveCalibrationBtn.onclick = () => {
+                        this.calculateAndPushCalibration()
+                    };
+
+                    const imgDivTwo = document.getElementById("img_div_two");
+                    imgDivTwo.innerHTML = "";
+                    imgDivTwo.appendChild(saveCalibrationBtn);
+
+                    const streamImg = document.getElementById("stream_img")
+
+                    const clickCanvas = document.createElement('canvas');
+                    const ctx = clickCanvas.getContext('2d');
+                    clickCanvas.width = streamImg.width;
+                    clickCanvas.height = streamImg.height;
+                    ctx.drawImage(streamImg, 0, 0, clickCanvas.width, clickCanvas.height);
+                    
+                    ctx.strokeStyle = 'red';
+                    ctx.lineWidth = 2;
+                    this.items.crosshairlength = 50;
+                    
+                    //draw crosshair on clicked location
+                    drawCrosshair(ctx, clickEvent.offsetX, clickEvent.offsetY, length, 'red', 2)
+
+                    const clickImage = new Image();
+                    clickImage.src = clickCanvas.toDataURL();
+
+                    clickImage.onload = () => {
+                        imgDivTwo.appendChild(clickImage);
+                    }
+                }
+
+                calculateAndPushCalibration(){
+                    const motorXDelta = this.items.motorCalibrationStartX - serverData.xStepperPosition
+                    const motorYDelta = this.items.motorCalibrationStartY - serverData.yStepperPosition
+
+                    const xDegreesPerDetectDistanceRatio = motorXDelta / this.items.xClickRatio
+                    const yDegreesPerDetectDistanceRatio = motorYDelta / this.items.yClickRatio
+                    console.log("motorCalibrationStart = " + this.items.motorCalibrationStartX + " , " + this.items.motorCalibrationStartY)
+                    console.log("currentMotorLocation = " + serverData.xStepperPosition + " , " + serverData.yStepperPosition)
+                    console.log("motorDelta = " + motorXDelta + " , " + motorYDelta)
+                    console.log("clickLocationRatio = " + this.items.xClickRatio + " , " + this.items.yClickRatio)
+                    console.log("steps to pixel ratio = " + xDegreesPerDetectDistanceRatio + " , " + yDegreesPerDetectDistanceRatio)
+                    //Push calibration to server
+                    sendMotorCalibrationFactors(xDegreesPerDetectDistanceRatio, yDegreesPerDetectDistanceRatio)
                 }
             }
+
 
             function drawCrosshair(canvasContext, xCenter, yCenter, length, color, width){
                 canvasContext.strokeStyle = color;
@@ -350,28 +531,39 @@
                 canvasContext.stroke();
             }
 
-            function calculateAndPushCalibration(xClickRatio, yClickRatio){
-                motorXDelta = motorCalibrationStartX - currentXMotorLocation
-                motorYDelta = motorCalibrationStartY - currentYMotorLocation
+            const imageFactory = new ImageFactory()
+            const servoController = new ServoControl() 
+            const stepperControl = new StepperControl()
+            const calibration = new Calibration()
 
-                xDegreesPerDetectDistanceRatio = motorXDelta / xClickRatio
-                yDegreesPerDetectDistanceRatio = motorYDelta / yClickRatio
-                console.log("motorCalibrationStart = " + motorCalibrationStartX + " , " + motorCalibrationStartY)
-                console.log("currentMotorLocation = " + currentXMotorLocation + " , " + currentYMotorLocation)
-                console.log("motorDelta = " + motorXDelta + " , " + motorYDelta)
-                console.log("clickLocationRatio = " + xClickRatio + " , " + yClickRatio)
-                console.log("steps to pixel ratio = " + xDegreesPerDetectDistanceRatio + " , " + yDegreesPerDetectDistanceRatio)
-                //Push calibration to server
-                sendMotorCalibrationFactors(xDegreesPerDetectDistanceRatio, yDegreesPerDetectDistanceRatio)
+
+            //Page navigation
+            function toggleMotControl(){
+                stepperControl.createGrid(pageSections.bottomCenter)
+                servoController.createGrid(pageSections.bottomRight)
             }
 
-        </script>
-        <script>
-            var motorCalibrationStartX = 0
-            var motorCalibrationStartY = 0
-            var currentXMotorLocation = 0
-            var currentYMotorLocation = 0
-            //Button functions
+            function toggleMainPage(){
+                //createStreamImage(pageSections.center)
+                ImageFactory.appendImage(pageSections.center, "/stream")
+                pageSections.bottomCenter.innerHTML = ""
+                pageSections.bottomRight.innerHTML = ""
+            }
+
+            function toggleStreamAndBaseImg(){
+                ImageFactory.createStreamAndBaseImage(pageSections.center);
+            }
+
+            function toggleCalibration(){
+                calibration.createCalibrationPage(pageSections.center);
+            }
+
+            function displayDetectImg(){
+                //ImageFactory.createDetectedImage(pageSections.bottomCenter)
+                ImageFactory.appendImage(pageSections.bottomCenter, '/detect-img?cache_buster=' + new Date().getTime());
+            }
+
+            //Server requests
             function stopStream(){
                 const btn = document.getElementById("start_stop_stream")
                 fetch('/stopStream', {
@@ -462,37 +654,9 @@
                         console.error(error)
                     })
                 }
-            
-            function toggleMotControl(){
-                const bottomCenterPage = document.getElementById("bottom-center-section");
-                createMotControlGrid(bottomCenterPage)
-            }
 
-            function toggleMainPage(){
-                const centerPage = document.getElementById("center_page");
-                createStreamImage(centerPage)
-                const bottomCenterPage = document.getElementById("bottom-center-section")
-                bottomCenterPage.innerHTML = ""
-            }
-
-            function toggleStreamAndBaseImg(){
-                const centerPage = document.getElementById("center_page");
-                createStreamAndBaseImage(centerPage);
-            }
-
-            function toggleCalibration(){
-                const centerPage = document.getElementById("center_page");
-                createCalibrationPage(centerPage);
-            }
-
-            function displayDetectImg(){
-                const bottomCenterPage = document.getElementById('bottom-center-section')
-                createDetectedImage(bottomCenterPage)
-            }
-
-            function startJog(direction){
+            function startJog(direction, speed){
                 console.log("Starting jog")
-                const speed = document.getElementById("speedInput").value;
                 fetch(`/motorControl/${direction}/${speed}`, {
                     method: 'GET'
                 })
@@ -527,6 +691,24 @@
                 })
             }
             
+            function moveServo(target){
+                console.log("Moving servo");
+                fetch(`/moveServo/${target}`, {
+                    method: 'GET'
+                })
+                .then(response => {
+                    if (response.status == 200){
+                        console.log("Server moving servo. Response: " + response.body);
+                    }
+                    else{
+                        console.log("Error while requesting servo move. Response: " + response.status);
+                    }
+                })
+                .catch(error => {
+                    console.error(error)
+                })
+            }
+
             function changeImgProcSetting(settingName, settingValue){
                 fetch(`/modImgProcSetting/${settingName}/${settingValue}`, {
                     method: 'GET'
@@ -578,8 +760,9 @@
                 })
             }
         
-        </script>
-        <script>
+            
+
+
             //Server Sent Events
             const dataEventSource = new EventSource('/dataEventSoruce');
             dataEventSource.onmessage = function(event) {
@@ -601,8 +784,13 @@
             const motorLocationSource = new EventSource('/motorLocation');
             motorLocationSource.onmessage = function(event){
                 console.log("Current motor location: " + JSON.parse(event.data).xPosition + ", " + JSON.parse(event.data).yPosition);
-                currentXMotorLocation = JSON.parse(event.data).xPosition;
-                currentYMotorLocation = JSON.parse(event.data).yPosition;
+                console.log("Current servo location: " + JSON.parse(event.data).servoPosition)
+                //Get values
+                serverData.xStepperPosition = JSON.parse(event.data).xPosition;
+                serverData.yStepperPosition = JSON.parse(event.data).yPosition;
+                serverData.servoPosition = JSON.parse(event.data).servoPosition;
+                //Update values on page
+                servoController.updateData(serverData.servoPosition)
             }
 
             //Embedded functions
