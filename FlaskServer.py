@@ -53,6 +53,7 @@ class FlaskServer(DetectionObserver):
         self.app.add_url_rule("/motorLocation", 'sendMotorLocation', self.sendMotorLocation)
         self.app.add_url_rule("/calibrateMotors/<xDegreesToPercentChange>/<yDegreesToPercentChange>", 'calibMotor', self.CalibrateMotors)
         self.app.add_url_rule("/moveServo/<angle>", 'moveServo', self.moveServo)
+        self.app.add_url_rule("/forceDetection/<xRatio>/<yRatio>", 'forceDetect', self.forceDetection)
 
 #Endpoint methods for flask endpoints
     def serve_page(self):
@@ -144,6 +145,10 @@ class FlaskServer(DetectionObserver):
         self.motorControl.yDegreesPerPercentChange = float(yDegreesToPercentChange)
         print(str(xDegreesToPercentChange) + " , " + str(yDegreesToPercentChange))
         return "Okey Dokey", 200
+
+    def forceDetection(self, xRatio: str, yRatio: str):
+        self.detector.setDetectedRatio(float(xRatio), float(yRatio))
+        return "okey DOKEY", 200
 
     #server sent events
     def sendDataSSE(self): #Periodic data transfer

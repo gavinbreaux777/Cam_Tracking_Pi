@@ -12,6 +12,8 @@ class ImageGenerator():
     ''''''
     def __init__(self, picam2: Picamera2, imageProcessor: ProcessImage):
         ''''''
+        self.imageSize = (640, 480)
+        
         self.picam2 = picam2
         self.configureCam()
 
@@ -24,7 +26,7 @@ class ImageGenerator():
         self.imageProcessThread = threading.Thread(target=self.CaptureBufferAndProcessImage)
 
     def configureCam(self):
-        self.picam2.configure(self.picam2.create_video_configuration(main={"size": (640, 480), "format":"RGB888"}))
+        self.picam2.configure(self.picam2.create_video_configuration(main={"size": self.imageSize, "format":"RGB888"}))
         self.picam2.set_controls({"ExposureTime": 1000000, "AnalogueGain": 10.0})
         self.picam2.post_callback = self.ModifyOutputImageOnCB
 

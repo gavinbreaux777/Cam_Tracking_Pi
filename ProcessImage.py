@@ -86,6 +86,11 @@ class ProcessImage():
                 if (self._consecutiveDetections > 10):
                     self._consecutiveDetections = 0
                     #report detected location
+                    #Y axis is flipped from what we want (here, positive Y is bottom edge). Flip it to have positive y = top of image
+                    print("shape = " + str(grayed.shape[0]))
+                    print("original y = " + str(yCenter))
+                    yCenter = abs(grayed.shape[0] - yCenter)
+                    print("new y = " + str(yCenter))
                     self._setDetectedLocation([xCenter, yCenter])
                     print(f"Detected center at {xCenter, yCenter}")
                     #after reporting detected location, clear base image so a new one will be created on next round of detection (after aim and fire sequence)

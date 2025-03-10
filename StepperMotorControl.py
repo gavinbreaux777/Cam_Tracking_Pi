@@ -87,11 +87,7 @@ class StepperMotorControl(StepperMotorControlInterface):
         pass
 
     def CalculateDelayBetweenSteps(self, speedIn_ms):
-        print("speedIn_ms = " + str(speedIn_ms))
-        print("stepsPerDegree = " + str(self._stepsPerDegree))
-        print("delayBetweenSteps = " + str(1 / speedIn_ms / (self._stepsPerDegree)))
         return 1 / speedIn_ms / (self._stepsPerDegree)
-        #return 1 / speedIn_ms * (self.motorResolution/360)
 
     def RotateRel(self, degrees: float) -> None:
         if(degrees < 0):
