@@ -1,9 +1,10 @@
 import time
-import RPi.GPIO as gpio
 from StepMode import StepMode
+from IOControl import IOControl
 class RawStepperControl():
 
-    def __init__(self, stepPin: int, directionPin: int = None, stepMode: StepMode = StepMode.Full, stepsPerRev: int = 200):
+    def __init__(self, ioControl: IOControl, stepPin: int, directionPin: int = None, stepMode: StepMode = StepMode.Full, stepsPerRev: int = 200):
+        self._ioControl = ioControl
         self._directionPin = directionPin
         self._stepPin = stepPin
         self._stepMode = stepMode
@@ -19,17 +20,19 @@ class RawStepperControl():
         '''Rotate motor by specified number of steps'''
         self._stopMotor = False
         if(clockwise):
-            gpio.output(self._directionPin, gpio.HIGH)
+            self._ioControl.SetOutput(self._directionPin, 1)
+            #gpio.output(self._directionPin, gpio.HIGH)
         else:
-            gpio.output(self._directionPin, gpio.LOW)
+            self._ioControl.SetOutput(self._directionPin, 0)
+            #gpio.output(self._directionPin, gpio.LOW)
         try:
             for step in range(steps):
                 if self._stopMotor == True:
                     break
                 else:
-                    gpio.output(self._stepPin, True)
+                    self._ioControl.SetOutput(self._stepPin, 1)
                     time.sleep(stepDelay)
-                    gpio.output(self._stepPin, False)
+                    self._ioControl.SetOutput(self._stepPin, 0)
                     time.sleep(stepDelay)
 
                     if(clockwise == False):

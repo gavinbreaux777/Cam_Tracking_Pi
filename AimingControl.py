@@ -2,11 +2,12 @@ from StepperMotorControl import StepperMotorControl
 from concurrent import futures
 from typing import Tuple
 from StepMode import StepMode
+from IOControl import IOControl
 
 class AimingControl():
-    def __init__(self):
-        self.xMotor = StepperMotorControl(18, 17, StepMode.Sixteenth) 
-        self.yMotor = StepperMotorControl(23, 22, StepMode.Full)
+    def __init__(self, ioControl: IOControl):
+        self.xMotor = StepperMotorControl(ioControl, 18, 17, StepMode.Sixteenth) 
+        self.yMotor = StepperMotorControl(ioControl, 23, 22, StepMode.Full)
 
     @property
     def yPosition(self) -> float:
