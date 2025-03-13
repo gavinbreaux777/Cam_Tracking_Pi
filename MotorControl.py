@@ -21,6 +21,22 @@ class MotorControl(DetectionObserver):
         self.firingControl.CloseGate()
 
     @property
+    def xMotorEnabled(self) -> bool:
+        '''Enable or disable motor if enable pin defined. 0 = disable, 1 = enable'''
+        return self.aimingControl.xMotor.enabled
+    @xMotorEnabled.setter
+    def xMotorEnabled(self, value: bool):
+        self.aimingControl.xMotor.enabled = value
+
+    @property
+    def yMotorEnabled(self) -> bool:
+        '''Enable or disable motor if enable pin defined. 0 = disable, 1 = enable'''
+        return self.aimingControl.yMotor.enabled
+    @yMotorEnabled.setter
+    def yMotorEnabled(self, value: bool):
+        self.aimingControl.yMotor.enabled = value
+
+    @property
     def xPosition(self) -> float:
         return self.aimingControl.xPosition
     

@@ -54,7 +54,7 @@
         </style>
     </head>
 
-    <body>
+    <body style="background-color: darkGray;">
         <h1 style="justify-content: center; text-align: center;">Cool Shit</h1>
         <div class="grid-container">
             <div id="left_strip" class="grid-item" style="grid-row: 2; grid-column: 1; border-style: dotted; border-color: green;">
@@ -64,6 +64,11 @@
                 <button onclick="stopImgMod()" id="start_stop_img_mod" class="btn-style">
                     Stop Image Modificaiton
                 </button>
+                <input id="show_delta" type="checkbox" onclick="toggleDelta(this.checked)">
+                <label for="show_delta">Show Delta</label>
+                <br>
+                <input id="show_contours" type="checkbox" onclick="toggleContours(this.checked)">
+                <label for="show_contours">Show Contours</label>
             </div>
             <div id="center_page" class="grid-item" style="grid-row: 2 / 5; grid-column: 2 / 6;  border: 5px dotted red; height: auto; width: 100%">
             </div>
@@ -321,12 +326,45 @@
                     speedContainer.appendChild(label);
                     speedContainer.appendChild(input);
 
+                    //Enable/disable motors
+                    const enableMotorsContainer = document.createElement('div');
+                    enableMotorsContainer.style.gridRow = '3';
+                    enableMotorsContainer.style.gridColumn = '1';
+
+                    const enableXCheckbox = document.createElement('input');
+                    enableXCheckbox.type = 'checkbox';
+                    enableXCheckbox.id = 'enableXCheckbox';
+                    enableXCheckbox.checked = true;
+                    enableXCheckbox.addEventListener('change', function(){ enableDisableMotor('x', this.checked) });
+                    enableMotorsContainer.appendChild(enableXCheckbox);
+
+                    const enableXLabel = document.createElement('label');
+                    enableXLabel.setAttribute('for', 'enableXCheckbox');
+                    enableXLabel.textContent = 'Enable X';
+                    enableMotorsContainer.appendChild(enableXLabel);
+
+                    const lineBreak = document.createElement('br');
+                    enableMotorsContainer.appendChild(lineBreak);
+                    
+                    const enableYCheckbox = document.createElement('input');
+                    enableYCheckbox.type = 'checkbox';
+                    enableYCheckbox.id = 'enableYCheckbox';
+                    enableYCheckbox.checked = true;
+                    enableYCheckbox.addEventListener('change', function(){ enableDisableMotor('y', this.checked) });
+                    enableMotorsContainer.appendChild(enableYCheckbox);
+
+                    const enableYLabel = document.createElement('label');
+                    enableYLabel.setAttribute('for', 'enableYCheckbox');
+                    enableYLabel.textContent = 'Enable Y';
+                    enableMotorsContainer.appendChild(enableYLabel);
+
                     //combine everything
                     container.appendChild(upcontainer)
                     container.appendChild(downContainer)
                     container.appendChild(leftContainer)
                     container.appendChild(rightContainer)
                     container.appendChild(speedContainer)
+                    container.appendChild(enableMotorsContainer)
 
                     //clear the specified element
                     htmlElementToAppendTo.innerHTML = ""
@@ -762,6 +800,57 @@
                     }
                     else{
                         console.log("Error while requesting forcing detection. Response: " + response.status);
+                    }
+                })
+                .catch(error => {
+                    console.error(error)
+                })
+            }
+
+            function toggleDelta(clicked){
+                fetch(`/toggleDelta/${clicked}`, {
+                    method: 'GET'
+                })
+                .then(response => {
+                    if (response.status == 200){
+                        console.log("Server is changing shown image. Response: " + response.text());
+                    }
+                    else{
+                        console.log("Error while requesting different image. Response: " + response.status);
+                    }
+                })
+                .catch(error => {
+                    console.error(error)
+                })
+            }
+
+            function toggleContours(clicked){
+                fetch(`/toggleContours/${clicked}`, {
+                    method: 'GET'
+                })
+                .then(response => {
+                    if (response.status == 200){
+                        console.log("Server is changing shown image. Response: " + response.text());
+                    }
+                    else{
+                        console.log("Error while requesting different image. Response: " + response.status);
+                    }
+                })
+                .catch(error => {
+                    console.error(error)
+                })
+            }
+
+            function enableDisableMotor(motorStr, enable){
+                fetch(`/enableDisableMotor/${motorStr}/${enable}`, {
+                    method: 'GET'
+                })
+                .then(response => {
+                    if (response.status == 200){
+                        console.log("Server is enabling/disabling motor. Response: " + response.text());
+                    }
+                    else{
+                        console.log("Error while requesting enable/disable of motor. Response: " + response.status);
                     }
                 })
                 .catch(error => {

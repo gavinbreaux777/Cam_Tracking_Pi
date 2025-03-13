@@ -6,8 +6,8 @@ from IOControl import IOControl
 
 class AimingControl():
     def __init__(self, ioControl: IOControl):
-        self.xMotor = StepperMotorControl(ioControl, 18, 17, StepMode.Sixteenth) 
-        self.yMotor = StepperMotorControl(ioControl, 23, 22, StepMode.Full)
+        self.xMotor = StepperMotorControl(ioControl, 18, 17, 19, StepMode.Sixteenth)
+        self.yMotor = StepperMotorControl(ioControl, 23, 22, 24, StepMode.Full)
 
     @property
     def yPosition(self) -> float:

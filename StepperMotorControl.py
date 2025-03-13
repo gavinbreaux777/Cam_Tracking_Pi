@@ -7,17 +7,24 @@ from StepMode import StepMode
 from IOControl import IOControl
 
 class StepperMotorControl(StepperMotorControlInterface):
-    def __init__(self, ioControl: IOControl, stepPin: int, dirPin: int = 1, stepMode: StepMode = StepMode.Full):
+    def __init__(self, ioControl: IOControl, stepPin: int, dirPin: int = None, enablePin: int = None, stepMode: StepMode = StepMode.Full):
         ''''''
         self._ioControl = ioControl
         self._ioControl.SetPinMode(stepPin, 1)
         self._ioControl.SetPinMode(dirPin, 1)
-        self.motor = RawStepperControl(ioControl, stepPin, dirPin, stepMode, 200) 
+        self.motor = RawStepperControl(ioControl, stepPin, dirPin, enablePin, stepMode, 200) 
         self._stepMode = stepMode
         self.motorResolution = 200
         self.speed = 120 
         self.timeout = 10 #setting really high right now because we're not using rn. (client *should resend jog command before shorter timeout but currently only sending 1 start and 1 stop command from client)
         self._jogTimer = threading.Timer(self.timeout, self.StopMotors)
+
+    @property
+    def enabled(self) -> bool:
+        return self.motor.enabled
+    @enabled.setter
+    def enabled(self, value: bool):
+        self.motor.enabled = value
 
     @property
     def position(self) -> float:

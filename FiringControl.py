@@ -1,4 +1,3 @@
-#import RPi.GPIO as gpio
 import time
 from RawServoControl import RawServoControl
 from IOControl import IOControl

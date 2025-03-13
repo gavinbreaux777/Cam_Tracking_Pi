@@ -1,5 +1,4 @@
 import pigpio
-import time
 class IOControl():
     def __init__(self):
         self.pi = pigpio.pi()
