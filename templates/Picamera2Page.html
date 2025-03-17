@@ -54,7 +54,7 @@
         </style>
     </head>
 
-    <body>
+    <body style="background-color: darkGray;">
         <h1 style="justify-content: center; text-align: center;">Cool Shit</h1>
         <div class="grid-container">
             <div id="left_strip" class="grid-item" style="grid-row: 2; grid-column: 1; border-style: dotted; border-color: green;">
@@ -64,6 +64,11 @@
                 <button onclick="stopImgMod()" id="start_stop_img_mod" class="btn-style">
                     Stop Image Modificaiton
                 </button>
+                <input id="show_delta" type="checkbox" onclick="toggleDelta(this.checked)">
+                <label for="show_delta">Show Delta</label>
+                <br>
+                <input id="show_contours" type="checkbox" onclick="toggleContours(this.checked)">
+                <label for="show_contours">Show Contours</label>
             </div>
             <div id="center_page" class="grid-item" style="grid-row: 2 / 5; grid-column: 2 / 6;  border: 5px dotted red; height: auto; width: 100%">
             </div>
@@ -121,6 +126,7 @@
                 yStepperPosition: 0,
                 servoPosition: 0
             }
+
         //HTML dynamic components
             class ImageFactory{
                 constructor(){}
@@ -174,8 +180,10 @@
                     img.style.borderstyle = 'solid';
 
                     //clear the specified element and append the image
-                    htmlElementToAppendTo.innerHTML = ""
-                    htmlElementToAppendTo.appendChild(img)
+                    htmlElementToAppendTo.innerHTML = "";
+                    htmlElementToAppendTo.appendChild(img);
+
+                    return img;
                 }
 
                 static createDetectedImage(htmlElementToAppendTo){
@@ -318,12 +326,45 @@
                     speedContainer.appendChild(label);
                     speedContainer.appendChild(input);
 
+                    //Enable/disable motors
+                    const enableMotorsContainer = document.createElement('div');
+                    enableMotorsContainer.style.gridRow = '3';
+                    enableMotorsContainer.style.gridColumn = '1';
+
+                    const enableXCheckbox = document.createElement('input');
+                    enableXCheckbox.type = 'checkbox';
+                    enableXCheckbox.id = 'enableXCheckbox';
+                    enableXCheckbox.checked = true;
+                    enableXCheckbox.addEventListener('change', function(){ enableDisableMotor('x', this.checked) });
+                    enableMotorsContainer.appendChild(enableXCheckbox);
+
+                    const enableXLabel = document.createElement('label');
+                    enableXLabel.setAttribute('for', 'enableXCheckbox');
+                    enableXLabel.textContent = 'Enable X';
+                    enableMotorsContainer.appendChild(enableXLabel);
+
+                    const lineBreak = document.createElement('br');
+                    enableMotorsContainer.appendChild(lineBreak);
+                    
+                    const enableYCheckbox = document.createElement('input');
+                    enableYCheckbox.type = 'checkbox';
+                    enableYCheckbox.id = 'enableYCheckbox';
+                    enableYCheckbox.checked = true;
+                    enableYCheckbox.addEventListener('change', function(){ enableDisableMotor('y', this.checked) });
+                    enableMotorsContainer.appendChild(enableYCheckbox);
+
+                    const enableYLabel = document.createElement('label');
+                    enableYLabel.setAttribute('for', 'enableYCheckbox');
+                    enableYLabel.textContent = 'Enable Y';
+                    enableMotorsContainer.appendChild(enableYLabel);
+
                     //combine everything
                     container.appendChild(upcontainer)
                     container.appendChild(downContainer)
                     container.appendChild(leftContainer)
                     container.appendChild(rightContainer)
                     container.appendChild(speedContainer)
+                    container.appendChild(enableMotorsContainer)
 
                     //clear the specified element
                     htmlElementToAppendTo.innerHTML = ""
@@ -452,7 +493,7 @@
                     imgDivTwo.style.fontWeight = "bold"
 
                     const streamImg = document.getElementById("stream_img");
-                    console.log("setting cursor to crosshair");
+                    console.log("setting cursor to crosshair" + streamImg);
                     streamImg.style.cursor = "crosshair";
                     streamImg.addEventListener('click', (event) => {
                         this.saveLocation(event, streamImg.width, streamImg.height)
@@ -460,9 +501,9 @@
                 }
 
                 saveLocation(clickEvent, imgWidth, imgHeight){
-                    this.items.xClickRatio = (clickEvent.offsetX - (imgWidth/2)) / imgWidth;
-                    this.items.yClickRatio = ((imgHeight/2) - clickEvent.offsetY) / imgHeight;
-                    
+                    this.items.xClickRatio = (clickEvent.offsetX - (imgWidth/2)) / (imgWidth/2);
+                    this.items.yClickRatio = ((imgHeight/2) - clickEvent.offsetY) / (imgHeight/2);
+
                     this.items.motorCalibrationStartX = serverData.xStepperPosition;
                     this.items.motorCalibrationStartY = serverData.yStepperPosition;
 
@@ -489,7 +530,7 @@
                     this.items.crosshairlength = 50;
                     
                     //draw crosshair on clicked location
-                    drawCrosshair(ctx, clickEvent.offsetX, clickEvent.offsetY, length, 'red', 2)
+                    drawCrosshair(ctx, clickEvent.offsetX, clickEvent.offsetY, this.items.crosshairlength, 'red', 2)
 
                     const clickImage = new Image();
                     clickImage.src = clickCanvas.toDataURL();
@@ -500,36 +541,16 @@
                 }
 
                 calculateAndPushCalibration(){
-                    const motorXDelta = this.items.motorCalibrationStartX - serverData.xStepperPosition
-                    const motorYDelta = this.items.motorCalibrationStartY - serverData.yStepperPosition
+                    const motorXDelta = serverData.xStepperPosition - this.items.motorCalibrationStartX
+                    const motorYDelta = serverData.yStepperPosition - this.items.motorCalibrationStartY
 
                     const xDegreesPerDetectDistanceRatio = motorXDelta / this.items.xClickRatio
                     const yDegreesPerDetectDistanceRatio = motorYDelta / this.items.yClickRatio
-                    console.log("motorCalibrationStart = " + this.items.motorCalibrationStartX + " , " + this.items.motorCalibrationStartY)
-                    console.log("currentMotorLocation = " + serverData.xStepperPosition + " , " + serverData.yStepperPosition)
-                    console.log("motorDelta = " + motorXDelta + " , " + motorYDelta)
-                    console.log("clickLocationRatio = " + this.items.xClickRatio + " , " + this.items.yClickRatio)
-                    console.log("steps to pixel ratio = " + xDegreesPerDetectDistanceRatio + " , " + yDegreesPerDetectDistanceRatio)
                     //Push calibration to server
                     sendMotorCalibrationFactors(xDegreesPerDetectDistanceRatio, yDegreesPerDetectDistanceRatio)
                 }
             }
 
-
-            function drawCrosshair(canvasContext, xCenter, yCenter, length, color, width){
-                canvasContext.strokeStyle = color;
-                canvasContext.lineWidth = width;
-                
-                canvasContext.beginPath()
-                canvasContext.moveTo(xCenter - length/2, yCenter)
-                canvasContext.lineTo(xCenter + length/2, yCenter)
-                canvasContext.stroke();
-
-                canvasContext.beginPath()
-                canvasContext.moveTo(xCenter, yCenter - length/2)
-                canvasContext.lineTo(xCenter, yCenter + length/2)
-                canvasContext.stroke();
-            }
 
             const imageFactory = new ImageFactory()
             const servoController = new ServoControl() 
@@ -545,7 +566,11 @@
 
             function toggleMainPage(){
                 //createStreamImage(pageSections.center)
-                ImageFactory.appendImage(pageSections.center, "/stream")
+                streamImg = ImageFactory.appendImage(pageSections.center, "/stream")
+                streamImg.style.cursor = "crosshair";
+                streamImg.addEventListener('click', (event) => {
+                        forceDetection(event, streamImg.width, streamImg.height)
+                    });
                 pageSections.bottomCenter.innerHTML = ""
                 pageSections.bottomRight.innerHTML = ""
             }
@@ -562,6 +587,7 @@
                 //ImageFactory.createDetectedImage(pageSections.bottomCenter)
                 ImageFactory.appendImage(pageSections.bottomCenter, '/detect-img?cache_buster=' + new Date().getTime());
             }
+
 
             //Server requests
             function stopStream(){
@@ -759,14 +785,83 @@
                     console.error(error)
                 })
             }
-        
-            
 
+            function forceDetection(clickEvent, imgWidth, imgHeight){
+                //Calculate percent offset x and y from center )
+                const xClickRatio = (clickEvent.offsetX - (imgWidth/2)) / (imgWidth/2);
+                const yClickRatio = ((imgHeight/2) - clickEvent.offsetY) / (imgHeight/2);
+                console.log("location = " + xClickRatio + ", " + yClickRatio);
+                fetch(`/forceDetection/${xClickRatio}/${yClickRatio}`, {
+                    method: 'GET'
+                })
+                .then(response => {
+                    if (response.status == 200){
+                        console.log("Server is responding to detection. Response: " + response.text());
+                    }
+                    else{
+                        console.log("Error while requesting forcing detection. Response: " + response.status);
+                    }
+                })
+                .catch(error => {
+                    console.error(error)
+                })
+            }
+
+            function toggleDelta(clicked){
+                fetch(`/toggleDelta/${clicked}`, {
+                    method: 'GET'
+                })
+                .then(response => {
+                    if (response.status == 200){
+                        console.log("Server is changing shown image. Response: " + response.text());
+                    }
+                    else{
+                        console.log("Error while requesting different image. Response: " + response.status);
+                    }
+                })
+                .catch(error => {
+                    console.error(error)
+                })
+            }
+
+            function toggleContours(clicked){
+                fetch(`/toggleContours/${clicked}`, {
+                    method: 'GET'
+                })
+                .then(response => {
+                    if (response.status == 200){
+                        console.log("Server is changing shown image. Response: " + response.text());
+                    }
+                    else{
+                        console.log("Error while requesting different image. Response: " + response.status);
+                    }
+                })
+                .catch(error => {
+                    console.error(error)
+                })
+            }
+
+            function enableDisableMotor(motorStr, enable){
+                fetch(`/enableDisableMotor/${motorStr}/${enable}`, {
+                    method: 'GET'
+                })
+                .then(response => {
+                    if (response.status == 200){
+                        console.log("Server is enabling/disabling motor. Response: " + response.text());
+                    }
+                    else{
+                        console.log("Error while requesting enable/disable of motor. Response: " + response.status);
+                    }
+                })
+                .catch(error => {
+                    console.error(error)
+                })
+            }
 
             //Server Sent Events
             const dataEventSource = new EventSource('/dataEventSoruce');
             dataEventSource.onmessage = function(event) {
-                console.log("time:" + JSON.parse(event.data).time);
+                //console.log("time:" + JSON.parse(event.data).time);
             };
             dataEventSource.onerror = function() {
                 console.error("EventSource failed.");
@@ -783,8 +878,8 @@
 
             const motorLocationSource = new EventSource('/motorLocation');
             motorLocationSource.onmessage = function(event){
-                console.log("Current motor location: " + JSON.parse(event.data).xPosition + ", " + JSON.parse(event.data).yPosition);
-                console.log("Current servo location: " + JSON.parse(event.data).servoPosition)
+                //console.log("Current motor location: " + JSON.parse(event.data).xPosition + ", " + JSON.parse(event.data).yPosition);
+                //console.log("Current servo location: " + JSON.parse(event.data).servoPosition)
                 //Get values
                 serverData.xStepperPosition = JSON.parse(event.data).xPosition;
                 serverData.yStepperPosition = JSON.parse(event.data).yPosition;
@@ -792,6 +887,27 @@
                 //Update values on page
                 servoController.updateData(serverData.servoPosition)
             }
+
+
+            //Misc functions
+            function drawCrosshair(canvasContext, xCenter, yCenter, length, color, width){
+                console.log("drawing crosshair at: " + xCenter + ", " + yCenter)
+                canvasContext.strokeStyle = color;
+                canvasContext.lineWidth = width;
+                
+                canvasContext.beginPath()
+                canvasContext.moveTo(xCenter - length/2, yCenter)
+                canvasContext.lineTo(xCenter + length/2, yCenter)
+                canvasContext.stroke();
+
+                canvasContext.beginPath()
+                canvasContext.moveTo(xCenter, yCenter - length/2)
+                canvasContext.lineTo(xCenter, yCenter + length/2)
+                canvasContext.stroke();
+                console.log("finished drawing crosshair")
+            }
+
+
 
             //Embedded functions
             window.onload = function() {

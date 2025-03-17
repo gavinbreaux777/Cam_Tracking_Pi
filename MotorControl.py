@@ -1,16 +1,17 @@
+from IOControl import IOControl
 from AimingControl import AimingControl
 from FiringControl import FiringControl
-from RawServoControl import RawServoControl
 from Observer import DetectionObserver
 import time
 import threading 
 from typing import Tuple, Callable
 from Event import Event
 class MotorControl(DetectionObserver):
-    def __init__(self):
+    def __init__(self, ioControl: IOControl):
+        self.ioControl = ioControl
         #Create class to control aiming steppers
-        self.aimingControl = AimingControl()
-        self.firingControl = FiringControl()
+        self.aimingControl = AimingControl(self.ioControl)
+        self.firingControl = FiringControl(self.ioControl)
         self.xDegreesPerPercentChange = 50 #CalifFactor - degrees motor move per % pixel change (% pixel change = (detect location - center location) / center location
         self.yDegreesPerPercentChange = 20
         self.motionStartedEvent = Event()
@@ -18,6 +19,22 @@ class MotorControl(DetectionObserver):
 
         self.aimingControl.motorSpeed = (100, 100)
         self.firingControl.CloseGate()
+
+    @property
+    def xMotorEnabled(self) -> bool:
+        '''Enable or disable motor if enable pin defined. 0 = disable, 1 = enable'''
+        return self.aimingControl.xMotor.enabled
+    @xMotorEnabled.setter
+    def xMotorEnabled(self, value: bool):
+        self.aimingControl.xMotor.enabled = value
+
+    @property
+    def yMotorEnabled(self) -> bool:
+        '''Enable or disable motor if enable pin defined. 0 = disable, 1 = enable'''
+        return self.aimingControl.yMotor.enabled
+    @yMotorEnabled.setter
+    def yMotorEnabled(self, value: bool):
+        self.aimingControl.yMotor.enabled = value
 
     @property
     def xPosition(self) -> float:

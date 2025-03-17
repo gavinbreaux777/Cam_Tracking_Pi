@@ -40,8 +40,16 @@ class ProcessImage():
         delta = cv2.absdiff(grayed, self._baseImg)
         delta = cv2.threshold(delta, 25, 255, cv2.THRESH_BINARY)[1]
 
+        #Select which image to draw on and return to stream
+        if(self.showDelta == True):
+            selectedImage = delta
+        else:
+            selectedImage = grayed
+
         #Find blobs of sufficient difference
         contours, _ = cv2.findContours(delta, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        if(self.showContours == True):
+                cv2.drawContours(selectedImage, contours,0,(255,255,255),2)
         selected_contours = []
         #process each contour
         for contour in contours:
@@ -52,12 +60,6 @@ class ProcessImage():
             rotBox = cv2.boxPoints(rotRect)
             rotBox = numpy.int0(rotBox)
             selected_contours.append(contour)
-
-        #Select which image to draw on and return to stream
-        if(self.showDelta == True):
-            selectedImage = delta
-        else:
-            selectedImage = grayed
 
         #Combine all contours into one output contour and find center point
         if(len(selected_contours) > 0):
@@ -86,6 +88,11 @@ class ProcessImage():
                 if (self._consecutiveDetections > 10):
                     self._consecutiveDetections = 0
                     #report detected location
+                    #Y axis is flipped from what we want (here, positive Y is bottom edge). Flip it to have positive y = top of image
+                    print("shape = " + str(grayed.shape[0]))
+                    print("original y = " + str(yCenter))
+                    yCenter = abs(grayed.shape[0] - yCenter)
+                    print("new y = " + str(yCenter))
                     self._setDetectedLocation([xCenter, yCenter])
                     print(f"Detected center at {xCenter, yCenter}")
                     #after reporting detected location, clear base image so a new one will be created on next round of detection (after aim and fire sequence)

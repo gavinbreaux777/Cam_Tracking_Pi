@@ -53,6 +53,10 @@ class FlaskServer(DetectionObserver):
         self.app.add_url_rule("/motorLocation", 'sendMotorLocation', self.sendMotorLocation)
         self.app.add_url_rule("/calibrateMotors/<xDegreesToPercentChange>/<yDegreesToPercentChange>", 'calibMotor', self.CalibrateMotors)
         self.app.add_url_rule("/moveServo/<angle>", 'moveServo', self.moveServo)
+        self.app.add_url_rule("/forceDetection/<xRatio>/<yRatio>", 'forceDetect', self.forceDetection)
+        self.app.add_url_rule("/toggleDelta/<show>", 'toggleDelta', self.toggleDelta)
+        self.app.add_url_rule("/toggleContours/<show>", 'toggleContours', self.toggleContours)
+        self.app.add_url_rule("/enableDisableMotor/<motorStr>/<clicked>", 'enableDisableMotor', self.enableDisableMotor)
 
 #Endpoint methods for flask endpoints
     def serve_page(self):
@@ -97,6 +101,20 @@ class FlaskServer(DetectionObserver):
     def setImageProcessSetting(self, settingName: str, settingValue: Any):
         self.detector.ModifyImageProcessorSetting(settingName, settingValue)
         return "okey dokey then", 200
+
+    def toggleDelta(self, show):
+        if(show == "true"):
+            self.detector.showDelta = True
+        else:
+            self.detector.showDelta = False
+        return "OKeY DOkeY", 200
+
+    def toggleContours(self, show):
+        if(show == "true"):
+            self.detector.showContours = True
+        else:
+            self.detector.showContours = False
+        return "OKeY DOkeY", 200
 
     #Camera controls
     def setCameraSetting(self, settingName: str, settingValue: Any):
@@ -143,6 +161,23 @@ class FlaskServer(DetectionObserver):
         self.motorControl.xDegreesPerPercentChange = float(xDegreesToPercentChange)
         self.motorControl.yDegreesPerPercentChange = float(yDegreesToPercentChange)
         print(str(xDegreesToPercentChange) + " , " + str(yDegreesToPercentChange))
+        return "Okey Dokey", 200
+
+    def forceDetection(self, xRatio: str, yRatio: str):
+        self.detector.setDetectedRatio(float(xRatio), float(yRatio))
+        return "okey DOKEY", 200
+
+    def enableDisableMotor(self, motorStr: str, clicked: str):
+        if(motorStr == "x"):
+            if(clicked == "true"):
+                self.motorControl.xMotorEnabled = True
+            else:
+                self.motorControl.xMotorEnabled = False
+        elif(motorStr == "y"):
+            if(clicked == "true"):
+                self.motorControl.yMotorEnabled = True
+            else:
+                self.motorControl.yMotorEnabled = False
         return "Okey Dokey", 200
 
     #server sent events

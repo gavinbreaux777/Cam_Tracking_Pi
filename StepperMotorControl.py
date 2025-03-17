@@ -1,53 +1,30 @@
-import RPi.GPIO as gpio
 import time
 import concurrent.futures 
 from StepperMotorControlInterface import StepperMotorControlInterface
 import threading
 from RawStepperControl import RawStepperControl
 from StepMode import StepMode
-#gpio.setmode(gpio.BCM)
-#gpio.setup(18, gpio.OUT)
-#gpio.output(18, gpio.HIGH)
-#time.sleep(2)
-#gpio.output(18, gpio.LOW)
-
-#for i in range(200):
-#    gpio.output(18, gpio.HIGH)
-#    time.sleep(0#.01)
-#    gpio.output(18, gpio.LOW)
-
-#myMotor = RpiMotLib.A4988Nema(1, 18, (-1,-1,-1), "A4988")
-
-##myMotor.motor_go()
-
-#threadPool = concurrent.futures.ThreadPoolExecutor()
-#future1 = threadPool.submit(myMotor.motor_go, 0, "Full", 200, 0.005, False, .1)
-#future2 = threadPool.submit(time.sleep, 1)
-#done, not_done = concurrent.futures.wait([future1, future2], timeout=0.01)
-
-
-#from RawServoControl import RawServoControl
-#servo = RawServoControl(12, 50)
-#servo.SetAngle(180)
-#time.sleep(2)
+from IOControl import IOControl
 
 class StepperMotorControl(StepperMotorControlInterface):
-    def __init__(self, stepPin: int, dirPin: int = 1, stepMode: StepMode = StepMode.Full):
+    def __init__(self, ioControl: IOControl, stepPin: int, dirPin: int = None, enablePin: int = None, stepMode: StepMode = StepMode.Full):
         ''''''
-        gpio.setmode(gpio.BCM)
-        gpio.setup(stepPin, gpio.OUT)
-        gpio.setup(dirPin, gpio.OUT)
-        self.motor = RawStepperControl(stepPin, dirPin, stepMode, 200) 
+        self._ioControl = ioControl
+        self._ioControl.SetPinMode(stepPin, 1)
+        self._ioControl.SetPinMode(dirPin, 1)
+        self.motor = RawStepperControl(ioControl, stepPin, dirPin, enablePin, stepMode, 200) 
         self._stepMode = stepMode
         self.motorResolution = 200
         self.speed = 120 
         self.timeout = 10 #setting really high right now because we're not using rn. (client *should resend jog command before shorter timeout but currently only sending 1 start and 1 stop command from client)
         self._jogTimer = threading.Timer(self.timeout, self.StopMotors)
-        print("stepMode = " + str(self._stepMode))
-        print("stepsPerRev = " + str(self._stepsPerRevoluton))
-        print("stepsPerDegree = " + str(self._stepsPerDegree))
-        print("delayBetweenSteps = " + str(self._delayBetweenSteps))
 
+    @property
+    def enabled(self) -> bool:
+        return self.motor.enabled
+    @enabled.setter
+    def enabled(self, value: bool):
+        self.motor.enabled = value
 
     @property
     def position(self) -> float:
@@ -87,11 +64,7 @@ class StepperMotorControl(StepperMotorControlInterface):
         pass
 
     def CalculateDelayBetweenSteps(self, speedIn_ms):
-        print("speedIn_ms = " + str(speedIn_ms))
-        print("stepsPerDegree = " + str(self._stepsPerDegree))
-        print("delayBetweenSteps = " + str(1 / speedIn_ms / (self._stepsPerDegree)))
         return 1 / speedIn_ms / (self._stepsPerDegree)
-        #return 1 / speedIn_ms * (self.motorResolution/360)
 
     def RotateRel(self, degrees: float) -> None:
         if(degrees < 0):

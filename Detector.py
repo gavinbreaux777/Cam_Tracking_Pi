@@ -57,11 +57,28 @@ class Detector():
 
     def _setDetectedLocation(self, location: tuple[int, int]):
         '''Setter for self.detectedLocation. Notifies observers and stops image processing'''
-        self._detectedLocation = location
+        newY = abs(self._imgGenerator.imageSize[1] - location[1]) #y motor is flipped from our y axis, reverse it
+        newLocation = (location[0], newY)
+        self._detectedLocation = newLocation
         self._notifyObservers()
         #tell image process class to change behavior here (ie, stop detecting etc.) (or could have image process class do it directly)
         #then have motor control class inform detector here that firing sequence has completed
         self.processImage = False #when this is called from here, the first image captured in process image once this is reset is all 0's and 255's. Added handling for it to ProcessImage
+
+    def setDetectedRatio(self, xRatio: float, yRatio: float):
+        '''Converts xRatio and yRatio to pixel offsets and calls "setDetectedLocation
+            Args:
+                xRatio (float): percentage of detection point away from center. 1 = far right edge, -1 = far left edge
+                yRatio (float): percentage of detection point away from center. 1 = top edge, -1 = bottom edge
+        "'''
+        xDistanceFromCenter = ((self._imgGenerator.imageSize[0] / 2) * xRatio)
+        xDetectLocation = xDistanceFromCenter + (self._imgGenerator.imageSize[0]/2)
+
+        yDistanceFromCenter = ((self._imgGenerator.imageSize[1] / 2) * yRatio)
+        yDetectLocation = yDistanceFromCenter + (self._imgGenerator.imageSize[1]/2)
+        print("XY ratio = " + str(xRatio) + " , " + str(yRatio))
+        print("XY detect location = " + str(xDetectLocation) + " , " + str(yDetectLocation))
+        self._setDetectedLocation((xDetectLocation, yDetectLocation))
 
     def _notifyObservers(self):
         '''Notify registered observers that motion has been detected with location. Once all observers have acknowledged the notification, restart image processing'''

@@ -1,20 +1,14 @@
-import RPi.GPIO as gpio
 import time
 from RawServoControl import RawServoControl
-
-#servo = RawServoControl(12, 50)
-#servo.SetAngle(165)
-#servo.SetAngle(160)
-#time.sleep(0.1)
-#servo.SetAngle(165)
+from IOControl import IOControl
 
 class FiringControl():
-    def __init__(self):
+    def __init__(self, ioControl: IOControl):
+        self._ioControl = ioControl
         self.relayOnPin = 21
-        gpio.setmode(gpio.BCM)
-        gpio.setup(self.relayOnPin, gpio.OUT)
+        self._ioControl.SetPinMode(self.relayOnPin, 1)
 
-        self.servo = RawServoControl(12, 50)
+        self.servo = RawServoControl(ioControl, 12, 50)
         self.closedAngle = 165
         self.openAngle = 160
         self.servo.SetAngle(self.closedAngle)
@@ -25,11 +19,11 @@ class FiringControl():
 
     def SpoolMotors(self):
         '''Spins up dc motors'''
-        gpio.output(self.relayOnPin, gpio.HIGH)
+        self._ioControl.SetOutput(self.relayOnPin, 1)
 
     def StopMotors(self):
         '''Stop dc motors'''
-        gpio.output(self.relayOnPin, gpio.LOW)
+        self._ioControl.SetOutput(self.relayOnPin, 0)
 
     def FireSingle(self):
         '''Release single ball. Motors should be spooled already'''
@@ -47,13 +41,3 @@ class FiringControl():
 
     def SetServoAngle(self, angle: float):
         self.servo.SetAngle(angle)
-
-
-
-#pwmPin = 12
-#gpio.setmode(gpio.BCM)
-#gpio.setup(pwmPin, gpio.OUT)
-#pwm = gpio.PWM(pwmPin, 50)
-#pwm.start()
-#time.sleep(3)
-#pwm.stop()
