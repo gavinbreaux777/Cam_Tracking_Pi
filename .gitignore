@@ -164,3 +164,15 @@ cython_debug/
 RPICamProject_Detailed/RPICamProject_Detailed-backups
 RPICamProject_Detailed/Gerbers
 RPICamProject_Detailed/Gerbers.zip
+*.gbl
+*.gbs
+*.gbp
+*.gbo
+*.gm1
+*.gtl
+*.gts
+*.gtp
+*.gto
+*.drl
+*.gbr
+PCB/MitskiKiller/MitskiKillerV1_1/MitskiKillerV1_1-backups/MitskiKillerV1_1-2025-03-22_185943.zip
