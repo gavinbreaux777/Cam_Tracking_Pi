@@ -104,3 +104,4 @@ class StepperMotorControl(StepperMotorControlInterface):
 
     def StopMotors(self):
         self.Stop()
+        self._jogTimer.cancel()

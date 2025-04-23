@@ -67,10 +67,15 @@ class MotorControl(DetectionObserver):
     def StopMotors(self):
         self.aimingControl.StopMotors()
 
-    def OnMotionFound(self, location, acknowledgeCallback):
+    def OnMotionFound(self, location, acknowledgeCallback, actOnMotion: bool):
         '''Start thread to handle firing so image generation/processing can continue'''
-        searchAndDestroyThread = threading.Thread(target=lambda: self.FindAndFire(location, acknowledgeCallback))
-        searchAndDestroyThread.start()
+        if(actOnMotion == True):
+            searchAndDestroyThread = threading.Thread(target=lambda: self.FindAndFire(location, acknowledgeCallback))
+            searchAndDestroyThread.start()
+            searchAndDestroyThread.join()
+
+        #Notify detector that firing sequence is complete
+        acknowledgeCallback(True)
 
     def FindAndFire(self, location: Tuple[int, int], callback: Callable[[bool], None]):
         '''Aim motors, fire projectile, and finally call callback to notify Detector that we've finished the sequence'''
@@ -95,8 +100,6 @@ class MotorControl(DetectionObserver):
         self.firingControl.FireSingle()
         self.firingControl.StopMotors()
 
-        #Notify detector that firing sequence finished
-        callback(True)
 
     def SetServoAngle(self, angle: float):
         self.firingControl.SetServoAngle(angle)

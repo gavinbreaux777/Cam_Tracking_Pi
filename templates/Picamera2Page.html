@@ -5,8 +5,8 @@
             .grid-container {
                 display: grid;
                 height: 90vh;
-                grid-template-columns: 10% 1fr 1fr 1fr 1fr 10%; /*repeat(3, 1fr);*/
-                grid-template-rows: 10% 1fr 1fr 1fr 20%;
+                grid-template-columns: 10% 1fr 1fr 1fr 1fr 10%;
+                grid-template-rows: 5% 1fr 1fr 1fr 1fr 1fr 20%;
                 grid-gap: 10px; 
                 padding: 10px;
                 border: 2px solid green;
@@ -23,7 +23,7 @@
                 height: 100%;
                 width: 100%;
                 grid-template-columns: 1fr 1fr 1fr;
-                grid-template-rows: 1fr 1fr 1fr;
+                grid-template-rows: 15% 1fr 1fr 1fr;
                 border: 5px solid purple;
             }
             .mot-control-button{
@@ -58,11 +58,14 @@
         <h1 style="justify-content: center; text-align: center;">Cool Shit</h1>
         <div class="grid-container">
             <div id="left_strip" class="grid-item" style="grid-row: 2; grid-column: 1; border-style: dotted; border-color: green;">
+                <button onclick="stopImgMod()" id="start_stop_img_mod" class="btn-style">
+                    Run Detection
+                </button>
                 <button onclick="stopStream()" id="start_stop_stream" class="btn-style">
                     Stop Stream
                 </button>
-                <button onclick="stopImgMod()" id="start_stop_img_mod" class="btn-style">
-                    Stop Image Modificaiton
+                <button onclick="actOnDetection()" id="toggle_act_on_detection" class="btn-style">
+                    Enable Act On Detection
                 </button>
                 <input id="show_delta" type="checkbox" onclick="toggleDelta(this.checked)">
                 <label for="show_delta">Show Delta</label>
@@ -70,7 +73,7 @@
                 <input id="show_contours" type="checkbox" onclick="toggleContours(this.checked)">
                 <label for="show_contours">Show Contours</label>
             </div>
-            <div id="center_page" class="grid-item" style="grid-row: 2 / 5; grid-column: 2 / 6;  border: 5px dotted red; height: auto; width: 100%">
+            <div id="center_page" class="grid-item" style="grid-row: 2 / 7; grid-column: 2 / 6;  border: 5px dotted red; height: auto; width: 100%">
             </div>
             <div id="top_strip" class="grid-item" style="grid-row: 1; grid-column: 2 / 6; border: 6px dashed burlywood; height: 100%; width: 100%; display: flex; flex-direction: row;">
                 <div style="border: 5px dashed cyan;">
@@ -96,12 +99,13 @@
             </div>
             
             
-            <div id="bottom-center-section" style="grid-row: 5; grid-column: 3 / 5; height: 100%; width: 100%"></div>
-            <div id="bottom-right-section" style="grid-row: 5; grid-column: 5 / 7; height: 100%; width: 100%;"></div>
+            <div id="bottom-center-section" style="grid-row: 7; grid-column: 3 / 5; height: 100%; width: 100%"></div>
+            <div id="bottom-right-section" style="grid-row: 7; grid-column: 5 / 7; height: 100%; width: 100%;"></div>
+            <div id="bottom-left-section" style="grid-row: 7; grid-column: 1 / 3; height: 100%; width: 100%;"></div>
             <div id="right-strip" style="grid-row: 2 / 5; grid-column: 6; border: 5px solid pink; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center;">
                 <div style="border: 2px dashed black;">
                     <label for="objSizeInput">Required Object Size</label>
-                    <input oninput="changeImgProcSetting('requiredObjectSize', this.value)" id="objSizeInput" type="number" value="2500" style="width: 50%;"/>
+                    <input oninput="changeImgProcSetting('requiredObjectSize', this.value)" id="objSizeInput" type="number" value="10000" style="width: 50%;"/>
                     <label for="gainInput" style="display:block; margin-top: 10">Analogue Gain</label>
                     <input oninput="changeCamSetting('AnalogueGain', this.value)" id="gainInput" type="number" value="10.0" style="width: 50%;"/>
                 </div>
@@ -117,14 +121,22 @@
                 center: document.getElementById("center_page"),
                 bottomCenter: document.getElementById("bottom-center-section"),
                 bottomRight: document.getElementById("bottom-right-section"),
+                bottomLeft: document.getElementById("bottom-left-section"),
                 leftStrip: null,
                 rightStrip: null,
                 topStrip: null
             }
+            const pageButtons = {
+                imageModButton: document.getElementById("start_stop_img_mod"),
+                streamButton: document.getElementById("start_stop_stream"),
+                actOnDetectionButton: document.getElementById("toggle_act_on_detection")
+            }
             const serverData = {
                 xStepperPosition: 0,
                 yStepperPosition: 0,
-                servoPosition: 0
+                servoPosition: 0,
+                actOnDetection: 0,
+                runMode: 0
             }
 
         //HTML dynamic components
@@ -247,10 +259,18 @@
                     const container = document.createElement('div')
                     container.className = 'mot-control-grid'
 
+                    //Title
+                    const titleContainer = document.createElement('div');
+                    titleContainer.style.gridRow = '1';
+                    titleContainer.style.gridColumn = '1 / 5';
+                    titleContainer.style.textAlign = 'center';
+                    titleContainer.textContent = "Stepper Control";
+                    titleContainer.style.margin = '5px';
+
                     //up button
                     const upcontainer = document.createElement('div');
                     upcontainer.className = 'mot-control-button-container';
-                    upcontainer.style.gridRow = '1';
+                    upcontainer.style.gridRow = '2';
                     upcontainer.style.gridColumn = '2';
                     
                     const upButton = document.createElement('button');
@@ -264,7 +284,7 @@
                     //down button
                     const downContainer = document.createElement('div');
                     downContainer.className = 'mot-control-button-container';
-                    downContainer.style.gridRow = '3';
+                    downContainer.style.gridRow = '4';
                     downContainer.style.gridColumn = '2';
                     
                     const downButton = document.createElement('button');
@@ -278,7 +298,7 @@
                     //left button
                     const leftContainer = document.createElement('div');
                     leftContainer.className = 'mot-control-button-container';
-                    leftContainer.style.gridRow = '2';
+                    leftContainer.style.gridRow = '3';
                     leftContainer.style.gridColumn = '1';
                     
                     const leftButton = document.createElement('button');
@@ -292,7 +312,7 @@
                     //right button
                     const rightContainer = document.createElement('div');
                     rightContainer.className = 'mot-control-button-container';
-                    rightContainer.style.gridRow = '2';
+                    rightContainer.style.gridRow = '3';
                     rightContainer.style.gridColumn = '3';
                     
                     const rightButton = document.createElement('button');
@@ -305,7 +325,7 @@
 
                     //speed setting box
                     const speedContainer = document.createElement('div');
-                    speedContainer.style.gridRow = '2';
+                    speedContainer.style.gridRow = '3';
                     speedContainer.style.gridColumn = '2';
                     speedContainer.style.display = 'flex';
                     speedContainer.style.justifyContent = 'center';
@@ -328,7 +348,7 @@
 
                     //Enable/disable motors
                     const enableMotorsContainer = document.createElement('div');
-                    enableMotorsContainer.style.gridRow = '3';
+                    enableMotorsContainer.style.gridRow = '4';
                     enableMotorsContainer.style.gridColumn = '1';
 
                     const enableXCheckbox = document.createElement('input');
@@ -359,6 +379,7 @@
                     enableMotorsContainer.appendChild(enableYLabel);
 
                     //combine everything
+                    container.appendChild(titleContainer)
                     container.appendChild(upcontainer)
                     container.appendChild(downContainer)
                     container.appendChild(leftContainer)
@@ -383,8 +404,8 @@
                     }
                 }
 
-                updateData(servoPosition){
-                    this.items.currentPositionElement.textContent = servoPosition;
+                updateData(){
+                    this.items.currentPositionElement.textContent = serverData.servoPosition;
                 }
 
                 createGrid(htmlElementToAppendTo){
@@ -473,6 +494,64 @@
                 }
             }          
 
+            class DcMotorControl{
+                createGrid(htmlElementToAppendTo){
+                    const container = document.createElement('div');
+                    container.style.border = '5px black solid';
+
+                    const title = document.createElement('div')
+                    title.style.textAlign = 'center';
+                    title.textContent = "Servo Control";
+                    title.style.margin = '5px';
+                    container.appendChild(title);
+
+                    const enableContainer = document.createElement('div');
+                    enableContainer.style.display = 'flex';
+                    enableContainer.style.flexDirection = 'row';
+                    enableContainer.style.gap = '10px';
+                    enableContainer.style.margin = '10px 0px';
+
+                    const enableText = document.createElement('div')
+                    enableText.textContent = "Enable Motors";
+                    enableContainer.append(enableText);
+                    container.append(enableContainer);
+
+                    const enableCB = document.createElement('input');
+                    enableCB.type = 'checkbox';
+                    enableCB.addEventListener('change', function(){ enableDisableDCMotors(this.checked) });
+                    enableContainer.appendChild(enableCB);
+
+                    const spoolButtonContainer = document.createElement('div');
+                    spoolButtonContainer.style.display = 'flex';
+                    spoolButtonContainer.style.justifyContent = 'center';
+                    spoolButtonContainer.style.margin = '20px';
+
+                    const spoolButton = document.createElement('button');
+                    spoolButton.style.margin = '2px';
+                    spoolButton.textContent = "Spool motors";
+                    spoolButton.style.padding = '10px';
+                    
+                    //Repeatedly send spool requests, server will timeout if request not received in time
+                    let spoolInterval;
+                    spoolButton.addEventListener('mousedown', () => {
+                        spoolDCMotors();
+                        spoolInterval = setInterval(spoolDCMotors, 50);
+                    });
+                    spoolButton.addEventListener('mouseup', () => {
+                        clearInterval(spoolInterval);
+                        stopSpoolingDCMotors();
+                    });
+                    spoolButtonContainer.appendChild(spoolButton);
+                    container.appendChild(spoolButtonContainer);
+
+                    //clear the specified element
+                    htmlElementToAppendTo.innerHTML = ""
+
+                    //append to specified element
+                    htmlElementToAppendTo.appendChild(container)
+                }
+            }
+
             class Calibration{
                 constructor(){
                     this.items = {
@@ -551,10 +630,10 @@
                 }
             }
 
-
             const imageFactory = new ImageFactory()
             const servoController = new ServoControl() 
             const stepperControl = new StepperControl()
+            const dcMotorControl = new DcMotorControl()
             const calibration = new Calibration()
 
 
@@ -562,6 +641,7 @@
             function toggleMotControl(){
                 stepperControl.createGrid(pageSections.bottomCenter)
                 servoController.createGrid(pageSections.bottomRight)
+                dcMotorControl.createGrid(pageSections.bottomLeft)
             }
 
             function toggleMainPage(){
@@ -604,8 +684,8 @@
                         }
                     })
                     .then(data => {
-                        btn.innerHTML = "Start Stream"
-                        btn.onclick = startStream
+                        //btn.innerHTML = "Start Stream"
+                        //btn.onclick = startStream
                     })
                     .catch(error => {
                         console.error(error)
@@ -629,8 +709,8 @@
                 })
                 .then(data => {
                     stream.src = "/stream"
-                    btn.innerHTML = "Stop Stream"
-                    btn.onclick = stopStream
+                    //btn.innerHTML = "Stop Stream"
+                    //btn.onclick = stopStream
                 })
                 .catch(error => {
                     console.error(error)
@@ -650,10 +730,6 @@
                             console.log("Failure to stop image mod. Server response: " + response.status);
                         }
                     })
-                    .then(data => {
-                        btn.innerHTML = "Start Image Mod"
-                        btn.onclick = startImgMod
-                    })
                     .catch(error => {
                         console.error(error)
                     })
@@ -672,14 +748,29 @@
                             console.log("Failure to start image mod. Server response: " + response.status);
                         }
                     })
-                    .then(data => {
-                        btn.innerHTML = "Stop Image Mod"
-                        btn.onclick = stopImgMod
-                    })
                     .catch(error => {
                         console.error(error)
                     })
                 }
+
+            function actOnDetection(){
+                const enableStr = !serverData.actOnDetection;
+                const btn = document.getElementById("toggle_act_on_detection")
+                fetch(`/actOnDetection/${enableStr}`, {
+                    method: 'GET'
+                    })
+                    .then(response => {
+                        if (response.status === 200){
+                            console.log("Enabled action on detection. Server response = " + response.body);
+                        }
+                        else{
+                            console.log("Failure to enable action on detection. Server response: " + response.status);
+                        }
+                    })
+                    .catch(error => {
+                        console.error(error)
+                    })
+            }
 
             function startJog(direction, speed){
                 console.log("Starting jog")
@@ -858,10 +949,64 @@
                 })
             }
 
+            function enableDisableDCMotors(enable){
+                fetch(`/enableDisableDCMotor/${enable}`, {
+                    method: 'GET'
+                })
+                .then(response => {
+                    if (response.status == 200){
+                        console.log("Server is enabling/disabling DC motors. Response: " + response.text());
+                    }
+                    else{
+                        console.log("Error while requesting enable/disable of DC motors. Response: " + response.status);
+                    }
+                })
+                .catch(error => {
+                    console.error(error)
+                })
+            }
+
+            function spoolDCMotors(){
+                fetch(`/spoolDCMotors`, {
+                    method: 'GET'
+                })
+                .then(response => {
+                    if (response.status == 200){
+                        console.log("Server is spooling DC motors. Response: " + response.text());
+                    }
+                    else{
+                        console.log("Error while requesting spooling of DC motors. Response: " + response.status);
+                    }
+                })
+                .catch(error => {
+                    console.error(error)
+                })
+            }
+
+            function stopSpoolingDCMotors(){
+                fetch(`/stopDCMotors`, {
+                    method: 'GET'
+                })
+                .then(response => {
+                    if (response.status == 200){
+                        console.log("Server is stopping DC motors. Response: " + response.text());
+                    }
+                    else{
+                        console.log("Error while requesting sstop of DC motors. Response: " + response.status);
+                    }
+                })
+                .catch(error => {
+                    console.error(error)
+                })
+            }
+
             //Server Sent Events
             const dataEventSource = new EventSource('/dataEventSoruce');
             dataEventSource.onmessage = function(event) {
-                //console.log("time:" + JSON.parse(event.data).time);
+                serverData.runMode = JSON.parse(event.data).moddingImage;
+                serverData.streaming = JSON.parse(event.data).streaming;
+                serverData.actOnDetection = JSON.parse(event.data).actOnDetection;
+                updateStaticHTML();
             };
             dataEventSource.onerror = function() {
                 console.error("EventSource failed.");
@@ -878,14 +1023,12 @@
 
             const motorLocationSource = new EventSource('/motorLocation');
             motorLocationSource.onmessage = function(event){
-                //console.log("Current motor location: " + JSON.parse(event.data).xPosition + ", " + JSON.parse(event.data).yPosition);
-                //console.log("Current servo location: " + JSON.parse(event.data).servoPosition)
                 //Get values
                 serverData.xStepperPosition = JSON.parse(event.data).xPosition;
                 serverData.yStepperPosition = JSON.parse(event.data).yPosition;
                 serverData.servoPosition = JSON.parse(event.data).servoPosition;
                 //Update values on page
-                servoController.updateData(serverData.servoPosition)
+                servoController.updateData()
             }
 
 
@@ -907,6 +1050,30 @@
                 console.log("finished drawing crosshair")
             }
 
+            function updateStaticHTML(){
+                if(serverData.streaming == true){
+                    pageButtons.streamButton.innerHTML = "Stop Stream";
+                    pageButtons.streamButton.onclick = stopStream;
+                }
+                else{
+                    pageButtons.streamButton.innerHTML = "Start Stream";
+                    pageButtons.streamButton.onclick = startStream;
+                }
+                if(serverData.runMode == true){
+                    pageButtons.imageModButton.innerHTML = "Stop Detection";
+                    pageButtons.imageModButton.onclick = stopImgMod;
+                }
+                else{
+                    pageButtons.imageModButton.innerHTML = "Run Detection";
+                    pageButtons.imageModButton.onclick = startImgMod;
+                }
+                if(serverData.actOnDetection == true){
+                    pageButtons.actOnDetectionButton.innerHTML = "Disable Act on Detection";
+                }
+                else{
+                    pageButtons.actOnDetectionButton.innerHTML = "Enable Act on Detection";
+                }
+            }
 
 
             //Embedded functions

@@ -1,4 +1,3 @@
-import numpy
 import picamera2
 import threading
 from StreamingOutput import StreamingOutput
@@ -6,7 +5,6 @@ import picamera2.encoders
 import picamera2.outputs
 from ProcessImage import ProcessImage
 from Observer import DetectionObserver
-import time
 from typing import Any
 
 from ImageGenerator import ImageGenerator
@@ -23,6 +21,7 @@ class Detector():
         self.output = StreamingOutput()
 
         self.observers: list[DetectionObserver] = []
+        self.actOnDetection = False
 
 
 
@@ -57,13 +56,14 @@ class Detector():
 
     def _setDetectedLocation(self, location: tuple[int, int]):
         '''Setter for self.detectedLocation. Notifies observers and stops image processing'''
-        newY = abs(self._imgGenerator.imageSize[1] - location[1]) #y motor is flipped from our y axis, reverse it
-        newLocation = (location[0], newY)
-        self._detectedLocation = newLocation
-        self._notifyObservers()
-        #tell image process class to change behavior here (ie, stop detecting etc.) (or could have image process class do it directly)
-        #then have motor control class inform detector here that firing sequence has completed
-        self.processImage = False #when this is called from here, the first image captured in process image once this is reset is all 0's and 255's. Added handling for it to ProcessImage
+        if(self.actOnDetection == True):
+            newY = abs(self._imgGenerator.imageSize[1] - location[1]) #y motor is flipped from our y axis, reverse it
+            newLocation = (location[0], newY)
+            self._detectedLocation = newLocation
+            self._notifyObservers()
+            #tell image process class to change behavior here (ie, stop detecting etc.) (or could have image process class do it directly)
+            #then have motor control class inform detector here that firing sequence has completed
+            self.processImage = False 
 
     def setDetectedRatio(self, xRatio: float, yRatio: float):
         '''Converts xRatio and yRatio to pixel offsets and calls "setDetectedLocation
@@ -89,10 +89,10 @@ class Detector():
             _completedObserverCount += 1
             if(_completedObserverCount == len(self.observers)):
                 pass
-                ###self.processImage = True #auto restart image processing
+                #self.processImage = True #auto restart image processing
 
         for observer in self.observers:
-             threading.Thread(target=observer.OnMotionFound, args=(self._getDetectedLocation(), _observerDone,)).start() 
+             threading.Thread(target=observer.OnMotionFound, args=(self._getDetectedLocation(), _observerDone, self.actOnDetection,)).start() 
 
     def RegisterObserver(self, newObserver: DetectionObserver):
         '''Register new observer to be notified when motion has been detected'''
