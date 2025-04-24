@@ -486,7 +486,7 @@
       "plot": "Gerbers/",
       "pos_files": "",
       "specctra_dsn": "",
-      "step": "",
+      "step": "MitskiKillerV1_2C.step",
       "svg": "",
       "vrml": ""
     },
