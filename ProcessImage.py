@@ -14,10 +14,8 @@ class ProcessImage():
     def __init__(self, updateDetectedLocationFunc: Callable[[tuple[int,int]], None]):
         self._baseImg = numpy.array([], dtype=numpy.uint8)
         self.detectImg = numpy.array([], dtype=numpy.uint8)
-        self.unprocessedImg = numpy.array([])
-        self.processedImg = numpy.array([])
         self._setDetectedLocation = updateDetectedLocationFunc
-        self.requiredObjectSize = 2500
+        self.requiredObjectSize = 10000
         self._baseRenewImageDelay = 0
         self._consecutiveDetections = 0
         self.showDelta = False #Return binary image representing pixels different than base past the threshold

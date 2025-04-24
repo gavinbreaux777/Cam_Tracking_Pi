@@ -3,7 +3,7 @@ class DetectionObserver:
     '''
         Observer of detection class, contains notifications to detection events
     '''
-    def OnMotionFound(self, location: Tuple[int,int], acknowledgeNotification: Callable[[bool], None]):
+    def OnMotionFound(self, location: Tuple[int,int], acknowledgeNotification: Callable[[bool], None], actOnMotion: bool):
         '''
         Called when motion is detected
 

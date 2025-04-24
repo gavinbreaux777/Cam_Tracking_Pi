@@ -57,6 +57,10 @@ class FlaskServer(DetectionObserver):
         self.app.add_url_rule("/toggleDelta/<show>", 'toggleDelta', self.toggleDelta)
         self.app.add_url_rule("/toggleContours/<show>", 'toggleContours', self.toggleContours)
         self.app.add_url_rule("/enableDisableMotor/<motorStr>/<clicked>", 'enableDisableMotor', self.enableDisableMotor)
+        self.app.add_url_rule("/enableDisableDCMotor/<clicked>", 'enableDisableDCMotor', self.enableDisableDCMotors)
+        self.app.add_url_rule("/spoolDCMotors", 'spoolDCMotors', self.spoolDCMotors)
+        self.app.add_url_rule("/stopDCMotors", 'stopDCMotors', self.stopDCMotors)
+        self.app.add_url_rule("/actOnDetection/<onOff>", 'actOnDetection', self.actOnDetection)
 
 #Endpoint methods for flask endpoints
     def serve_page(self):
@@ -180,6 +184,28 @@ class FlaskServer(DetectionObserver):
                 self.motorControl.yMotorEnabled = False
         return "Okey Dokey", 200
 
+    def enableDisableDCMotors(self, clicked: str):
+        if(clicked == "true"):
+            self.motorControl.firingControl.enabled = True
+        else:
+            self.motorControl.firingControl.enabled = False
+        return "OKEY dokeY", 200
+
+    def spoolDCMotors(self):
+        self.motorControl.firingControl.SpoolMotorsWithTimeout()
+        return "oKEY dokEY", 200
+
+    def stopDCMotors(self):
+        self.motorControl.firingControl.StopMotors()
+        return "OKeY DOKey", 200
+
+    def actOnDetection(self, onOff: str):
+        if(onOff == "true"):
+            self.detector.actOnDetection = True
+        else:
+            self.detector.actOnDetection = False
+        return "okeY DoKEy", 200
+
     #server sent events
     def sendDataSSE(self): #Periodic data transfer
         return flask.Response(self.generate_data(), content_type='text/event-stream')
@@ -202,11 +228,14 @@ class FlaskServer(DetectionObserver):
     def generate_data(self):
         while True:
             data = {
-                'time': time.ctime()
+                'time': time.ctime(),
+                'streaming': not self.stopStreamEvent.is_set(),
+                'moddingImage': self.detector.processImage,
+                'actOnDetection': self.detector.actOnDetection
             }
             json_data = json.dumps(data)
             yield f"data: {json_data}\n\n"
-            time.sleep(5)
+            time.sleep(1)
 
     def detectionNotificationStream(self):
         while True:
@@ -227,7 +256,7 @@ class FlaskServer(DetectionObserver):
             yield f"data: {json_data}\n\n"
             time.sleep(1)
 
-    def OnMotionFound(self, location: tuple[int,int], callback: Callable[[bool], None]): 
+    def OnMotionFound(self, location: tuple[int,int], callback: Callable[[bool], None], actOnDetection: bool): 
         self.newDetectedImageAvailable.set()
         callback(True)
 
