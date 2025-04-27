@@ -16,6 +16,8 @@ class MotorControl(DetectionObserver):
         self.yDegreesPerPercentChange = 20
         self.motionStartedEvent = Event()
         self.motionEndedEvent = Event()
+        self.spoolTime = 0.25
+        self.actOnDetection = False
 
         self.aimingControl.motorSpeed = (100, 100)
         self.firingControl.CloseGate()
@@ -94,7 +96,7 @@ class MotorControl(DetectionObserver):
         xAdjustment = percentXDistanceFromCenter * self.xDegreesPerPercentChange
         yAdjustment = percentYDistanceFromCenter * self.yDegreesPerPercentChange
         self.AimXYRel(xAdjustment, yAdjustment)
-        while(time.time() - spoolStartTime < 2):
+        while(time.time() - spoolStartTime < self.spoolTime):
             pass
         
         self.firingControl.FireSingle()
@@ -103,6 +105,3 @@ class MotorControl(DetectionObserver):
 
     def SetServoAngle(self, angle: float):
         self.firingControl.SetServoAngle(angle)
-
-
-        

@@ -56,14 +56,13 @@ class Detector():
 
     def _setDetectedLocation(self, location: tuple[int, int]):
         '''Setter for self.detectedLocation. Notifies observers and stops image processing'''
-        if(self.actOnDetection == True):
-            newY = abs(self._imgGenerator.imageSize[1] - location[1]) #y motor is flipped from our y axis, reverse it
-            newLocation = (location[0], newY)
-            self._detectedLocation = newLocation
-            self._notifyObservers()
-            #tell image process class to change behavior here (ie, stop detecting etc.) (or could have image process class do it directly)
-            #then have motor control class inform detector here that firing sequence has completed
-            self.processImage = False 
+        newY = abs(self._imgGenerator.imageSize[1] - location[1]) #y motor is flipped from our y axis, reverse it
+        newLocation = (location[0], newY)
+        self._detectedLocation = newLocation
+        self._notifyObservers()
+        #tell image process class to change behavior here (ie, stop detecting etc.) (or could have image process class do it directly)
+        #then have motor control class inform detector here that firing sequence has completed
+        self.processImage = False 
 
     def setDetectedRatio(self, xRatio: float, yRatio: float):
         '''Converts xRatio and yRatio to pixel offsets and calls "setDetectedLocation
