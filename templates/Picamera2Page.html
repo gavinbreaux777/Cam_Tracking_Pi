@@ -2,6 +2,14 @@
     <head>
         <title>Really Cool Thing E's</title>
         <style>
+            body{
+                background-color: #0c0c2d;
+                opacity: 1;
+                background: #272e33;
+                background: linear-gradient(0deg, rgba(39, 46, 51, 1) 0%, rgba(13, 21, 51, 1) 48%, rgba(12, 12, 13, 1) 100%);                
+                color: lightgray;
+                font-family: Arial, sans-serif;
+            }
             .grid-container {
                 display: grid;
                 height: 90vh;
@@ -9,14 +17,12 @@
                 grid-template-rows: 5% 1fr 1fr 1fr 1fr 1fr 20%;
                 grid-gap: 10px; 
                 padding: 10px;
-                border: 2px solid green;
                 place-items: center;
             }
-            .grid-item{
-                margin: 0px;
-            }
-            .btn-style{
-                margin: 0 auto 10%; width: 100%; height: auto; font-size: 12;
+            .run-btn-style{
+                margin: 0 auto 10%; 
+                width: 100%; height: auto;  min-height: 3%;
+                font-size: 12;
             }
             .mot-control-grid{
                 display: grid;
@@ -24,7 +30,6 @@
                 width: 100%;
                 grid-template-columns: 1fr 1fr 1fr;
                 grid-template-rows: 15% 1fr 1fr 1fr;
-                border: 5px solid purple;
             }
             .mot-control-button{
                 height: 100%;
@@ -34,7 +39,6 @@
                 display: flex; 
                 justify-content: center; 
                 align-items: center;
-                border: 2px dashed orange;
             }
             .servo-control-grid{
                 display: grid;
@@ -42,7 +46,6 @@
                 width: 100%;
                 grid-template-columns: 1fr 1fr 1fr;
                 grid-template-rows: 1fr 1fr 1fr 1fr 1fr;
-                border: 5px solid gray
             }
             .two-img-grid{
                 display: grid;
@@ -51,20 +54,203 @@
                 grid-template-columns: 1fr 1fr;
                 border: 5px solid green;
             }
+            .center-page{
+                grid-row: 2 / 7; 
+                grid-column: 2 / 6;
+            }
+            .tabcontent {
+                display: none;
+            }
+            .tabcontent.active {
+                display: block;
+            }
+            .tab-buttons{
+                display: flex;
+                width: 100%;
+                align-items: center;
+                justify-content: center;
+                border-bottom: rgb(79, 79, 79) 2px solid;
+            }
+            .tab-buttons button{
+                padding: 5px;
+                cursor: pointer;
+                color: white;
+                border: none;
+                background: none;
+                border-radius: 20%;
+                height: 60%;
+            }
+            .tab-buttons button.active{
+                background-color: rgb(17, 17, 114);
+                color: white;
+            }
+            .bottom-center{
+                grid-row: 7; 
+                grid-column: 3 / 5;
+            }
+            .bottom-right{
+                grid-row: 7; 
+                grid-column: 5 / 7;
+            }
+            .bottom-left{
+                grid-row: 7; 
+                grid-column: 1 / 3;
+            }
+            .right-strip{
+                grid-row: 2 / 5; grid-column: 6;
+                width: 100%; height: 100%; 
+                display: flex; flex-direction: column; 
+                align-items: center;
+            }
+            .left-strip{
+                grid-row: 2; grid-column: 1; 
+            }
+            .top-strip{
+                grid-row: 1; grid-column: 2 / 6;
+                height: 100%; width: 100%; 
+                display: flex; flex-direction: row;
+            }
+            img{
+                display: block; 
+                margin: 0 auto; 
+                max-height: 100%; max-width: 100%;
+            }
+            button{
+                background-color: lightgray;
+            }
+            button:active{
+                opacity: 0.75;
+            }
+            .side-by-side{
+                display: flex;
+                flex-direction: row;
+            }
+            .on-btn{
+                background-color: lightgray;
+            }
+            .off-btn{
+                background-color: gray;
+            }
         </style>
     </head>
 
-    <body style="background-color: darkGray;">
-        <h1 style="justify-content: center; text-align: center;">Cool Shit</h1>
+    <body>
+        <h1 style="justify-content: center; text-align: center;">Mitski Killer</h1>
         <div class="grid-container">
-            <div id="left_strip" class="grid-item" style="grid-row: 2; grid-column: 1; border-style: dotted; border-color: green;">
-                <button onclick="stopImgMod()" id="start_stop_img_mod" class="btn-style">
+            <!--Tabs-->
+            <div class="top-strip" >
+                <div class="tab-buttons">
+                    <button class="active" onclick="openTab(event, 'home')">Home</button>
+                    <button onclick="openTab(event, 'motor_control')">Motor Control</button>
+                    <button onclick="openTab(event, 'side_by_side')">Side by Side</button>
+                    <button onclick="openTab(event, 'calibration')">Calibration</button>
+                    <button onclick="openTab(event, 'settings')">Settings</button>
+                </div>
+            </div>
+            <!--Stream image-->
+            <div class="tabcontent active center-page" data-tabs="home,motor_control">
+                <img id="stream_img" src="/stream" onclick="(forceDetection(event, this.width, this.height))"/>
+            </div>
+            <!--Base and stream images-->
+            <div class="tabcontent center-page" data-tabs="side_by_side">
+                <div class="side-by-side">
+                    <img src="/stream"/>
+                    <img src="/base-img?cache_buster=0"/>
+                </div>
+            </div>
+            <!--Stepper Control-->
+            <div class="tabcontent bottom-center" data-tabs="motor_control,calibration" style="border: 3px solid blueviolet;">
+                <div id="stepper-control" class="mot-control-grid">
+                    <div id="stepper-control-title" style="grid-row: 1; grid-column: 1/5;
+                    text-align: center; font-size: 20px; font-weight: bold;">
+                        Stepper Control
+                    </div>
+                    <div class="mot-control-button-container" style="grid-row: 2; grid-column: 2;">
+                        <button class="mot-control-button" onmousedown="startJog('up', document.getElementById('speedInput'))" onmouseup="stopMotors()">Up</button>
+                    </div>
+                    <div class="mot-control-button-container" style="grid-row: 4; grid-column: 2;">
+                        <button class="mot-control-button" onmousedown="startJog('down', document.getElementById('speedInput'))" onmouseup="stopMotors()">Down</button>
+                    </div>
+                    <div class="mot-control-button-container" style="grid-row: 3; grid-column: 1;">
+                        <button class="mot-control-button" onmousedown="startJog('left', document.getElementById('speedInput'))" onmouseup="stopMotors()">Left</button>
+                    </div>
+                    <div class="mot-control-button-container" style="grid-row: 3; grid-column: 3;">
+                        <button class="mot-control-button" onmousedown="startJog('right', document.getElementById('speedInput'))" onmouseup="stopMotors()">Right</button>
+                    </div>
+                    <div class="mot-control-button-container" style="grid-row: 3; grid-column: 2; display: flex; justify-content: center; align-items: center;">
+                        <label for="speedInput" style="margin-right: 10px;">Jog Speed</label>
+                        <input type="text" id="speedInput" value="10" style="width: 50%;">
+                    </div>
+                    <div class="mot-control-button-container" style="grid-row: 4; grid-column: 1;">
+                        <input type="checkbox" id="enableXCheckbox" checked onchange="enableDisableMotor('x', this.checked)">
+                        <label for="enableXCheckbox">Enable X</label>
+                        <br>
+                        <input type="checkbox" id="enableYCheckbox" checked onchange="enableDisableMotor('y', this.checked)">
+                        <label for="enableYCheckbox">Enable Y</label>
+                    </div>
+                </div>
+            </div>
+            <!--Servo Control-->
+            <div class="tabcontent bottom-right" data-tabs="motor_control">
+                <div id="servo-control" class="servo-control-grid">
+                    <div id="servo-control-title" style="grid-row: 1; grid-column: 1/5;
+                    text-align: center; font-size: 20px; font-weight: bold;">
+                        Servo Control
+                    </div>
+                    <div class="mot-control-button-container" style="grid-row: 2 / 6; grid-column: 1 / 2; display: flex; flex-direction: column; text-align: center;">
+                        <div>Current Position</div>
+                        <div id="servo-pos">0</div>
+                    </div>
+                    <div class="mot-control-button-container" style="grid-row: 2 / 6; grid-column: 2 / 5; display: flex; flex-direction: column; text-align: center;">
+                        <button style="width: 50%; height: 100%;" onclick="moveServo(servoControl.items.targetPositionElement.value)">Move To Target</button>
+                        <label for="positionInput" style="margin-right: 10px;">Target Position</label>
+                        <input type="text" id="positionInput" value="10" style="width: 50%;" oninput="servoControl.items.targetPositionElement = this.value">
+                    </div>
+                </div>
+            </div>
+            <!--DC Motor Control-->
+            <div class="tabcontent bottom-left" data-tabs="motor_control">
+                <div id="dc-motor-control">
+                    <div id="dc-motor-control-title" style="text-align: center; font-size: 20px; font-weight: bold;">
+                        DC Motor Control
+                    </div>
+                    <div style="display: flex; flex-direction: row; align-items: center; gap: 10px; margin: 5px;">
+                        <div>Enable Motors</div>
+                        <input type="checkbox" id="enableDCMotorsCheckbox" checked onchange="enableDisableDCMotors(this.checked)" style="vertical-align: center;">
+                    </div>
+                    <div style="grid-row: 2 / 6; grid-column: 1 / 5; display: flex; justify-content: center; align-items: center;">
+                        <button style="width: 50%; height: 100%;" onmousedown="() => setInterval(spoolDCMotors, 50)" 
+                            onmouseup="() => {clearInterval(spoolDCMotors()); stopSpoolingDCMotors()}">
+                            Spool Motors
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!--Calibration-->
+            <div class="tabcontent center-page" data-tabs="calibration">
+                <div class="two-img-grid">
+                    <img id="stream_img" src="/stream" onclick="(calibration.saveLocation(event, this.width, this.height))" style="cursor: crosshair"/>
+                    <div id="img_div_two">
+                        Click in the image to save coordinates
+                    </div>
+                </div>
+            </div>
+            <!--Settings-->
+            <div class="right-strip">
+                    <label for="objSizeInput">Required Object Size</label>
+                    <input oninput="changeImgProcSetting('requiredObjectSize', this.value)" id="objSizeInput" type="number" value="10000" style="width: 50%;"/>
+                    <label for="gainInput" style="display:block; margin-top: 10">Analogue Gain</label>
+                    <input oninput="changeCamSetting('AnalogueGain', this.value)" id="gainInput" type="number" value="10.0" style="width: 50%;"/>
+            </div>
+            <!--Run Control-->
+            <div class="left-strip">
+                <button onclick="stopImgMod()" id="start_stop_img_mod" class="run-btn-style">
                     Run Detection
                 </button>
-                <button onclick="stopStream()" id="start_stop_stream" class="btn-style">
+                <button onclick="stopStream()" id="start_stop_stream" class="run-btn-style">
                     Stop Stream
                 </button>
-                <button onclick="actOnDetection()" id="toggle_act_on_detection" class="btn-style">
+                <button onclick="actOnDetection()" id="toggle_act_on_detection" class="run-btn-style">
                     Enable Act On Detection
                 </button>
                 <input id="show_delta" type="checkbox" onclick="toggleDelta(this.checked)">
@@ -73,47 +259,8 @@
                 <input id="show_contours" type="checkbox" onclick="toggleContours(this.checked)">
                 <label for="show_contours">Show Contours</label>
             </div>
-            <div id="center_page" class="grid-item" style="grid-row: 2 / 7; grid-column: 2 / 6;  border: 5px dotted red; height: auto; width: 100%">
-            </div>
-            <div id="top_strip" class="grid-item" style="grid-row: 1; grid-column: 2 / 6; border: 6px dashed burlywood; height: 100%; width: 100%; display: flex; flex-direction: row;">
-                <div style="border: 5px dashed cyan;">
-                    <button onclick="toggleMainPage()" id="main_page_btn" class="btn-style" >
-                    Main Page
-                    </button>
-                </div>
-                <div style="border: 5px dashed blue;">
-                    <button onclick="toggleMotControl()" id="mot_ctrl_btn" class="btn-style" >
-                    Motor Control
-                    </button>
-                </div>
-                <div style="border: 5px solid magenta;">
-                    <button onclick="toggleStreamAndBaseImg()" id="show_base_img_btn" class="btn-style" >
-                        Show Base Image
-                    </button>
-                </div>
-                <div style="border: 5px dotted darkorange">
-                    <button onclick="toggleCalibration()" id="toggle_calibration" class="btn-style">
-                        Calibrate Motors
-                    </button>
-                </div>
-            </div>
-            
-            
-            <div id="bottom-center-section" style="grid-row: 7; grid-column: 3 / 5; height: 100%; width: 100%"></div>
-            <div id="bottom-right-section" style="grid-row: 7; grid-column: 5 / 7; height: 100%; width: 100%;"></div>
-            <div id="bottom-left-section" style="grid-row: 7; grid-column: 1 / 3; height: 100%; width: 100%;"></div>
-            <div id="right-strip" style="grid-row: 2 / 5; grid-column: 6; border: 5px solid pink; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center;">
-                <div style="border: 2px dashed black;">
-                    <label for="objSizeInput">Required Object Size</label>
-                    <input oninput="changeImgProcSetting('requiredObjectSize', this.value)" id="objSizeInput" type="number" value="10000" style="width: 50%;"/>
-                    <label for="gainInput" style="display:block; margin-top: 10">Analogue Gain</label>
-                    <input oninput="changeCamSetting('AnalogueGain', this.value)" id="gainInput" type="number" value="10.0" style="width: 50%;"/>
-                </div>
-            </div>
         </div>
 
-        </div>
-        
         <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
         <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
         <script>
@@ -139,259 +286,30 @@
                 runMode: 0
             }
 
-        //HTML dynamic components
-            class ImageFactory{
-                constructor(){}
+            function openTab(evt, tabName) {
+                // Remove the active class from all buttons
+                document.querySelectorAll('.tab-buttons button').forEach((button) => {
+                    button.classList.remove('active');
+                });
 
-                static createStreamImage(htmlElementToAppendTo){
-                    //create image element
-                    const img = document.createElement('img');
-                    img.src = '/stream';
-                    img.id = 'stream_img';
-                    img.style.display = 'block';
-                    img.style.margin = '0 auto';
-                    img.style.maxHeight = '100%'
-                    img.style.maxWidth = '100%'
-                    img.style.borderwidth = '2';
-                    img.style.borderColor = 'black';
-                    img.style.borderstyle = 'solid';
-
-                    //clear the specified element and append the image
-                    htmlElementToAppendTo.innerHTML = ""
-                    htmlElementToAppendTo.appendChild(img)
-                }
-
-                static createBaseImg(htmlElementToAppendTo){
-                    const img = document.createElement('img');
-                    img.src = '/base-img?cache_buster=' + new Date().getTime();
-                    img.id = 'base_img';
-                    img.style.display = 'block';
-                    img.style.margin = '0 auto';
-                    img.style.maxHeight = '100%'
-                    img.style.maxWidth = '100%'
-                    img.style.borderWidth = '2';
-                    img.style.borderColor = 'blue';
-                    img.style.borderstyle = 'solid';
-
-                    //clear the specified element and append the image
-                    htmlElementToAppendTo.innerHTML = "";
-                    htmlElementToAppendTo.appendChild(img);
-                }
-
-                static appendImage(htmlElementToAppendTo, src){
-                    //create image element
-                    const img = document.createElement('img');
-                    img.src = src;
-                    img.id = 'stream_img';
-                    img.style.display = 'block';
-                    img.style.margin = '0 auto';
-                    img.style.maxHeight = '100%'
-                    img.style.maxWidth = '100%'
-                    img.style.borderwidth = '2';
-                    img.style.borderColor = 'black';
-                    img.style.borderstyle = 'solid';
-
-                    //clear the specified element and append the image
-                    htmlElementToAppendTo.innerHTML = "";
-                    htmlElementToAppendTo.appendChild(img);
-
-                    return img;
-                }
-
-                static createDetectedImage(htmlElementToAppendTo){
-                    const img = document.createElement('img');
-                    img.src = '/detect-img?cache_buster=' + new Date().getTime();
-                    img.id = 'detect_img';
-                    img.style.display = 'block';
-                    img.style.margin = '0 auto';
-                    img.style.maxHeight = '100%'
-                    img.style.maxWidth = '100%'
-                    img.style.borderWidth = '2';
-                    img.style.borderColor = 'blue';
-                    img.style.borderstyle = 'solid';
-
-                    //clear the specified element and append the image
-                    htmlElementToAppendTo.innerHTML = "";
-                    htmlElementToAppendTo.appendChild(img);
-                }
-
-                static createStreamAndBaseImage(htmlElementToAppendTo){
-                    const container = document.createElement('div');
-                    container.className = 'two-img-grid';
-
-                    //Create live stream image
-                    const streamContainer = document.createElement('div');
-                    streamContainer.id = "img_div_one"
-                    streamContainer.className = 'mot-control-button-container'
-                    streamContainer.style.gridColumn = '1';
-                    streamContainer.style.width = '100%';
-                    this.createStreamImage(streamContainer)
-                    //appendImage(streamContainer, '/stream'); //This works when tied directly to navigation buttons but not here
-
-                    container.appendChild(streamContainer);
-
-                    //Create static base image
-                    const baseImgContainer = document.createElement('div');
-                    baseImgContainer.id = "img_div_two"
-                    baseImgContainer.className = 'mot-control-button-container'
-                    baseImgContainer.style.gridColumn = '2';
-                    baseImgContainer.style.height = '100%';
-                    this.createBaseImg(baseImgContainer)
-                    //appendImage(streamContainer, '/base-img?cache_buster=' + new Date().getTime());
-
-                    container.appendChild(baseImgContainer);
-
-                    htmlElementToAppendTo.innerHTML = "";
-                    htmlElementToAppendTo.appendChild(container);
-                }
-
+                // Show the current tab, hide others, and add an "active" class to the button that opened it
+                document.querySelectorAll('.tabcontent').forEach(section => {
+                    const tabs = section.dataset.tabs.split(',').map(t => t.trim());
+                    if (tabs.includes(tabName)) {
+                        section.classList.add('active');
+                    } else {
+                        section.classList.remove('active');
+                    }
+                });
+                evt.currentTarget.classList.add('active');
             }
 
+        //HTML dynamic components
             class StepperControl{
                 constructor(){
                     this.items = {
                         jogSpeedElement: null
                     }
-                }
-
-                createGrid(htmlElementToAppendTo){
-                    //grid container for all buttons
-                    const container = document.createElement('div')
-                    container.className = 'mot-control-grid'
-
-                    //Title
-                    const titleContainer = document.createElement('div');
-                    titleContainer.style.gridRow = '1';
-                    titleContainer.style.gridColumn = '1 / 5';
-                    titleContainer.style.textAlign = 'center';
-                    titleContainer.textContent = "Stepper Control";
-                    titleContainer.style.margin = '5px';
-
-                    //up button
-                    const upcontainer = document.createElement('div');
-                    upcontainer.className = 'mot-control-button-container';
-                    upcontainer.style.gridRow = '2';
-                    upcontainer.style.gridColumn = '2';
-                    
-                    const upButton = document.createElement('button');
-                    upButton.className = 'mot-control-button';
-                    upButton.onmousedown = () => startJog('up', this.items.jogSpeedElement.value);
-                    upButton.onmouseup = stopMotors;
-                    upButton.textContent = 'up button';
-                    
-                    upcontainer.appendChild(upButton);
-
-                    //down button
-                    const downContainer = document.createElement('div');
-                    downContainer.className = 'mot-control-button-container';
-                    downContainer.style.gridRow = '4';
-                    downContainer.style.gridColumn = '2';
-                    
-                    const downButton = document.createElement('button');
-                    downButton.className = 'mot-control-button';
-                    downButton.onmousedown = () => startJog('down', this.items.jogSpeedElement.value);
-                    downButton.onmouseup = stopMotors;
-                    downButton.textContent = 'down button';
-                    
-                    downContainer.appendChild(downButton);
-
-                    //left button
-                    const leftContainer = document.createElement('div');
-                    leftContainer.className = 'mot-control-button-container';
-                    leftContainer.style.gridRow = '3';
-                    leftContainer.style.gridColumn = '1';
-                    
-                    const leftButton = document.createElement('button');
-                    leftButton.className = 'mot-control-button';
-                    leftButton.onmousedown = () => startJog('left', this.items.jogSpeedElement.value);
-                    leftButton.onmouseup = stopMotors;
-                    leftButton.textContent = 'left button';
-                    
-                    leftContainer.appendChild(leftButton);
-
-                    //right button
-                    const rightContainer = document.createElement('div');
-                    rightContainer.className = 'mot-control-button-container';
-                    rightContainer.style.gridRow = '3';
-                    rightContainer.style.gridColumn = '3';
-                    
-                    const rightButton = document.createElement('button');
-                    rightButton.className = 'mot-control-button';
-                    rightButton.onmousedown = () => startJog('right', this.items.jogSpeedElement.value);
-                    rightButton.onmouseup = stopMotors;
-                    rightButton.textContent = 'right button';
-                    
-                    rightContainer.appendChild(rightButton);
-
-                    //speed setting box
-                    const speedContainer = document.createElement('div');
-                    speedContainer.style.gridRow = '3';
-                    speedContainer.style.gridColumn = '2';
-                    speedContainer.style.display = 'flex';
-                    speedContainer.style.justifyContent = 'center';
-                    speedContainer.style.alignItems = 'center';
-                    
-                    const label = document.createElement('label');
-                    label.setAttribute('for', 'speedInput');
-                    label.style.marginRight = '10px';
-                    label.textContent = 'Jog Speed';
-                    
-                    const input = document.createElement('input');
-                    input.type = 'text';
-                    input.id = 'speedInput';
-                    input.style.width = '50%';
-                    input.value = "10";
-                    this.items.jogSpeedElement = input;
-                    
-                    speedContainer.appendChild(label);
-                    speedContainer.appendChild(input);
-
-                    //Enable/disable motors
-                    const enableMotorsContainer = document.createElement('div');
-                    enableMotorsContainer.style.gridRow = '4';
-                    enableMotorsContainer.style.gridColumn = '1';
-
-                    const enableXCheckbox = document.createElement('input');
-                    enableXCheckbox.type = 'checkbox';
-                    enableXCheckbox.id = 'enableXCheckbox';
-                    enableXCheckbox.checked = true;
-                    enableXCheckbox.addEventListener('change', function(){ enableDisableMotor('x', this.checked) });
-                    enableMotorsContainer.appendChild(enableXCheckbox);
-
-                    const enableXLabel = document.createElement('label');
-                    enableXLabel.setAttribute('for', 'enableXCheckbox');
-                    enableXLabel.textContent = 'Enable X';
-                    enableMotorsContainer.appendChild(enableXLabel);
-
-                    const lineBreak = document.createElement('br');
-                    enableMotorsContainer.appendChild(lineBreak);
-                    
-                    const enableYCheckbox = document.createElement('input');
-                    enableYCheckbox.type = 'checkbox';
-                    enableYCheckbox.id = 'enableYCheckbox';
-                    enableYCheckbox.checked = true;
-                    enableYCheckbox.addEventListener('change', function(){ enableDisableMotor('y', this.checked) });
-                    enableMotorsContainer.appendChild(enableYCheckbox);
-
-                    const enableYLabel = document.createElement('label');
-                    enableYLabel.setAttribute('for', 'enableYCheckbox');
-                    enableYLabel.textContent = 'Enable Y';
-                    enableMotorsContainer.appendChild(enableYLabel);
-
-                    //combine everything
-                    container.appendChild(titleContainer)
-                    container.appendChild(upcontainer)
-                    container.appendChild(downContainer)
-                    container.appendChild(leftContainer)
-                    container.appendChild(rightContainer)
-                    container.appendChild(speedContainer)
-                    container.appendChild(enableMotorsContainer)
-
-                    //clear the specified element
-                    htmlElementToAppendTo.innerHTML = ""
-
-                    //append to specified element
-                    htmlElementToAppendTo.appendChild(container)
                 }
             }     
 
@@ -407,150 +325,7 @@
                 updateData(){
                     this.items.currentPositionElement.textContent = serverData.servoPosition;
                 }
-
-                createGrid(htmlElementToAppendTo){
-                    //grid container for all buttons
-                    const container = document.createElement('div')
-                    container.className = 'servo-control-grid'
-
-                    //title
-                    const titleContainer = document.createElement('div');
-                    titleContainer.style.gridRow = '1';
-                    titleContainer.style.gridColumn = '1 / 5'
-                    titleContainer.style.textAlign = 'center';
-                    titleContainer.textContent = "Servo Control";
-                    titleContainer.style.margin = '5px';
-
-                    container.appendChild(titleContainer);
-
-                    //Current position
-                    const leftContainer = document.createElement('div');
-                    leftContainer.style.display = 'flex';
-                    leftContainer.style.flexDirection = 'column';
-                    leftContainer.style.textAlign = 'center';
-                    leftContainer.style.justifyItems = 'center';
-                    leftContainer.style.alignItems = 'center';
-                    leftContainer.className = 'mot-control-button-container';
-                    leftContainer.style.gridRow = '2 / 6';
-                    leftContainer.style.gridColumn = '1 / 2';
-                    
-                    const currentPosTitle = document.createElement('div');
-                    currentPosTitle.textContent = 'Current Position';
-                    leftContainer.appendChild(currentPosTitle);
-
-                    const currentPosValue = document.createElement('div');
-                    this.items.currentPositionElement = currentPosValue
-                    currentPosValue.id = "servo-pos";
-                    currentPosValue.textContent = serverData.xStepperPosition;
-                    
-                    leftContainer.appendChild(currentPosValue);
-                    
-
-                    // Target Position
-                    const targetPositionContainer = document.createElement('div');
-                    targetPositionContainer.className = 'mot-control-button-container';
-                    targetPositionContainer.style.gridRow = '2 / 6';
-                    targetPositionContainer.style.gridColumn = '2 / 5';
-                    targetPositionContainer.style.display = 'flex';
-                    targetPositionContainer.style.flexDirection = 'column';
-                    targetPositionContainer.style.textAlign = 'center';
-                    targetPositionContainer.style.justifyItems = 'center';
-                    targetPositionContainer.style.alignItems = 'center';
-                    
-                    const moveBtn = document.createElement('button')
-                    moveBtn.style.width = '50%';
-                    moveBtn.style.height = '100%';
-                    moveBtn.textContent = 'Move To Target';
-
-                    targetPositionContainer.appendChild(moveBtn);
-                    
-                    const label = document.createElement('label');
-                    label.setAttribute('for', 'positionInput');
-                    label.style.marginRight = '10px';
-                    label.textContent = 'Target Position';
-                    label.style.marginTop = '5px';
-                    
-                    const input = document.createElement('input');
-                    input.type = 'text';
-                    input.id = 'positionInput';
-                    input.style.width = '50%';
-                    input.value = "10";
-                    this.items.targetPositionElement = input
-
-                    moveBtn.onclick = () => {moveServo((this.items.targetPositionElement).value);}
-                    
-                    targetPositionContainer.appendChild(label);
-                    targetPositionContainer.appendChild(input);
-
-                    //combine everything
-                    container.appendChild(leftContainer)
-                    container.appendChild(targetPositionContainer)
-
-                    //clear the specified element
-                    htmlElementToAppendTo.innerHTML = ""
-
-                    //append to specified element
-                    htmlElementToAppendTo.appendChild(container)
-                }
             }          
-
-            class DcMotorControl{
-                createGrid(htmlElementToAppendTo){
-                    const container = document.createElement('div');
-                    container.style.border = '5px black solid';
-
-                    const title = document.createElement('div')
-                    title.style.textAlign = 'center';
-                    title.textContent = "Servo Control";
-                    title.style.margin = '5px';
-                    container.appendChild(title);
-
-                    const enableContainer = document.createElement('div');
-                    enableContainer.style.display = 'flex';
-                    enableContainer.style.flexDirection = 'row';
-                    enableContainer.style.gap = '10px';
-                    enableContainer.style.margin = '10px 0px';
-
-                    const enableText = document.createElement('div')
-                    enableText.textContent = "Enable Motors";
-                    enableContainer.append(enableText);
-                    container.append(enableContainer);
-
-                    const enableCB = document.createElement('input');
-                    enableCB.type = 'checkbox';
-                    enableCB.addEventListener('change', function(){ enableDisableDCMotors(this.checked) });
-                    enableContainer.appendChild(enableCB);
-
-                    const spoolButtonContainer = document.createElement('div');
-                    spoolButtonContainer.style.display = 'flex';
-                    spoolButtonContainer.style.justifyContent = 'center';
-                    spoolButtonContainer.style.margin = '20px';
-
-                    const spoolButton = document.createElement('button');
-                    spoolButton.style.margin = '2px';
-                    spoolButton.textContent = "Spool motors";
-                    spoolButton.style.padding = '10px';
-                    
-                    //Repeatedly send spool requests, server will timeout if request not received in time
-                    let spoolInterval;
-                    spoolButton.addEventListener('mousedown', () => {
-                        spoolDCMotors();
-                        spoolInterval = setInterval(spoolDCMotors, 50);
-                    });
-                    spoolButton.addEventListener('mouseup', () => {
-                        clearInterval(spoolInterval);
-                        stopSpoolingDCMotors();
-                    });
-                    spoolButtonContainer.appendChild(spoolButton);
-                    container.appendChild(spoolButtonContainer);
-
-                    //clear the specified element
-                    htmlElementToAppendTo.innerHTML = ""
-
-                    //append to specified element
-                    htmlElementToAppendTo.appendChild(container)
-                }
-            }
 
             class Calibration{
                 constructor(){
@@ -630,42 +405,16 @@
                 }
             }
 
-            const imageFactory = new ImageFactory()
             const servoController = new ServoControl() 
             const stepperControl = new StepperControl()
-            const dcMotorControl = new DcMotorControl()
             const calibration = new Calibration()
 
-
-            //Page navigation
-            function toggleMotControl(){
-                stepperControl.createGrid(pageSections.bottomCenter)
-                servoController.createGrid(pageSections.bottomRight)
-                dcMotorControl.createGrid(pageSections.bottomLeft)
-            }
-
-            function toggleMainPage(){
-                //createStreamImage(pageSections.center)
-                streamImg = ImageFactory.appendImage(pageSections.center, "/stream")
-                streamImg.style.cursor = "crosshair";
-                streamImg.addEventListener('click', (event) => {
-                        forceDetection(event, streamImg.width, streamImg.height)
-                    });
-                pageSections.bottomCenter.innerHTML = ""
-                pageSections.bottomRight.innerHTML = ""
-            }
-
-            function toggleStreamAndBaseImg(){
-                ImageFactory.createStreamAndBaseImage(pageSections.center);
-            }
-
-            function toggleCalibration(){
-                calibration.createCalibrationPage(pageSections.center);
-            }
-
             function displayDetectImg(){
-                //ImageFactory.createDetectedImage(pageSections.bottomCenter)
                 ImageFactory.appendImage(pageSections.bottomCenter, '/detect-img?cache_buster=' + new Date().getTime());
+                pageSections.bottomCenter.innterHTML = "";
+                const detectImg = document.createElement("img");
+                detectImg.src = "/detect-img?cache_buster=" + new Date().getTime();
+                pageSections.bottomCenter.appendChild(detectImg);
             }
 
 
@@ -682,10 +431,6 @@
                         else{
                             console.log("Failure to stop stream. Server response: " + response.status);
                         }
-                    })
-                    .then(data => {
-                        //btn.innerHTML = "Start Stream"
-                        //btn.onclick = startStream
                     })
                     .catch(error => {
                         console.error(error)
@@ -706,11 +451,6 @@
                     else{
                         console.log("Server failed to start stream. Server response: " + server.response)
                     }
-                })
-                .then(data => {
-                    stream.src = "/stream"
-                    //btn.innerHTML = "Stop Stream"
-                    //btn.onclick = stopStream
                 })
                 .catch(error => {
                     console.error(error)
@@ -1053,33 +793,33 @@
             function updateStaticHTML(){
                 if(serverData.streaming == true){
                     pageButtons.streamButton.innerHTML = "Stop Stream";
+                    pageButtons.streamButton.class = "on-btn";
                     pageButtons.streamButton.onclick = stopStream;
                 }
                 else{
                     pageButtons.streamButton.innerHTML = "Start Stream";
+                    pageButtons.streamButton.class = "off-btn";
                     pageButtons.streamButton.onclick = startStream;
                 }
                 if(serverData.runMode == true){
                     pageButtons.imageModButton.innerHTML = "Stop Detection";
+                    pageButtons.imageModButton.class = "on-btn";
                     pageButtons.imageModButton.onclick = stopImgMod;
                 }
                 else{
                     pageButtons.imageModButton.innerHTML = "Run Detection";
+                    pageButtons.streamButton.style.backgroundColor = "rgb(204, 204, 204);";
                     pageButtons.imageModButton.onclick = startImgMod;
                 }
                 if(serverData.actOnDetection == true){
                     pageButtons.actOnDetectionButton.innerHTML = "Disable Act on Detection";
+                    pageButtons.actOnDetectionButton.class = "on-btn";
                 }
                 else{
                     pageButtons.actOnDetectionButton.innerHTML = "Enable Act on Detection";
+                    pageButtons.actOnDetectionButton.class = "off-btn";
                 }
             }
-
-
-            //Embedded functions
-            window.onload = function() {
-                toggleMainPage();
-        }
         </script>
     </body>
 </html>
