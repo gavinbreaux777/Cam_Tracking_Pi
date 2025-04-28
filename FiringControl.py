@@ -14,8 +14,8 @@ class FiringControl():
 
 
         self.servo = RawServoControl(ioControl, 12, 50)
-        self.closedAngle = 165
-        self.openAngle = 160
+        self.closedAngle = 160
+        self.openAngle = 155
         self.servo.SetAngle(self.closedAngle)
 
     @property

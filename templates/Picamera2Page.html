@@ -3,6 +3,16 @@
     <head>
         <title>Really Cool Thing E's</title>
         <style>
+            * {
+                box-sizing: border-box; /* Include padding/border in total height */
+            }
+            html{
+                height: 100vh;
+                overflow: hidden;;
+            }
+            h1{
+                height: 5%;
+            }
             body{
                 background-color: #0c0c2d;
                 opacity: 1;
@@ -10,13 +20,14 @@
                 background: linear-gradient(0deg, rgba(39, 46, 51, 1) 0%, rgba(13, 21, 51, 1) 48%, rgba(12, 12, 13, 1) 100%);                
                 color: lightgray;
                 font-family: Arial, sans-serif;
-            }
+                height: 92%;
+            }            
             .grid-container {
                 display: grid;
-                height: 90vh;
+                height: 100%;
                 grid-template-columns: 10% 1fr 1fr 1fr 1fr 10%;
                 grid-template-rows: 5% 1fr 1fr 1fr 1fr 1fr 20%;
-                grid-gap: 10px; 
+                gap: 0px; 
                 padding: 10px;
                 place-items: center;
             }
@@ -33,13 +44,14 @@
                 grid-template-rows: 15% 1fr 1fr 1fr;
             }
             .mot-control-button{
-                height: 100%;
-                width: 100%;
+                height: 80%;
+                width: 80%;
             }
             .mot-control-button-container{
                 display: flex; 
                 justify-content: center; 
                 align-items: center;
+                height: 100%;
             }
             .servo-control-grid{
                 display: grid;
@@ -102,7 +114,7 @@
                 height: 100%;
                 background-color: #57575f3c;
                 border: 10px solid #5050633c;
-                border-radius: 10%;
+                border-radius: 7%;
             }
             .right-strip{
                 grid-row: 2 / 5; grid-column: 6;
@@ -125,6 +137,8 @@
             }
             button{
                 background-color: lightgray;
+                border-radius: 5px;
+                padding: 5%;
             }
             button:active{
                 opacity: 0.75;
@@ -197,6 +211,16 @@
                         <br>
                         <input type="checkbox" id="enableYCheckbox" checked onchange="enableDisableMotor('y', this.checked)">
                         <label for="enableYCheckbox">Enable Y</label>
+                    </div>
+                    <div style="grid-row: 2; grid-column: 1; display: flex; flex-direction: column; white-space: nowrap; align-self: center;">
+                        <div style="display: flex; flex-direction: row; margin-left: 2%">
+                            <span>X Position:</span>
+                            <Span id="x_stepper_pos" style="margin-left: 1%;"></Span>
+                        </div>
+                        <div style="display: flex; flex-direction: row; margin-left: 2%">
+                            <span>Y Position:</span>
+                            <Span id="y_stepper_pos" style="margin-left: 1%;"></Span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -286,7 +310,8 @@
             <!--Non-Tabs-->
             <!--Detect Image-->
             <img id="detect_img" onclick="hideDetectImg()" style="display: none"/>
-            <!--Working calibration data. Note that data-tabs is present but empty - this is so we can show things dynamically using js but switching tabs will still clear it all-->
+            <!--Working calibration data--
+            Note that data-tabs is present but empty - this is so we can show things dynamically using js but switching tabs will still clear it all-->
             <div id="working_calibration_data" class="tabcontent bottom-right" data-tabs="">
                 <!--To be shown when image is clicked-->
                 <div style="text-align: center; font-weight: bold; margin-bottom: 3%;">Working Calibration Data</div>
@@ -339,6 +364,11 @@
                 PostSaveCalibrationData_Element: document.getElementById("post_save_calibration_data"),
                 xMotorDelta_Element: document.getElementById("motor_delta_x"),
                 yMotorDelta_Element: document.getElementById("motor_delta_y")
+            }
+            const motorElements ={
+                xStepperPos_Element: document.getElementById("x_stepper_pos"),
+                yStepperPos_Element: document.getElementById("y_stepper_pos"),
+                servoPos_Element: document.getElementById("servo-pos")
             }
             let serverData = {
                 xStepperPosition: 0,
@@ -403,10 +433,10 @@
                         imgDivTwo.appendChild(saveCalibrationBtn);
                     }
                 
-                    calibrationElements.xClickRatio_Element.innerHTML = this.items.xClickRatio;
-                    calibrationElements.yClickRatio_Element.innerHTML = this.items.yClickRatio;
-                    calibrationElements.xMotorStartPos_Element.innerHTML = this.items.motorCalibrationStartX;
-                    calibrationElements.yMotorStartPos_Element.innerHTML = this.items.motorCalibrationStartY;
+                    calibrationElements.xClickRatio_Element.innerHTML = Number(this.items.xClickRatio).toFixed(2);
+                    calibrationElements.yClickRatio_Element.innerHTML = Number(this.items.yClickRatio).toFixed(2);
+                    calibrationElements.xMotorStartPos_Element.innerHTML = Number(this.items.motorCalibrationStartX).toFixed(2);
+                    calibrationElements.yMotorStartPos_Element.innerHTML = Number(this.items.motorCalibrationStartY).toFixed(2);
                     calibrationElements.workingCalibrationData_Element.classList.add("active");
                     
                 }
@@ -814,11 +844,13 @@
             const motorLocationSource = new EventSource('/motorLocation');
             motorLocationSource.onmessage = function(event){
                 //Get values
-                serverData.xStepperPosition = JSON.parse(event.data).xPosition;
-                serverData.yStepperPosition = JSON.parse(event.data).yPosition;
-                serverData.servoPosition = JSON.parse(event.data).servoPosition;
+                serverData.xStepperPosition = JSON.parse(event.data).xPosition.toFixed(2);
+                serverData.yStepperPosition = JSON.parse(event.data).yPosition.toFixed(2);
+                serverData.servoPosition = JSON.parse(event.data).servoPosition.toFixed(2);
                 //Update values on page
-                document.getElementById("servo-pos").textContent = serverData.servoPosition;
+                motorElements.xStepperPos_Element.textContent = serverData.xStepperPosition;
+                motorElements.yStepperPos_Element.textContent = serverData.yStepperPosition;
+                motorElements.servoPos_Element.textContent = serverData.servoPosition;
             }
 
 
@@ -855,8 +887,8 @@
                 pageButtons.actOnDetectionButton.classList.add(serverData.actOnDetection ? "on-btn" : "off-btn");
                 pageButtons.actOnDetectionButton.innerHTML = serverData.actOnDetection ? "Disable Act on Detection" : "Enable Act on Detection";
 
-                calibrationElements.xDegreesPerPercent_Element.innerHTML = serverData.xDegreesPerPercent;
-                calibrationElements.yDegreesPerPercent_Element.innerHTML = serverData.yDegreesPerPercent;
+                calibrationElements.xDegreesPerPercent_Element.innerHTML = Number(serverData.xDegreesPerPercent).toFixed(2);
+                calibrationElements.yDegreesPerPercent_Element.innerHTML = Number(serverData.yDegreesPerPercent).toFixed(2);
             }
         </script>
     </body>

@@ -40,12 +40,6 @@ class AimingControl():
     def MoveYRel(self, degrees: float):
         self.yMotor.RotateRel(degrees)
 
-    def JogX(self, speed: int, cw: bool):
-        self.xMotor.Jog(speed, cw) #Start motor rotating more than we will during jog, we will stop it via stop command
-        
-    def JogY(self, speed: int, cw: bool):
-        self.yMotor.Jog(speed, cw)
-
     def Jog(self, speed: int, cw: bool, motor: int):
         '''Start motor rotating at specified speed until timeout
 

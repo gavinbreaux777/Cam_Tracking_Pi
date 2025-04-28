@@ -12,7 +12,7 @@ class MotorControl(DetectionObserver):
         #Create class to control aiming steppers
         self.aimingControl = AimingControl(self.ioControl)
         self.firingControl = FiringControl(self.ioControl)
-        self.xDegreesPerPercentChange = 50 #CalifFactor - degrees motor move per % pixel change (% pixel change = (detect location - center location) / center location
+        self.xDegreesPerPercentChange = -50 #CalifFactor - degrees motor move per % pixel change (% pixel change = (detect location - center location) / center location
         self.yDegreesPerPercentChange = 20
         self.motionStartedEvent = Event()
         self.motionEndedEvent = Event()
@@ -85,7 +85,7 @@ class MotorControl(DetectionObserver):
         spoolStartTime = time.time()
 
         #pixel distance from center
-        pixelXDistanceFromCenter = location[0] - (640/2)
+        pixelXDistanceFromCenter = (640/2) - location[0]
         pixelYDistanceFromCenter = (480/2) - location[1]
 
         #Percent distance from center (far right, top = 1,1 ; far left and bottom = -1,-1)
