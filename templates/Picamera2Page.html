@@ -176,16 +176,16 @@
                         Stepper Control
                     </div>
                     <div class="mot-control-button-container" style="grid-row: 2; grid-column: 2;">
-                        <button class="mot-control-button" onmousedown="startJog('up', document.getElementById('speedInput'))" onmouseup="stopMotors()">Up</button>
+                        <button class="mot-control-button" onmousedown="startJog('up', document.getElementById('speedInput').value)" onmouseup="stopMotors()">Up</button>
                     </div>
                     <div class="mot-control-button-container" style="grid-row: 4; grid-column: 2;">
-                        <button class="mot-control-button" onmousedown="startJog('down', document.getElementById('speedInput'))" onmouseup="stopMotors()">Down</button>
+                        <button class="mot-control-button" onmousedown="startJog('down', document.getElementById('speedInput').value)" onmouseup="stopMotors()">Down</button>
                     </div>
                     <div class="mot-control-button-container" style="grid-row: 3; grid-column: 1;">
-                        <button class="mot-control-button" onmousedown="startJog('left', document.getElementById('speedInput'))" onmouseup="stopMotors()">Left</button>
+                        <button class="mot-control-button" onmousedown="startJog('left', document.getElementById('speedInput').value)" onmouseup="stopMotors()">Left</button>
                     </div>
                     <div class="mot-control-button-container" style="grid-row: 3; grid-column: 3;">
-                        <button class="mot-control-button" onmousedown="startJog('right', document.getElementById('speedInput'))" onmouseup="stopMotors()">Right</button>
+                        <button class="mot-control-button" onmousedown="startJog('right', document.getElementById('speedInput').value)" onmouseup="stopMotors()">Right</button>
                     </div>
                     <div class="mot-control-button-container" style="grid-row: 3; grid-column: 2; display: flex; justify-content: center; align-items: center;">
                         <label for="speedInput" style="margin-right: 10px;">Jog Speed</label>
@@ -230,8 +230,8 @@
                             <input type="checkbox" id="enableDCMotorsCheckbox" checked onchange="enableDisableDCMotors(this.checked)" style="vertical-align: center;">
                         </div>
                         <div style="display: flex; justify-content: center; align-items: center;">
-                            <button style="padding: 10%" onmousedown="() => setInterval(spoolDCMotors, 50)" 
-                                    onmouseup="() => {clearInterval(spoolDCMotors()); stopSpoolingDCMotors()}">
+                            <button style="padding: 10%" onmousedown="spoolID = setInterval(spoolDCMotors, 50)" 
+                                    onmouseup="clearInterval(spoolID); stopSpoolingDCMotors()">
                                 Spool Motors
                             </button>
                         </div>
@@ -245,6 +245,18 @@
                     <div id="img_div_two">
                         Click in the image to save coordinates
                     </div>
+                </div>
+            </div>
+            <!--Calibration data-->
+            <div class="tabcontent bottom-left" data-tabs="calibration">
+                <div style="text-align: center; font-size: 20px; font-weight: bold; margin-bottom: 10%;">Calibration Data</div>
+                <div style="display: flex; flex-direction: row; margin-bottom: 5%; white-space: nowrap; justify-content: center;">
+                    <span>X Degrees / %Move:</span>
+                    <span id="x_degrees_per" Style="border-bottom: rgba(245, 245, 245, 0.565) 2px solid; margin-left: 3%;"></span>
+                </div>
+                <div style="display: flex; flex-direction: row; white-space: nowrap; justify-content: center;">
+                    <span>Y Degrees / %Move:</span>
+                    <span id="y_degrees_per" Style="border-bottom: rgba(245, 245, 245, 0.565) 2px solid; margin-left: 3%;"></span>
                 </div>
             </div>
             <!--Settings-->
@@ -272,32 +284,70 @@
                 <label for="show_contours">Show Contours</label>
             </div>
             <!--Non-Tabs-->
+            <!--Detect Image-->
             <img id="detect_img" onclick="hideDetectImg()" style="display: none"/>
+            <!--Working calibration data. Note that data-tabs is present but empty - this is so we can show things dynamically using js but switching tabs will still clear it all-->
+            <div id="working_calibration_data" class="tabcontent bottom-right" data-tabs="">
+                <!--To be shown when image is clicked-->
+                <div style="text-align: center; font-weight: bold; margin-bottom: 3%;">Working Calibration Data</div>
+                <div style="display: flex; flex-direction: row; white-space: nowrap; justify-content: center;">
+                    <span>X Click Ratio:</span>
+                    <span id="xClickRatio" style="margin-left: 3%;"></span>
+                </div>
+                <div style="display: flex; flex-direction: row; white-space: nowrap; justify-content: center;">
+                    <span>Y Click Ratio:</span>
+                    <span id="yClickRatio" style="margin-left: 3%;"></span>
+                </div>
+                <div style="display: flex; flex-direction: row; white-space: nowrap; justify-content: center;">
+                    <span>Motor Calibration Start X:</span>
+                    <span id="motorCalibrationStartX" style="margin-left: 3%;"></span>
+                </div>
+                <div style="display: flex; flex-direction: row; white-space: nowrap; justify-content: center;">
+                    <span>Motor Calibration Start Y:</span>
+                    <span id="motorCalibrationStartY" style="margin-left: 3%;"></span>
+                </div>
+                <!--To be shown after save calibration button press-->
+                <div id="post_save_calibration_data" class="tabcontent" data-tabs="">
+                    <div style="display: flex; flex-direction: row; white-space: nowrap; justify-content: center;">
+                        <span>Motor Delta X:</span>
+                        <span id="motor_delta_x" style="margin-left: 3%;"></span>
+                    </div>
+                    <div style="display: flex; flex-direction: row; white-space: nowrap; justify-content: center;">
+                        <span>Motor Delta Y:</span>
+                        <span id="motor_delta_y" style="margin-left: 3%;"></span>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
         <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
         <script>
-            const pageSections = {
-                center: document.getElementById("center_page"),
-                bottomCenter: document.getElementById("bottom-center"),
-                bottomRight: document.getElementById("bottom-right"),
-                bottomLeft: document.getElementById("bottom-left"),
-                leftStrip: null,
-                rightStrip: null,
-                topStrip: null
-            }
             const pageButtons = {
                 imageModButton: document.getElementById("start_stop_img_mod"),
                 streamButton: document.getElementById("start_stop_stream"),
                 actOnDetectionButton: document.getElementById("toggle_act_on_detection")
+            }
+            const calibrationElements = {
+                workingCalibrationData_Element: document.getElementById("working_calibration_data"),
+                xDegreesPerPercent_Element: document.getElementById("x_degrees_per"),
+                yDegreesPerPercent_Element: document.getElementById("y_degrees_per"),
+                xClickRatio_Element: document.getElementById("xClickRatio"),
+                yClickRatio_Element: document.getElementById("yClickRatio"),
+                xMotorStartPos_Element: document.getElementById("motorCalibrationStartX"),
+                yMotorStartPos_Element: document.getElementById("motorCalibrationStartY"),
+                PostSaveCalibrationData_Element: document.getElementById("post_save_calibration_data"),
+                xMotorDelta_Element: document.getElementById("motor_delta_x"),
+                yMotorDelta_Element: document.getElementById("motor_delta_y")
             }
             let serverData = {
                 xStepperPosition: 0,
                 yStepperPosition: 0,
                 servoPosition: 0,
                 actOnDetection: 0,
-                runMode: 0
+                runMode: 0,
+                xDegreesPerPercent: 0,
+                yDegreesPerPercent: 0
             }
 
         //HTML dynamic components  
@@ -352,6 +402,13 @@
                         imgDivTwo.appendChild(clickImage);
                         imgDivTwo.appendChild(saveCalibrationBtn);
                     }
+                
+                    calibrationElements.xClickRatio_Element.innerHTML = this.items.xClickRatio;
+                    calibrationElements.yClickRatio_Element.innerHTML = this.items.yClickRatio;
+                    calibrationElements.xMotorStartPos_Element.innerHTML = this.items.motorCalibrationStartX;
+                    calibrationElements.yMotorStartPos_Element.innerHTML = this.items.motorCalibrationStartY;
+                    calibrationElements.workingCalibrationData_Element.classList.add("active");
+                    
                 }
 
                 calculateAndPushCalibration(){
@@ -360,6 +417,11 @@
 
                     const xDegreesPerDetectDistanceRatio = motorXDelta / this.items.xClickRatio
                     const yDegreesPerDetectDistanceRatio = motorYDelta / this.items.yClickRatio
+
+                    calibrationElements.xMotorDelta_Element.innerHTML = motorXDelta;
+                    calibrationElements.yMotorDelta_Element.innerHTML = motorYDelta;
+                    calibrationElements.PostSaveCalibrationData_Element.classList.add("active");
+                    
                     //Push calibration to server
                     sendMotorCalibrationFactors(xDegreesPerDetectDistanceRatio, yDegreesPerDetectDistanceRatio)
                 }
@@ -408,7 +470,6 @@
 
             //Server requests
             function stopStream(){
-                const btn = document.getElementById("start_stop_stream")
                 fetch('/stopStream', {
                     method: 'GET'
                     })
@@ -449,7 +510,6 @@
             }
 
             function stopImgMod(){
-                const btn = document.getElementById("start_stop_img_mod")
                 fetch('/stopImgMod', {
                     method: 'GET'
                     })
@@ -467,7 +527,6 @@
                 }
 
             function startImgMod(){
-                const btn = document.getElementById("start_stop_img_mod")
                 fetch('/startImgMod', {
                     method: 'GET'
                     })
@@ -486,7 +545,6 @@
 
             function actOnDetection(){
                 const enableStr = !serverData.actOnDetection;
-                const btn = document.getElementById("toggle_act_on_detection")
                 fetch(`/actOnDetection/${enableStr}`, {
                     method: 'GET'
                     })
@@ -737,6 +795,8 @@
                 serverData.runMode = JSON.parse(event.data).moddingImage;
                 serverData.streaming = JSON.parse(event.data).streaming;
                 serverData.actOnDetection = JSON.parse(event.data).actOnDetection;
+                serverData.xDegreesPerPercent = JSON.parse(event.data).xDegreesPerPercent;
+                serverData.yDegreesPerPercent = JSON.parse(event.data).yDegreesPerPercent;
                 updateStaticHTML();
             };
             dataEventSource.onerror = function() {
@@ -794,6 +854,9 @@
                 pageButtons.actOnDetectionButton.classList.remove("on-btn", "off-btn");
                 pageButtons.actOnDetectionButton.classList.add(serverData.actOnDetection ? "on-btn" : "off-btn");
                 pageButtons.actOnDetectionButton.innerHTML = serverData.actOnDetection ? "Disable Act on Detection" : "Enable Act on Detection";
+
+                calibrationElements.xDegreesPerPercent_Element.innerHTML = serverData.xDegreesPerPercent;
+                calibrationElements.yDegreesPerPercent_Element.innerHTML = serverData.yDegreesPerPercent;
             }
         </script>
     </body>

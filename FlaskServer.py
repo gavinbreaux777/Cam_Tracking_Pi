@@ -140,9 +140,9 @@ class FlaskServer(DetectionObserver):
     def jogMotor(self, direction: str, speed: str):
         speedInt = int(speed)
         if(direction == "left"):
-            self.motorControl.JogX(speedInt, False)
-        elif(direction == "right"):
             self.motorControl.JogX(speedInt, True)
+        elif(direction == "right"):
+            self.motorControl.JogX(speedInt, False)
         elif(direction == "up"):
             self.motorControl.JogY(speedInt, True)
         elif(direction == "down"):
@@ -231,7 +231,9 @@ class FlaskServer(DetectionObserver):
                 'time': time.ctime(),
                 'streaming': not self.stopStreamEvent.is_set(),
                 'moddingImage': self.detector.processImage,
-                'actOnDetection': self.detector.actOnDetection
+                'actOnDetection': self.detector.actOnDetection,
+                'xDegreesPerPercent': self.motorControl.xDegreesPerPercentChange,
+                'yDegreesPerPercent': self.motorControl.yDegreesPerPercentChange,
             }
             json_data = json.dumps(data)
             yield f"data: {json_data}\n\n"

@@ -24,7 +24,6 @@ class AimingControl():
     
     @motorSpeed.setter
     def motorSpeed(self, xySpeeds: Tuple[float, float]):
-        print("Speed set from AIming control = " + str(xySpeeds))
         self.xMotor.speed = xySpeeds[0]
         self.yMotor.speed = xySpeeds[1]
 

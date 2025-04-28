@@ -56,8 +56,9 @@ class Detector():
 
     def _setDetectedLocation(self, location: tuple[int, int]):
         '''Setter for self.detectedLocation. Notifies observers and stops image processing'''
+        newX = abs(self._imgGenerator.imageSize[0] - location[0]) #x motor is flipped from our x axis, reverse it
         newY = abs(self._imgGenerator.imageSize[1] - location[1]) #y motor is flipped from our y axis, reverse it
-        newLocation = (location[0], newY)
+        newLocation = (newX, newY)
         self._detectedLocation = newLocation
         self._notifyObservers()
         #tell image process class to change behavior here (ie, stop detecting etc.) (or could have image process class do it directly)
