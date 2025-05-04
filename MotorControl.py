@@ -1,17 +1,17 @@
 from IOControl import IOControl
 from AimingControl import AimingControl
-from FiringControl import FiringControl
+from ServoControl import ServoControl
+from DCMotorControl import DCMotorControl
 from Observer import DetectionObserver
-import time
-import threading 
+import threading
 from typing import Tuple, Callable
 from Event import Event
 class MotorControl(DetectionObserver):
     def __init__(self, ioControl: IOControl):
         self.ioControl = ioControl
-        #Create class to control aiming steppers
         self.aimingControl = AimingControl(self.ioControl)
-        self.firingControl = FiringControl(self.ioControl)
+        self.servoControl = ServoControl(self.ioControl)
+        self.dcMotorControl = DCMotorControl(self.ioControl)
         self.xDegreesPerPercentChange = -50 #CalifFactor - degrees motor move per % pixel change (% pixel change = (detect location - center location) / center location
         self.yDegreesPerPercentChange = 20
         self.motionStartedEvent = Event()
@@ -20,7 +20,7 @@ class MotorControl(DetectionObserver):
         self.actOnDetection = False
 
         self.aimingControl.motorSpeed = (100, 100)
-        self.firingControl.CloseGate()
+        self.servoControl.CloseGate()
 
     @property
     def xMotorEnabled(self) -> bool:
@@ -48,7 +48,7 @@ class MotorControl(DetectionObserver):
     
     @property
     def servoPosition(self) -> float:
-        return self.firingControl.servoPosition
+        return self.servoControl.servoPosition
 
     def AimXYRel(self, xDegrees: float, yDegrees: float):
         self.aimingControl.AimXYRel(xDegrees, yDegrees)
@@ -81,8 +81,7 @@ class MotorControl(DetectionObserver):
 
     def FindAndFire(self, location: Tuple[int, int], callback: Callable[[bool], None]):
         '''Aim motors, fire projectile, and finally call callback to notify Detector that we've finished the sequence'''
-        self.firingControl.SpoolMotors()
-        spoolStartTime = time.time()
+        self.dcMotorControl.SpoolMotors()
 
         #pixel distance from center
         pixelXDistanceFromCenter = (640/2) - location[0]
@@ -96,12 +95,12 @@ class MotorControl(DetectionObserver):
         xAdjustment = percentXDistanceFromCenter * self.xDegreesPerPercentChange
         yAdjustment = percentYDistanceFromCenter * self.yDegreesPerPercentChange
         self.AimXYRel(xAdjustment, yAdjustment)
-        while(time.time() - spoolStartTime < self.spoolTime):
+        while(not self.dcMotorControl.motorsSpooled):
             pass
         
-        self.firingControl.FireSingle()
-        self.firingControl.StopMotors()
+        self.servoControl.ReleaseSingle()
+        self.dcMotorControl.StopMotors()
 
 
     def SetServoAngle(self, angle: float):
-        self.firingControl.SetServoAngle(angle)
+        self.servoControl.SetServoAngle(angle)
