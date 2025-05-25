@@ -186,17 +186,17 @@ class FlaskServer(DetectionObserver):
 
     def enableDisableDCMotors(self, clicked: str):
         if(clicked == "true"):
-            self.motorControl.firingControl.enabled = True
+            self.motorControl.dcMotorControl.enabled = True
         else:
-            self.motorControl.firingControl.enabled = False
+            self.motorControl.dcMotorControl.enabled = False
         return "OKEY dokeY", 200
 
     def spoolDCMotors(self):
-        self.motorControl.firingControl.SpoolMotorsWithTimeout()
+        self.motorControl.dcMotorControl.SpoolMotorsWithTimeout()
         return "oKEY dokEY", 200
 
     def stopDCMotors(self):
-        self.motorControl.firingControl.StopMotors()
+        self.motorControl.dcMotorControl.StopMotors()
         return "OKeY DOKey", 200
 
     def actOnDetection(self, onOff: str):

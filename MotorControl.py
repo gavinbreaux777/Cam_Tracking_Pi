@@ -6,6 +6,7 @@ from Observer import DetectionObserver
 import threading
 from typing import Tuple, Callable
 from Event import Event
+import time
 class MotorControl(DetectionObserver):
     def __init__(self, ioControl: IOControl):
         self.ioControl = ioControl
@@ -99,6 +100,7 @@ class MotorControl(DetectionObserver):
             pass
         
         self.servoControl.ReleaseSingle()
+        time.sleep(0.2)
         self.dcMotorControl.StopMotors()
 
 

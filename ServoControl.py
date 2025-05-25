@@ -7,9 +7,9 @@ class ServoControl:
         self.servo = RawServoControl(ioControl, 12, 50)
         self.activeInlet = 1
         self.ammoInlets = AmmoInletTrio(
-            AmmoInletSingle(3, 3, 155, 160),
-            AmmoInletSingle(3, 3, 110, 115),
-            AmmoInletSingle(3, 3, 65, 70)
+            AmmoInletSingle(3, 3, 150, 165),
+            AmmoInletSingle(3, 3, 115, 125),
+            AmmoInletSingle(3, 3, 65, 75)
         )
         
         self.CloseGate()
