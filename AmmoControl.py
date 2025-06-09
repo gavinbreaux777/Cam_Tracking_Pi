@@ -2,42 +2,67 @@ from RawServoControl import RawServoControl
 from IOControl import IOControl
 import time
 
-class ServoControl:
+class AmmoControl:
     def __init__(self, ioControl:IOControl):
-        self.servo = RawServoControl(ioControl, 12, 50)
+        #self.triInletServo = RawServoControl(ioControl, -1, 50)
+        self.chamberServo = RawServoControl(ioControl, 12, 50)
         self.activeInlet = 1
         self.ammoInlets = AmmoInletTrio(
             AmmoInletSingle(3, 3, 150, 165),
             AmmoInletSingle(3, 3, 115, 125),
             AmmoInletSingle(3, 3, 65, 75)
         )
-        
-        self.CloseGate()
+        self.chamberServoOpenAngle = 115
+        self.chamberServoClosedAngle = 100
+        #self.CloseTriInletServo()
 
     @property
-    def servoPosition(self) -> float:
-        return self.servo.position
+    def chamberServoPosition(self) -> float:
+        return self.chamberServo.position
+    @property
+    def triInletServoPosition(self) -> float:
+        return self.triInletServo.position
     
-    def OpenGate(self):
-        '''Open gate to release all balls'''
-        self.servo.SetAngle(self.ammoInlets.activeOpenServoAngle)
+    # region chamberServo Control
+    def OpenChamberServo(self):
+        '''Allow ball into chamber'''
+        self.chamberServo.SetAngle(self.chamberServoOpenAngle)
+    
+    def CloseChamberServo(self):
+        '''Closes chamber servo, forcing a ball into firing wheels, if present'''
+        self.chamberServo.SetAngle(self.chamberServoClosedAngle)
+        
+    def SetChamberServoAngle(self, angle: float):
+        self.chamberServo.SetAngle(angle)
 
-    def CloseGate(self):
-        '''Close gate to stop releasing balls'''
-        self.servo.SetAngle(self.ammoInlets.activeClosedServoAngle)
+    def FireSingle(self):
+        '''Force single ball through chamber into wheels. Motors should be spooled already'''
+        self.CloseChamberServo()
+        time.sleep(0.1) 
+        self.OpenChamberServo()
+    #endregion
 
-    def SetServoAngle(self, angle: float):
-        self.servo.SetAngle(angle)
+    # region triInlet Control
+    def OpenTriInletServo(self):
+        '''Open gate to release all balls in active chute'''
+        self.triInletServo.SetAngle(self.ammoInlets.activeOpenServoAngle)
+
+    def CloseTriInletServo(self):
+        '''Close gate to stop releasing balls in active chute'''
+        self.triInletServo.SetAngle(self.ammoInlets.activeClosedServoAngle)
+
+    def SetTriInletServoAngle(self, angle: float):
+        self.triInletServo.SetAngle(angle)
 
     def ReleaseSingle(self):
-        '''Release single ball. Motors should be spooled already'''
-        self.OpenGate()
+        '''Release single ball through triInlet. Motors should be spooled already'''
+        self.OpenTriInletServo()
         time.sleep(0.1) #Add sensor to allow only 1 ball?
-        self.CloseGate()
+        self.CloseTriInletServo()
         
         self.ammoInlets.ReduceActiveAmmoCount()
-        self.CloseGate()
-
+        self.CloseTriInletServo()
+    # endregion
     
 class AmmoInletSingle():
     def __init__(self, Capacity: int, CurrentCount: int, OpenServoAngle: int, ClosedServoAngle: int):

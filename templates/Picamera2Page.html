@@ -236,7 +236,7 @@
                         <div id="servo-pos">0</div>
                     </div>
                     <div class="mot-control-button-container" style="grid-row: 2 / 6; grid-column: 2 / 5; display: flex; flex-direction: column; text-align: center;">
-                        <button style="width: 50%; height: 100%;" onclick="moveServo(document.getElementById('positionInput').value)">Move To Target</button>
+                        <button style="width: 50%; height: 100%;" onclick="moveChamberServo(document.getElementById('positionInput').value)">Move To Target</button>
                         <label for="positionInput" style="margin-right: 10px;">Target Position</label>
                         <input type="text" id="positionInput" value="10" style="width: 50%;">
                     </div>
@@ -283,7 +283,11 @@
                     <span id="y_degrees_per" Style="border-bottom: rgba(245, 245, 245, 0.565) 2px solid; margin-left: 3%;"></span>
                 </div>
             </div>
-            <!--Settings-->
+            <!--Settings tab-->
+            <div class="tabcontent center-page" data-tabs="settings">
+                
+            </div>
+            <!--Settings right strip-->
             <div class="right-strip">
                     <label for="objSizeInput">Required Object Size</label>
                     <input oninput="changeImgProcSetting('requiredObjectSize', this.value)" id="objSizeInput" type="number" value="10000" style="width: 50%;"/>
@@ -627,9 +631,9 @@
                 })
             }
             
-            function moveServo(target){
+            function moveChamberServo(target){
                 console.log("Moving servo");
-                fetch(`/moveServo/${target}`, {
+                fetch(`/moveChamberServo/${target}`, {
                     method: 'GET'
                 })
                 .then(response => {

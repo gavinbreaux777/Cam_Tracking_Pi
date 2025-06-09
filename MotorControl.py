@@ -1,6 +1,6 @@
 from IOControl import IOControl
 from AimingControl import AimingControl
-from ServoControl import ServoControl
+from AmmoControl import AmmoControl
 from DCMotorControl import DCMotorControl
 from Observer import DetectionObserver
 import threading
@@ -11,7 +11,7 @@ class MotorControl(DetectionObserver):
     def __init__(self, ioControl: IOControl):
         self.ioControl = ioControl
         self.aimingControl = AimingControl(self.ioControl)
-        self.servoControl = ServoControl(self.ioControl)
+        self.servoControl = AmmoControl(self.ioControl)
         self.dcMotorControl = DCMotorControl(self.ioControl)
         self.xDegreesPerPercentChange = -50 #CalifFactor - degrees motor move per % pixel change (% pixel change = (detect location - center location) / center location
         self.yDegreesPerPercentChange = 20
@@ -21,7 +21,6 @@ class MotorControl(DetectionObserver):
         self.actOnDetection = False
 
         self.aimingControl.motorSpeed = (100, 100)
-        self.servoControl.CloseGate()
 
     @property
     def xMotorEnabled(self) -> bool:
@@ -48,17 +47,11 @@ class MotorControl(DetectionObserver):
         return self.aimingControl.yPosition
     
     @property
-    def servoPosition(self) -> float:
-        return self.servoControl.servoPosition
+    def chamberServoPosition(self) -> float:
+        return self.servoControl.chamberServoPosition
 
     def AimXYRel(self, xDegrees: float, yDegrees: float):
         self.aimingControl.AimXYRel(xDegrees, yDegrees)
-
-    def MoveXRel(self, degrees: float):
-        self.aimingControl.MoveXRel(degrees)
-
-    def MoveYRel(self, degrees: float):
-        self.aimingControl.MoveYRel(degrees)
 
     def JogX(self, speed: int, clockwise: bool):
         '''Command motor to move at constant speed until timeout reached, unless another command is received. Speed in mm/s'''
@@ -99,10 +92,10 @@ class MotorControl(DetectionObserver):
         while(not self.dcMotorControl.motorsSpooled):
             pass
         
-        self.servoControl.ReleaseSingle()
+        self.servoControl.FireSingle()
         time.sleep(0.2)
         self.dcMotorControl.StopMotors()
 
 
-    def SetServoAngle(self, angle: float):
-        self.servoControl.SetServoAngle(angle)
+    def SetChamberServoAngle(self, angle: float):
+        self.servoControl.SetChamberServoAngle(angle)

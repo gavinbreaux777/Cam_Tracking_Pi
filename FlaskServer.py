@@ -52,7 +52,7 @@ class FlaskServer(DetectionObserver):
         self.app.add_url_rule("/modCamSetting/<settingName>/<settingValue>", 'modCamSetting', self.setCameraSetting)
         self.app.add_url_rule("/motorLocation", 'sendMotorLocation', self.sendMotorLocation)
         self.app.add_url_rule("/calibrateMotors/<xDegreesToPercentChange>/<yDegreesToPercentChange>", 'calibMotor', self.CalibrateMotors)
-        self.app.add_url_rule("/moveServo/<angle>", 'moveServo', self.moveServo)
+        self.app.add_url_rule("/moveChamberServo/<angle>", 'moveChamberServo', self.moveChamberServo)
         self.app.add_url_rule("/forceDetection/<xRatio>/<yRatio>", 'forceDetect', self.forceDetection)
         self.app.add_url_rule("/toggleDelta/<show>", 'toggleDelta', self.toggleDelta)
         self.app.add_url_rule("/toggleContours/<show>", 'toggleContours', self.toggleContours)
@@ -124,18 +124,6 @@ class FlaskServer(DetectionObserver):
     def setCameraSetting(self, settingName: str, settingValue: Any):
         self.detector.ModifyCameraSetting(settingName, settingValue)
         return "oKeY DoKEy thEN", 200
-
-    #Motor control
-    def moveMotorRel(self, direction: str, distance: str):
-        distanceInt = int(distance)
-        if(direction == "left"):
-            distanceInt *= -1
-            self.motorControl.MoveXRel(distanceInt)
-        elif(direction == "right"):
-            self.motorControl.MoveXRel(distanceInt)
-        else:
-            print("Invalid direction parameter received: " + direction)
-        return "Okey Dokey", 200
     
     def jogMotor(self, direction: str, speed: str):
         speedInt = int(speed)
@@ -151,10 +139,10 @@ class FlaskServer(DetectionObserver):
             print("Invalid direction parameter received: " + direction)
         return "Okey Dokey", 200
     
-    def moveServo(self, angle: str):
+    def moveChamberServo(self, angle: str):
         angleInt = int(angle)
         print("moving servo")
-        self.motorControl.SetServoAngle(angleInt)
+        self.motorControl.SetChamberServoAngle(angleInt)
         return "okeY DOkey", 200
 
     def stopMotors(self):
@@ -252,7 +240,7 @@ class FlaskServer(DetectionObserver):
             data = {
                 'xPosition': self.motorControl.xPosition,
                 'yPosition': self.motorControl.yPosition,
-                'servoPosition': self.motorControl.servoPosition
+                'servoPosition': self.motorControl.chamberServoPosition
             }
             json_data = json.dumps(data)
             yield f"data: {json_data}\n\n"
