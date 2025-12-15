@@ -4,32 +4,38 @@
         <title>Really Cool Thing E's</title>
         <style>
             * {
-                box-sizing: border-box; /* Include padding/border in total height */
+                box-sizing: border-box;
             }
-            html{
+            html, body {
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            body {
                 height: 100vh;
-                overflow: hidden;;
-            }
-            h1{
-                height: 5%;
-            }
-            body{
-                background-color: #0c0c2d;
-                opacity: 1;
-                background: #272e33;
-                background: linear-gradient(0deg, rgba(39, 46, 51, 1) 0%, rgba(13, 21, 51, 1) 48%, rgba(12, 12, 13, 1) 100%);                
+                background: linear-gradient(0deg, rgba(39,46,51,1) 0%, rgba(13,21,51,1) 48%, rgba(12,12,13,1) 100%);
                 color: lightgray;
                 font-family: Arial, sans-serif;
-                height: 92%;
-            }            
+                display: flex;
+                flex-direction: column;
+            }
+            h1 {
+                flex: 0 0 5%; 
+                margin: 0;
+                padding: 0 10px;
+                display: flex;
+                align-items: center;
+            }
             .grid-container {
+                flex: 1 1 auto;
                 display: grid;
-                height: 100%;
                 grid-template-columns: 10% 1fr 1fr 1fr 1fr 10%;
-                grid-template-rows: 5% 1fr 1fr 1fr 1fr 1fr 20%;
-                gap: 0px; 
+                grid-template-rows: 0.2fr 1fr 1fr 1fr 1fr 1fr 0.5fr;
+                gap: 0;
                 padding: 10px;
+                box-sizing: border-box;
                 place-items: center;
+                overflow: hidden;
             }
             .run-btn-style{
                 margin: 0 auto 10%; 
