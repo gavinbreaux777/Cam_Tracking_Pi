@@ -1,7 +1,7 @@
-import pigpio
+from IOInterface import IOInterface
 class IOControl():
-    def __init__(self):
-        self.pi = pigpio.pi()
+    def __init__(self, io : IOInterface):
+        self.pi = io
         print("Pi detected = " + str(self.pi.connected))
     
     def SetPinMode(self, pin: int, mode: int):

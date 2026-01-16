@@ -1,8 +1,6 @@
-import picamera2
+from CameraInterface import CameraInterface
 import threading
 from StreamingOutput import StreamingOutput
-import picamera2.encoders
-import picamera2.outputs
 from ProcessImage import ProcessImage
 from Observer import DetectionObserver
 from typing import Any
@@ -12,7 +10,7 @@ from ImageGenerator import ImageGenerator
 '''This class contains camera and image processing control - together they output detection results'''
 class Detector():
     '''Init detector objects'''
-    def __init__(self, picam2: picamera2.Picamera2):
+    def __init__(self, picam2: CameraInterface):
         self.detectedLocation = property(self._getDetectedLocation, self._setDetectedLocation) #Creating property this way so we can pass it as argument to ProcessImage class
 
         self._imgProcessor = ProcessImage(self._setDetectedLocation)

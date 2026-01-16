@@ -1,16 +1,14 @@
 import numpy
-from picamera2 import Picamera2
 import threading
 import StreamingOutput
-import picamera2.encoders
-import picamera2.outputs
 from ProcessImage import ProcessImage
 import time
 from typing import Any
+from CameraInterface import CameraInterface
 
 class ImageGenerator():
     ''''''
-    def __init__(self, picam2: Picamera2, imageProcessor: ProcessImage):
+    def __init__(self, picam2: CameraInterface, imageProcessor: ProcessImage):
         ''''''
         self.imageSize = (640, 480)
         
@@ -26,9 +24,9 @@ class ImageGenerator():
         self.imageProcessThread = threading.Thread(target=self.CaptureBufferAndProcessImage)
 
     def configureCam(self):
-        self.picam2.configure(self.picam2.create_video_configuration(main={"size": self.imageSize, "format":"RGB888"}))
-        self.picam2.set_controls({"ExposureTime": 1000000, "AnalogueGain": 10.0})
-        self.picam2.post_callback = self.ModifyOutputImageOnCB
+        self.picam2.picamera2.configure(self.picam2.picamera2.create_video_configuration(main={"size": self.imageSize, "format":"RGB888"}))
+        self.picam2.picamera2.set_controls({"ExposureTime": 1000000, "AnalogueGain": 10.0})
+        self.picam2.picamera2.post_callback = self.ModifyOutputImageOnCB
 
 
     def StartRecording(self, output: StreamingOutput):
@@ -38,7 +36,7 @@ class ImageGenerator():
         Args:
             output (StreamingOutput) The stream to be written to
         """
-        self.picam2.start_recording(picamera2.encoders.MJPEGEncoder(), picamera2.outputs.FileOutput(output))
+        self.picam2.start_recording(self.picam2.encoders.MJPEGEncoder(), self.picam2.outputs.FileOutput(output))
         #self.picam2.set_controls({"AnalogueGain": 10.0}) 
         self.imageProcessThread.start()
 
@@ -53,7 +51,7 @@ class ImageGenerator():
         Args:
             request (picamera2 post/pre-callback request): Automatically supplied by picamera2's post_callback event - represents a single frame capture
         """
-        with picamera2.MappedArray(request, "main") as mapArr:
+        with self.picam2.picamera2.MappedArray(request, "main") as mapArr:
             #potentially split image off here (write un modified image to separate stream)
             if (self.processImage and self.processedImg.size != 0):  
                 if len(self.processedImg.shape) == 2:  # If it's a single-channel image (gray)
