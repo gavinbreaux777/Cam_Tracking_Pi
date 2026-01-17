@@ -53,6 +53,9 @@ class FlaskServer(DetectionObserver):
         self.app.add_url_rule("/motorLocation", 'sendMotorLocation', self.sendMotorLocation)
         self.app.add_url_rule("/calibrateMotors/<xDegreesToPercentChange>/<yDegreesToPercentChange>", 'calibMotor', self.CalibrateMotors)
         self.app.add_url_rule("/moveChamberServo/<angle>", 'moveChamberServo', self.moveChamberServo)
+        self.app.add_url_rule("/openChamberServo", 'openChamberServo', self.openChamberServo)
+        self.app.add_url_rule("/closeChamberServo", 'closeChamberServo', self.closeChamberServo)        
+        self.app.add_url_rule("/teachServo/<state>", 'teachServo', self.teachServo)
         self.app.add_url_rule("/forceDetection/<xRatio>/<yRatio>", 'forceDetect', self.forceDetection)
         self.app.add_url_rule("/toggleDelta/<show>", 'toggleDelta', self.toggleDelta)
         self.app.add_url_rule("/toggleContours/<show>", 'toggleContours', self.toggleContours)
@@ -145,6 +148,16 @@ class FlaskServer(DetectionObserver):
         self.motorControl.SetChamberServoAngle(angleInt)
         return "okeY DOkey", 200
 
+    def openChamberServo(self):
+        print("opening servo")
+        self.motorControl.servoControl.OpenChamberServo()
+        return "okeY DOkey", 200
+    
+    def closeChamberServo(self):
+        print("closing servo")
+        self.motorControl.servoControl.CloseChamberServo()
+        return "okeY DOkey", 200
+
     def stopMotors(self):
         self.motorControl.StopMotors()
         return "okeY DokeY", 200
@@ -174,7 +187,7 @@ class FlaskServer(DetectionObserver):
 
     def enableDisableDCMotors(self, clicked: str):
         if(clicked == "true"):
-            self.motorControl.dcMotorControl.enabled = True
+            self.motorControl.dcMotorControl.enabled = True            
         else:
             self.motorControl.dcMotorControl.enabled = False
         return "OKEY dokeY", 200
@@ -193,6 +206,23 @@ class FlaskServer(DetectionObserver):
         else:
             self.detector.actOnDetection = False
         return "okeY DoKEy", 200
+    
+    def teachServo(self, state: str):
+        """Record the current chamber servo position as taught open/closed."""
+        try:
+            current_pos = self.motorControl.chamberServoPosition
+            if state == 'open':
+                self.motorControl.servoControl.chamberServoOpenAngle = current_pos
+            elif state == 'closed':
+                self.motorControl.servoControl.chamberServoClosedAngle = current_pos
+            else:
+                return f"Unknown state: {state}", 400
+            return "OK", 200
+        except Exception as e:
+            print(f"Error in teachServo: {e}")
+            return "Error", 500
+
+
 
     #server sent events
     def sendDataSSE(self): #Periodic data transfer
@@ -240,7 +270,9 @@ class FlaskServer(DetectionObserver):
             data = {
                 'xPosition': self.motorControl.xPosition,
                 'yPosition': self.motorControl.yPosition,
-                'servoPosition': self.motorControl.chamberServoPosition
+                'servoPosition': self.motorControl.chamberServoPosition,
+                'taughtOpen': self.motorControl.servoControl.chamberServoOpenAngle,
+                'taughtClosed': self.motorControl.servoControl.chamberServoClosedAngle
             }
             json_data = json.dumps(data)
             yield f"data: {json_data}\n\n"
