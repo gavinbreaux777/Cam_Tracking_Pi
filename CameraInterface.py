@@ -2,10 +2,11 @@ from abc import ABC, abstractmethod
 
 class CameraInterface(ABC):  
     def __init__(self):
-        self.camera = CameraInterface.picamera2()
-        self.post_callback = None
+        self.Picamera2 = CameraInterface.IPicamera2()
 
-    class picamera2():
+    class IPicamera2():
+        def __init__(self):
+            self.post_callback = None
         @abstractmethod
         def configure(*args):
             pass
@@ -30,8 +31,16 @@ class CameraInterface(ABC):
         def create_video_configuration(*args):
             pass
         
-    class MappedArray():
-        def __init__(self):
-            self.array = []
+        class MappedArray():
+            def __init__(self):
+                self.array = []
             
-        
+    class encoders:
+        class MJPEGEncoder():
+            def __init__(self):
+                pass
+
+    class outputs:
+        class FileOutput():
+            def __init__(self):
+                pass

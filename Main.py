@@ -5,7 +5,7 @@ from Detector import Detector
 from MotorControl import MotorControl
 from IOControl import IOControl
 #Create class to handle camera and image processing
-picam2 = ClassFactory.ReturnCamera() #picamera2.Picamera2()
+picam2 = ClassFactory.ReturnCamera()
 detector = Detector(picam2)
 
 #Create class to handle IO

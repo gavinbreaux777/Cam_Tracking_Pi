@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 class IOInterface():    
+    def __init__(self):
+        self.connected = True
     @abstractmethod
     def __init__(self):
         pass
@@ -14,4 +16,8 @@ class IOInterface():
 
     @abstractmethod
     def set_servo_pulsewidth(*args):
+        pass
+
+    @abstractmethod
+    def set_PWM_frequency(*args):
         pass

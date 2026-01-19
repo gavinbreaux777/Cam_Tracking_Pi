@@ -1,9 +1,6 @@
 import config
-from unittest.mock import create_autospec
 from unittest.mock import MagicMock
 from CameraInterface import CameraInterface
-from IOInterface import IOInterface
-from typing import cast
 
 class ClassFactory():
     def __init__(self):
@@ -12,17 +9,21 @@ class ClassFactory():
     @staticmethod
     def ReturnCamera():
         if(config.mockMode):
-            camera : CameraInterface = MagicMock() #= create_autospec(CameraInterface, instance=True)
-            return camera
+            return MagicMock()
         else:
-            import picamera2.Picamera2
-            return picamera2.Picamera2
-    
+            import picamera2
+            picamFromLib = picamera2
+            cameraInterfacePicam = CameraInterface()
+            cameraInterfacePicam.Picamera2 = picamFromLib.Picamera2()
+            cameraInterfacePicam.encoders = picamera2.encoders
+            cameraInterfacePicam.outputs = picamera2.outputs
+            cameraInterfacePicam.Picamera2.MappedArray = picamFromLib.MappedArray
+            return cameraInterfacePicam
+
     @staticmethod
     def ReturnIO():
         if(config.mockMode):
-            io : IOInterface = MagicMock() #=create_autospec(IOInterface, instance=True)
-            return io
+            return MagicMock()
         else:
             import pigpio
-            return pigpio
+            return pigpio.pi()

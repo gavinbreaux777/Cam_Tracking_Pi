@@ -24,9 +24,9 @@ class ImageGenerator():
         self.imageProcessThread = threading.Thread(target=self.CaptureBufferAndProcessImage)
 
     def configureCam(self):
-        self.picam2.picamera2.configure(self.picam2.picamera2.create_video_configuration(main={"size": self.imageSize, "format":"RGB888"}))
-        self.picam2.picamera2.set_controls({"ExposureTime": 1000000, "AnalogueGain": 10.0})
-        self.picam2.picamera2.post_callback = self.ModifyOutputImageOnCB
+        self.picam2.Picamera2.configure(self.picam2.Picamera2.create_video_configuration(main={"size": self.imageSize, "format":"RGB888"}))
+        self.picam2.Picamera2.set_controls({"ExposureTime": 1000000, "AnalogueGain": 10.0})
+        self.picam2.Picamera2.post_callback = self.ModifyOutputImageOnCB
 
 
     def StartRecording(self, output: StreamingOutput):
@@ -36,13 +36,13 @@ class ImageGenerator():
         Args:
             output (StreamingOutput) The stream to be written to
         """
-        self.picam2.start_recording(self.picam2.encoders.MJPEGEncoder(), self.picam2.outputs.FileOutput(output))
+        self.picam2.Picamera2.start_recording(self.picam2.encoders.MJPEGEncoder(), self.picam2.outputs.FileOutput(output))
         #self.picam2.set_controls({"AnalogueGain": 10.0}) 
         self.imageProcessThread.start()
 
 
     def Stop(self):
-        self.picam2.stop_recording()
+        self.picam2.Picamera2.stop_recording()
 
 
     def ModifyOutputImageOnCB(self, request):
@@ -51,7 +51,7 @@ class ImageGenerator():
         Args:
             request (picamera2 post/pre-callback request): Automatically supplied by picamera2's post_callback event - represents a single frame capture
         """
-        with self.picam2.picamera2.MappedArray(request, "main") as mapArr:
+        with self.picam2.Picamera2.MappedArray(request, "main") as mapArr:
             #potentially split image off here (write un modified image to separate stream)
             if (self.processImage and self.processedImg.size != 0):  
                 if len(self.processedImg.shape) == 2:  # If it's a single-channel image (gray)
@@ -67,7 +67,7 @@ class ImageGenerator():
         while True: #always leaving thread running, stop event below with time.sleep is our pause mechanism
             while self.processImage:
                 with lock:
-                    self.currentImg = self.picam2.capture_array()
+                    self.currentImg = self.picam2.Picamera2.capture_array()
                     self.processedImg = self.imageProcessor.ProcessImage(self.currentImg)
             
             time.sleep(1) #delay to ease processing use while not running
@@ -75,4 +75,4 @@ class ImageGenerator():
     def ModifyCameraControls(self, setting: str, value: Any):
         if(setting == "AnalogueGain"):
             value = float(value)
-        self.picam2.set_controls({setting: value}) 
+        self.picam2.Picamera2.set_controls({setting: value}) 
