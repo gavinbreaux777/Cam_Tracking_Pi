@@ -4,6 +4,14 @@ from FlaskServer import FlaskServer
 from Detector import Detector
 from MotorControl import MotorControl
 from IOControl import IOControl
+from AppConfig import AppConfig
+import os
+
+#load config values
+config = AppConfig.load_config("config/")
+print(config.cameraConfig.mockMode)
+os._exit(1)
+
 #Create class to handle camera and image processing
 picam2 = ClassFactory.ReturnCamera()
 detector = Detector(picam2)
