@@ -9,9 +9,9 @@ class ClientConfig:
 
 @dataclass
 class MotorConfig:
-    aimMotorsConfig: 'AimMotorsConfig'
-    firingMotorConfig: 'FiringMotorConfig'
-    ChamberServoConfig: 'ChamberServoConfig'
+    aimMotors: 'AimMotorsConfig'
+    firingMotor: 'FiringMotorConfig'
+    chamberServo: 'ChamberServoConfig'
 
 @dataclass
 class AimMotorsConfig:
@@ -20,20 +20,33 @@ class AimMotorsConfig:
 
 @dataclass
 class SingleAimMotorConfig:
-    mockMode: bool = False
+    mock: bool = False
     stepPin: int = 0
     dirPin: int = 0
     enablePin: int = 0
     stepMode: str = "1"
+    speed: int = 50,
+    stepsPerRev: int = 200
 
 @dataclass
 class FiringMotorConfig:
-    mockMode: bool = False
+    mock: bool = False
+    onPin: int = 0
+    minSpoolTime: float = 0.2
+    manSpoolTimeout: float = 1.0
 
 @dataclass
 class ChamberServoConfig:
-    mockMode: bool = False
+    mock: bool = False
+    pwmPin: int = 0
+    openAngle: float = 0.0
+    closedAngle: float = 0.0
+    pulseFrequency: float = 50.0
+
+@dataclass
+class IOConfig:
+    mock: bool = False
 
 @dataclass
 class CameraConfig:
-    mockMode: bool = False
+    mock: bool = False

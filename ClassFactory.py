@@ -1,4 +1,4 @@
-import config
+from AppConfig import *
 from unittest.mock import MagicMock
 from CameraInterface import CameraInterface
 
@@ -7,8 +7,8 @@ class ClassFactory():
         pass
 
     @staticmethod
-    def ReturnCamera():
-        if(config.mockMode):
+    def ReturnCamera(config: CameraConfig):
+        if(config.mock):
             return MagicMock()
         else:
             import picamera2
@@ -21,9 +21,20 @@ class ClassFactory():
             return cameraInterfacePicam
 
     @staticmethod
-    def ReturnIO():
-        if(config.mockMode):
+    def ReturnIO(config: IOConfig):
+        if(config.mock):
             return MagicMock()
         else:
             import pigpio
             return pigpio.pi()
+        
+    @staticmethod
+    def ReturnMotorControl(ioControl, motorConfig: MotorConfig):
+        from MotorControl import MotorControl
+        if(motorConfig.aimMotors.panMotor.mock or
+           motorConfig.aimMotors.tiltMotor.mock or 
+           motorConfig.firingMotor.mock or 
+           motorConfig.chamberServo.mock):
+            raise Exception("Individual motor mocking not supported yet - use IO mocking instead to mock all motors")
+        else:
+            return MotorControl(ioControl, motorConfig)

@@ -7,20 +7,18 @@ import threading
 from typing import Tuple, Callable
 from Event import Event
 import time
+from ConfigClasses import MotorConfig
 class MotorControl(DetectionObserver):
-    def __init__(self, ioControl: IOControl):
+    def __init__(self, ioControl: IOControl, motorConfig: MotorConfig):
         self.ioControl = ioControl
-        self.aimingControl = AimingControl(self.ioControl)
-        self.servoControl = AmmoControl(self.ioControl)
-        self.dcMotorControl = DCMotorControl(self.ioControl)
+        self.aimingControl = AimingControl(self.ioControl, motorConfig.aimMotors)
+        self.servoControl = AmmoControl(self.ioControl, motorConfig.chamberServo)
+        self.dcMotorControl = DCMotorControl(self.ioControl, motorConfig.firingMotor)
         self.xDegreesPerPercentChange = -50 #CalifFactor - degrees motor move per % pixel change (% pixel change = (detect location - center location) / center location
         self.yDegreesPerPercentChange = 20
         self.motionStartedEvent = Event()
         self.motionEndedEvent = Event()
-        self.spoolTime = 0.25
         self.actOnDetection = False
-
-        self.aimingControl.motorSpeed = (100, 100)
 
     @property
     def xMotorEnabled(self) -> bool:
