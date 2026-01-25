@@ -1,4 +1,5 @@
 import time
+from fractions import Fraction
 from StepMode import StepMode
 from IOControl import IOControl
 class RawStepperControl():
@@ -7,7 +8,7 @@ class RawStepperControl():
         self._ioControl = ioControl
         self._directionPin = directionPin
         self._stepPin = stepPin
-        self._stepMode = stepMode
+        self._stepMode = float(Fraction(stepMode))
         self._stopMotor = False
         self._stepsPerRev = stepsPerRev
         self._enabled = True

@@ -1,4 +1,4 @@
-import time
+from fractions import Fraction
 import concurrent.futures 
 from StepperMotorControlInterface import StepperMotorControlInterface
 import threading
@@ -15,6 +15,8 @@ class StepperMotorControl(StepperMotorControlInterface):
         self._ioControl.SetPinMode(config.dirPin, 1)
         self.motor = RawStepperControl(ioControl, config.stepPin, config.dirPin, config.enablePin, config.stepMode, config.stepsPerRev) 
         self.speed = config.speed
+        self._stepMode = float(Fraction(config.stepMode))
+        self.motorResolution = config.stepsPerRev
         self.timeout = 10 #setting really high right now because we're not using rn. (client *should resend jog command before shorter timeout but currently only sending 1 start and 1 stop command from client)
         self._jogTimer = threading.Timer(self.timeout, self.StopMotors)
 
@@ -33,6 +35,15 @@ class StepperMotorControl(StepperMotorControlInterface):
     def position(self, value: float):
         self.motor.position = value  
         
+    @property
+    def _stepsPerRevoluton(self):
+        ''''''
+        return self.motorResolution / self._stepMode
+
+    @property
+    def _stepsPerDegree(self):
+        return self._stepsPerRevoluton / 360 
+    
     @property
     def speed(self) -> float:
         '''speed of motor rotation in degrees/sec (actual speed ~15% slower than commanded per initial tests)'''
