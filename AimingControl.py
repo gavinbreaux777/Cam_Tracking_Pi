@@ -3,11 +3,12 @@ from concurrent import futures
 from typing import Tuple
 from StepMode import StepMode
 from IOControl import IOControl
+from ConfigClasses import AimMotorsConfig
 
 class AimingControl():
-    def __init__(self, ioControl: IOControl):
-        self.xMotor = StepperMotorControl(ioControl, 18, 17, 19, StepMode.Sixteenth)
-        self.yMotor = StepperMotorControl(ioControl, 23, 22, 24, StepMode.Sixteenth)
+    def __init__(self, ioControl: IOControl, motorConfig: AimMotorsConfig):
+        self.xMotor = StepperMotorControl(ioControl, motorConfig.panMotor)
+        self.yMotor = StepperMotorControl(ioControl, motorConfig.tiltMotor)
 
     @property
     def yPosition(self) -> float:
