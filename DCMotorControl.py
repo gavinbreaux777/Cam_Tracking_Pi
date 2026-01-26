@@ -1,22 +1,23 @@
 from IOControl import IOControl
 import threading
+from ConfigClasses import FiringMotorConfig
 
 class DCMotorControl:
-    def __init__(self, ioControl: IOControl):
+    def __init__(self, ioControl: IOControl, config: FiringMotorConfig):
         self._ioControl = ioControl
-        self.relayOnPin = 21
+        self.relayOnPin = config.onPin
         self._ioControl.SetPinMode(self.relayOnPin, 1)
         self.enabled = True
 
-        self.manualSpoolTimeout = 0.1
+        self.manualSpoolTimeout = config.manSpoolTimeout
         self._manSpoolTimer = threading.Timer(self.manualSpoolTimeout, self.StopMotors)
 
-        self.minSpoolTime = 0.25
+        self.minSpoolTime = config.minSpoolTime
         self.motorsSpooled = False
         self._motorsSpooledTimer = threading.Timer(self.minSpoolTime, self._MarkMotorsSpooled)
 
     def SpoolMotors(self):
-        '''Spins up dc motors'''
+        '''Spins up dc motors. Sets property motorsSpooled to true after minSpoolTime has elapsed'''
         if(self.enabled == True):
             self._ioControl.SetOutput(self.relayOnPin, 1)
             self._RestartMotorsSpooledTimer()

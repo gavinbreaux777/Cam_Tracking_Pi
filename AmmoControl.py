@@ -1,11 +1,12 @@
 from RawServoControl import RawServoControl
 from IOControl import IOControl
 import time
+from ConfigClasses import ChamberServoConfig
 
 class AmmoControl:
-    def __init__(self, ioControl:IOControl):
+    def __init__(self, ioControl:IOControl, config: ChamberServoConfig):
         #self.triInletServo = RawServoControl(ioControl, -1, 50)
-        self.chamberServo = RawServoControl(ioControl, 12, 50)
+        self.chamberServo = RawServoControl(ioControl, config)
         self.activeInlet = 1
         self.ammoInlets = AmmoInletTrio(
             AmmoInletSingle(3, 3, 150, 165),

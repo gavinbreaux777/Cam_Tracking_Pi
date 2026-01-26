@@ -1,0 +1,35 @@
+{
+    "aimMotors":{
+        "panMotor": {
+            "mock": false,
+            "stepPin": 18,
+            "dirPin": 17,
+            "enablePin": 19,
+            "stepMode": "1/16",
+            "speed": 100,
+            "stepsPerRev": 200
+        },
+        "tiltMotor": {
+            "mock": false,
+            "stepPin": 23,
+            "dirPin": 22,
+            "enablePin": 24,
+            "stepMode": "1/16",
+            "speed": 100,
+            "stepsPerRev": 200
+        }
+    },
+    "firingMotor": {
+        "mock": false,
+        "onPin": 21,
+        "minSpoolTime": 0.25,
+        "manSpoolTimeout": 0.1
+    },
+    "chamberServo": {
+        "mock": false,
+        "pwmPin": 12,
+        "pulseFrequency": 50,
+        "openAngle": 115,
+        "closedAngle": 100
+    }
+}

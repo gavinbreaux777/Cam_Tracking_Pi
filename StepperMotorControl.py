@@ -1,21 +1,22 @@
-import time
+from fractions import Fraction
 import concurrent.futures 
 from StepperMotorControlInterface import StepperMotorControlInterface
 import threading
 from RawStepperControl import RawStepperControl
 from StepMode import StepMode
 from IOControl import IOControl
+from ConfigClasses import SingleAimMotorConfig
 
 class StepperMotorControl(StepperMotorControlInterface):
-    def __init__(self, ioControl: IOControl, stepPin: int, dirPin: int = None, enablePin: int = None, stepMode: StepMode = StepMode.Full):
+    def __init__(self, ioControl: IOControl, config: SingleAimMotorConfig):
         ''''''
         self._ioControl = ioControl
-        self._ioControl.SetPinMode(stepPin, 1)
-        self._ioControl.SetPinMode(dirPin, 1)
-        self.motor = RawStepperControl(ioControl, stepPin, dirPin, enablePin, stepMode, 200) 
-        self._stepMode = stepMode
-        self.motorResolution = 200
-        self.speed = 120 
+        self._ioControl.SetPinMode(config.stepPin, 1)
+        self._ioControl.SetPinMode(config.dirPin, 1)
+        self.motor = RawStepperControl(ioControl, config.stepPin, config.dirPin, config.enablePin, config.stepMode, config.stepsPerRev) 
+        self.speed = config.speed
+        self._stepMode = float(Fraction(config.stepMode))
+        self.motorResolution = config.stepsPerRev
         self.timeout = 10 #setting really high right now because we're not using rn. (client *should resend jog command before shorter timeout but currently only sending 1 start and 1 stop command from client)
         self._jogTimer = threading.Timer(self.timeout, self.StopMotors)
 
@@ -32,17 +33,17 @@ class StepperMotorControl(StepperMotorControlInterface):
         return self.motor.position
     @position.setter
     def position(self, value: float):
-        self.motor.position = value
-
+        self.motor.position = value  
+        
     @property
     def _stepsPerRevoluton(self):
         ''''''
         return self.motorResolution / self._stepMode
-    
+
     @property
     def _stepsPerDegree(self):
-        return self._stepsPerRevoluton / 360    
-        
+        return self._stepsPerRevoluton / 360 
+    
     @property
     def speed(self) -> float:
         '''speed of motor rotation in degrees/sec (actual speed ~15% slower than commanded per initial tests)'''

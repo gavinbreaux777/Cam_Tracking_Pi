@@ -1,9 +1,10 @@
 from IOControl import IOControl
+from ConfigClasses import ChamberServoConfig
 
 class RawServoControl():
-    def __init__(self, ioControl: IOControl, pwmPin, frequency: float):
+    def __init__(self, ioControl: IOControl, config: ChamberServoConfig):
         self.ioControl = ioControl
-        self._pwmPin = pwmPin
+        self._pwmPin = config.pwmPin
         self._minAngle = 0
         self._maxAngle = 180
         self._minDutyCycle = 500
@@ -11,8 +12,8 @@ class RawServoControl():
         self._dutyCyclePerDegree = (self._maxDutyCycle - self._minDutyCycle) / (self._maxAngle - self._minAngle)
         self.position = 0
 
-        self.ioControl.SetPinMode(pwmPin, 1)
-        self.ioControl.SetPWMFrequency(self._pwmPin, frequency)
+        self.ioControl.SetPinMode(self._pwmPin, 1)
+        self.ioControl.SetPWMFrequency(self._pwmPin, config.pulseFrequency)
         self.SetAngle(self._minAngle)
 
     def SetAngle(self, angle: float):
