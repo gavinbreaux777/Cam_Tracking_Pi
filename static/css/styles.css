@@ -25,95 +25,27 @@ h1 {
     align-items: center;
 }
 
+/*Main grid layout*/
 .grid-container {
     flex: 1 1 auto;
     display: grid;
     grid-template-columns: 10% 1fr 1fr 1fr 1fr 10%;
-    grid-template-rows: 0.2fr 1fr 1fr 1fr 1fr 1fr 0.5fr;
+    grid-template-rows: 0.2fr minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) 0.5fr;
     gap: 0;
     padding: 10px;
     box-sizing: border-box;
-    place-items: center;
+    align-items: stretch;
+    justify-items: stretch;
     overflow: hidden;
-}
-
-.run-btn-style{
-    margin: 0 auto 10%; 
-    width: 100%; height: auto;  min-height: 3%;
-    font-size: 12;
-}
-
-.mot-control-grid{
-    display: grid;
-    height: 100%;
-    width: 100%;
-    grid-template-columns: 1fr 1fr 1fr;
-    grid-template-rows: 15% 1fr 1fr 1fr;
-}
-
-.mot-control-button{
-    height: 80%;
-    width: 80%;
-}
-
-.mot-control-button-container{
-    display: flex; 
-    justify-content: center; 
-    align-items: center;
-    height: 100%;
-}
-
-.servo-control-grid{
-    display: grid;
-    height: 100%;
-    width: 100%;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto 1fr; 
-    gap: 1rem;
-}
-
-.two-img-grid{
-    display: grid;
-    height: 100%;
-    width: 100%;
-    grid-template-columns: 1fr 1fr;
-    gap: 25px;
 }
 
 .center-page{
     grid-row: 2 / 7; 
     grid-column: 2 / 6;
-}
-
-.tabcontent {
-    display: none;
-}
-
-.tabcontent.active {
-    display: block;
-}
-
-.tab-buttons{
-    display: flex;
-    width: 100%;
-    align-items: center;
-    justify-content: center;
-    border-bottom: rgb(79, 79, 79) 2px solid;
-}
-
-.tab-buttons button{
-    padding: 5px;
-    cursor: pointer;
-    color: white;
-    border: none;
-    background: none;
-    border-radius: 20%;
-    height: 60%;
-}
-
-.tab-buttons button.active{
-    background-color: rgb(17, 17, 114);
-    color: white;
+    min-height: 0;
+    overflow: hidden;
+    place-content: center;
+    justify-items: center;
 }
 
 .bottom-center{
@@ -156,8 +88,124 @@ h1 {
     display: flex; flex-direction: row;
 }
 
+.run-btn-style{
+    margin: 0 auto 10%; 
+    width: 100%; height: auto;  min-height: 3%;
+    font-size: 12;
+}
+
+/*Motor control layout*/
+.mot-control-grid{
+    display: grid;
+    height: 100%;
+    width: 100%;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 15% 1fr 1fr 1fr;
+}
+
+.mot-control-button{
+    height: 80%;
+    width: 80%;
+}
+
+.mot-control-button-container{
+    display: flex; 
+    justify-content: center; 
+    align-items: center;
+    height: 100%;
+}
+
+.servo-control-grid{
+    display: grid;
+    height: 100%;
+    width: 100%;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto 1fr; 
+    gap: 1rem;
+}
+
+/*Pages with side by side image setup*/
+.two-img-grid{
+    display: grid;
+    height: 100%;
+    width: 100%;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+}
+
+.two-img-grid > * {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+    min-width: 0;
+}
+
+.two-img-grid img {
+    object-fit: contain;
+}
+
+/*Calibration page styles*/
+.click-img-wrapper{
+    display: inline-block;
+    position: relative;
+}
+
+.save-clb-btn{
+    padding: 0.5rem;
+}
+
+.clb-stream-img{
+    grid-column: 1;
+    cursor: crosshair;
+}
+
+.save-clb-stack{
+    grid-column: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+
+/*Tab styles*/
+.tabcontent {
+    display: none;
+}
+
+.tabcontent.active {
+    display: block;
+}
+
+.tab-buttons{
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    border-bottom: rgb(79, 79, 79) 2px solid;
+}
+
+.tab-buttons button{
+    padding: 5px;
+    cursor: pointer;
+    color: white;
+    border: none;
+    background: none;
+    border-radius: 20%;
+    height: 60%;
+}
+
+.tab-buttons button.active{
+    background-color: rgb(17, 17, 114);
+    color: white;
+}
+
+/*Misc styles*/
+
 img{
-    display: block; 
+    display: block;
     margin: 0 auto; 
     max-height: 90%; max-width: 90%;
 }
