@@ -20,7 +20,7 @@
             </div>
             <!--Stream image-->
             <div class="tabcontent active center-page" data-tabs="home,motor_control">
-                <img id="stream_img" src="/stream" onclick="(forceDetection(event, this.width, this.height))" style="cursor: crosshair;"/>
+                <img id="stream_img" src="/stream" onclick="(forceDetection(event, this.width, this.height))" style="cursor: crosshair; margin: auto;"/>
             </div>
             <!--Base and stream images-->
             <div class="tabcontent center-page" data-tabs="side_by_side">
@@ -132,8 +132,10 @@
             <!--Calibration-->
             <div class="tabcontent center-page" data-tabs="calibration">
                 <div class="two-img-grid">
-                    <img id="stream_img" src="/stream" onclick="(calibration.saveLocation(event, this.width, this.height))" style="cursor: crosshair;"/>
-                    <div id="img_div_two">
+                    <div class="click-img-wrapper">
+                        <img id="stream_img" src="/stream" onclick="(calibration.saveLocation(event, this.width, this.height))" class="clb-stream-img"/>
+                    </div>                    
+                    <div id="img_div_two" class="save-clb-stack">
                         Click in the image to save coordinates
                     </div>
                 </div>
