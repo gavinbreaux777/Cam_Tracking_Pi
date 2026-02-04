@@ -75,7 +75,7 @@ ROUTES = [
 ]
 
 # Skip streaming/SSE routes in tests
-SKIP_ROUTES = ['/stream', '/dataEventSoruce', '/detectNotifySource', '/motorLocation']
+SKIP_ROUTES = ['/stream', '/dataEventSoruce', '/detectNotifySource', '/motorLocation', '/base-img', '/detect-img']
 
 @pytest.mark.parametrize("route,params", ROUTES)
 def test_routes_return_200(flask_app, route, params):
