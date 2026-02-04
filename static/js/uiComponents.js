@@ -64,4 +64,6 @@ function changeImgProcSetting(settingName, settingValue){
     .catch(error => {
         console.error(error)
     })
+
+    changeImgProcSetting("requiredObj")
 }

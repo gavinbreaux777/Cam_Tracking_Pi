@@ -2,8 +2,6 @@ import time
 import cv2
 import numpy
 from typing import Callable
-import skimage
-import matplotlib.pyplot as plt
 
 class ProcessImage():
     '''Initialize image processing class.
@@ -21,7 +19,7 @@ class ProcessImage():
         self.showDelta = False #Return binary image representing pixels different than base past the threshold
         self.showContours = False #Draw difference contours on selected image
         
-    def ProcessImage(self, imgToProcess: numpy.ndarray[tuple[int,int,int]]) -> numpy.ndarray[tuple[int, int, int]]:
+    def ProcessImage(self, imgToProcess: numpy.ndarray[tuple[int,int,int]], imgSize: tuple[int, int]) -> numpy.ndarray[tuple[int, int, int]]:
         #convert image to grayscale and numpy uint8 array
         grayed = cv2.cvtColor(imgToProcess, cv2.COLOR_BGR2GRAY)
         numpy.uint8(grayed)
@@ -80,7 +78,7 @@ class ProcessImage():
             cv2.circle(selectedImage, (xCenter, yCenter),5,(255,255,255),2)
             
             #Only report motion found if not at edge of image
-            if(xCenter > 640 * 0.1 and xCenter < 640 * .9) and (yCenter > 480 * 0.1 and yCenter < 480 * 0.9):
+            if(xCenter > imgSize[0] * 0.1 and xCenter < imgSize[0] * .9) and (yCenter > imgSize[1] * 0.1 and yCenter < imgSize[1] * 0.9):
                 #Wait for motion to be found several times in a row
                 self._consecutiveDetections += 1
                 if (self._consecutiveDetections > 10):
@@ -91,8 +89,12 @@ class ProcessImage():
                     print("original y = " + str(yCenter))
                     yCenter = abs(grayed.shape[0] - yCenter)
                     print("new y = " + str(yCenter))
-                    self._setDetectedLocation([xCenter, yCenter])
-                    print(f"Detected center at {xCenter, yCenter}")
+
+                    #convert pixels to percentage-from-center
+                    xPercentOffset, yPercentOffset = self.CalculatePercentOffset([xCenter, yCenter], imgSize)
+
+                    self._setDetectedLocation([xPercentOffset, yPercentOffset])
+                    print(f"Detected center at %offset = {xCenter, yCenter}")
                     #after reporting detected location, clear base image so a new one will be created on next round of detection (after aim and fire sequence)
                     self._baseImg = numpy.array([], dtype=numpy.uint8)
                     self.detectImg = selectedImage
@@ -105,3 +107,15 @@ class ProcessImage():
         cv2.putText(selectedImage, curTime, (0, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
         return selectedImage
+    
+    def CalculatePercentOffset(self, location: tuple[int, int], imgSize: tuple[int, int]) -> tuple[float, float]:
+        '''Convert from pixel offset-from-center of camera frame to motor degrees'''
+        #pixel distance from center
+        pixelXDistanceFromCenter = (imgSize[0]/2) - location[0]
+        pixelYDistanceFromCenter = (imgSize[1]/2) - location[1]
+
+        #Percent distance from center (far right, top = 1,1 ; far left and bottom = -1,-1)
+        percentXDistanceFromCenter = pixelXDistanceFromCenter / (imgSize[0]/2)
+        percentYDistanceFromCenter = pixelYDistanceFromCenter / (imgSize[1]/2)
+
+        return percentXDistanceFromCenter, percentYDistanceFromCenter

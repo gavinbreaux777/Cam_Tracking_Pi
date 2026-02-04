@@ -1,47 +1,76 @@
 from StepperMotorControl import StepperMotorControl
 from concurrent import futures
 from typing import Tuple
-from StepMode import StepMode
 from IOControl import IOControl
 from ConfigClasses import AimMotorsConfig
+from MotorEnums import MotorEnum
 
 class AimingControl():
-    def __init__(self, ioControl: IOControl, motorConfig: AimMotorsConfig):
-        self.xMotor = StepperMotorControl(ioControl, motorConfig.panMotor)
-        self.yMotor = StepperMotorControl(ioControl, motorConfig.tiltMotor)
+    def __init__(self, panMotor: StepperMotorControl, tiltMotor: StepperMotorControl):
+        self.panMotor = panMotor
+        self.tiltMotor = tiltMotor
 
     @property
-    def yPosition(self) -> float:
-        return self.yMotor.position
-    
-    @property
-    def xPosition(self) -> float:
-        return self.xMotor.position
+    def motorPositions(self) -> dict[MotorEnum, float]:
+        pos = {}
+        pos[MotorEnum.Pan] = self.panMotor.position
+        pos[MotorEnum.Tilt] = self.tiltMotor.position
+        return pos
 
     @property
-    def motorSpeed(self) ->Tuple[float, float]: 
+    def motorSpeeds(self) -> dict[MotorEnum, float]: 
         '''Speed for both motors in degPerSec'''
-        return tuple[self.xMotor.speed, self.yMotor.speed]
+        speeds = {}
+        speeds[MotorEnum.Pan] = self.panMotor.speed
+        speeds[MotorEnum.Tilt] = self.tiltMotor.speed
+        return speeds
     
-    @motorSpeed.setter
-    def motorSpeed(self, xySpeeds: Tuple[float, float]):
-        self.xMotor.speed = xySpeeds[0]
-        self.yMotor.speed = xySpeeds[1]
+    @motorSpeeds.setter
+    def motorSpeeds(self, panTiltSpeeds: Tuple[float, float]):
+        self.panMotor.speed = panTiltSpeeds[0]
+        self.tiltMotor.speed = panTiltSpeeds[1]
 
-    def AimXYRel(self, xDegrees: float, yDegrees: float):
+    def AimPanTiltRel(self, panDegrees: float, tiltDegrees: float):
         '''Move motors relative in x and y'''
         threadPool = futures.ThreadPoolExecutor()
-        xMove = threadPool.submit(self.xMotor.RotateRel, xDegrees)
-        yMove = threadPool.submit(self.yMotor.RotateRel, yDegrees)
+        xMove = threadPool.submit(self.panMotor.RotateRel, panDegrees)
+        yMove = threadPool.submit(self.tiltMotor.RotateRel, tiltDegrees)
         futures.wait([xMove, yMove])
     
+    def MoveMotorRel(self, motor: MotorEnum, degrees: float):
+        match motor:
+            case MotorEnum.Pan:
+                self.panMotor.RotateRel(degrees)
+            case MotorEnum.Tilt:
+                self.tiltMotor.RotateRel(degrees)
+            case _:
+                print("Unknown motor")
+
     def MoveXRel(self, degrees: float):
-        self.xMotor.RotateRel(degrees)
+        self.panMotor.RotateRel(degrees)
 
     def MoveYRel(self, degrees: float):
-        self.yMotor.RotateRel(degrees)
+        self.tiltMotor.RotateRel(degrees)
+    
+    def EnableMotor(self, motor: MotorEnum):
+        match motor:
+            case MotorEnum.Pan:
+                self.panMotor.enabled = True
+            case MotorEnum.Tilt:
+                self.tiltMotor.enabled = True
+            case _:
+                print("Unknown motor")
 
-    def Jog(self, speed: int, cw: bool, motor: int):
+    def DisableMotor(self, motor: MotorEnum):
+        match motor:
+            case MotorEnum.Pan:
+                self.panMotor.enabled = False
+            case MotorEnum.Tilt:
+                self.tiltMotor.enabled = False
+            case _:
+                print("Unknown motor")
+
+    def Jog(self, speed: int, cw: bool, motor: MotorEnum):
         '''Start motor rotating at specified speed until timeout
 
             args: 
@@ -49,13 +78,15 @@ class AimingControl():
                 cw: should motor spin in clockwise direction (bool)
                 motor: which motor to jog. 1=x, 2=y (int)
         '''
-        if(motor == 1):
-            self.xMotor.Jog(speed, cw)
-        elif(motor == 2):
-            self.yMotor.Jog(speed, cw)
+        if(motor == MotorEnum.Pan):
+            self.panMotor.Jog(speed, cw)
+        elif(motor == MotorEnum.Tilt):
+            self.tiltMotor.Jog(speed, cw)
         else:
             print("Error: Invalid parameter received for 'motor' argument of AimingControl.Jog")
 
     def StopMotors(self):
-        self.xMotor.Stop()
-        self.yMotor.Stop()
+        self.panMotor.Stop()
+        self.tiltMotor.Stop()
+
+   

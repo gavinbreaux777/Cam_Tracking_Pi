@@ -2,11 +2,12 @@ from RawServoControl import RawServoControl
 from IOControl import IOControl
 import time
 from ConfigClasses import ChamberServoConfig
+from MotorEnums import MotorEnum
 
 class AmmoControl:
-    def __init__(self, ioControl:IOControl, config: ChamberServoConfig):
+    def __init__(self, chamberServo: RawServoControl):
         #self.triInletServo = RawServoControl(ioControl, -1, 50)
-        self.chamberServo = RawServoControl(ioControl, config)
+        self.chamberServo = chamberServo
         self.activeInlet = 1
         self.ammoInlets = AmmoInletTrio(
             AmmoInletSingle(3, 3, 150, 165),
@@ -18,12 +19,11 @@ class AmmoControl:
         #self.CloseTriInletServo()
 
     @property
-    def chamberServoPosition(self) -> float:
-        return self.chamberServo.position
-    @property
-    def triInletServoPosition(self) -> float:
-        return self.triInletServo.position
-    
+    def motorPositions(self) -> dict[MotorEnum, float]:
+        pos = {}
+        pos[MotorEnum.Chamber] = self.chamberServo.position
+        return pos
+
     # region chamberServo Control
     def OpenChamberServo(self):
         '''Allow ball into chamber'''

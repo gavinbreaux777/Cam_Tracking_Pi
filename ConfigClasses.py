@@ -1,7 +1,11 @@
 from dataclasses import dataclass
 @dataclass
-class SystemConfig:
-    pass
+class SystemConfig():
+    tiltDegreesPerCamPercentChange: float
+    panDegreesPerCamPercentChange: float
+    actOnDetection: bool
+    spoolTime: float
+    manualSpoolTimeout: float
 
 @dataclass
 class ClientConfig:
@@ -50,3 +54,8 @@ class IOConfig:
 @dataclass
 class CameraConfig:
     mock: bool = False
+    imgSize: tuple[int, int] = (640,480)
+
+@dataclass
+class ImageProcessorConfig:
+    pass

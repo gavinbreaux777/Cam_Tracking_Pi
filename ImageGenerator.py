@@ -9,9 +9,7 @@ from CameraInterface import CameraInterface
 class ImageGenerator():
     ''''''
     def __init__(self, picam2: CameraInterface, imageProcessor: ProcessImage):
-        ''''''
-        self.imageSize = (640, 480)
-        
+        ''''''        
         self.picam2 = picam2
         self.configureCam()
 
@@ -21,10 +19,10 @@ class ImageGenerator():
         self.processedImg = numpy.array([]) #image that has had processing applied to it, ready to be streamed
         self.currentImg = numpy.array([]) #last image that was captured from camera, processing gets applied to this image, then copied
 
-        self.imageProcessThread = threading.Thread(target=self.CaptureBufferAndProcessImage)
+        self.imageProcessThread = threading.Thread(target=self.CaptureBufferAndProcessImage, daemon=True)
 
     def configureCam(self):
-        self.picam2.Picamera2.configure(self.picam2.Picamera2.create_video_configuration(main={"size": self.imageSize, "format":"RGB888"}))
+        self.picam2.Picamera2.configure(self.picam2.Picamera2.create_video_configuration(main={"size": self.picam2.imgSize, "format":"RGB888"}))
         self.picam2.Picamera2.set_controls({"ExposureTime": 1000000, "AnalogueGain": 10.0})
         self.picam2.Picamera2.post_callback = self.ModifyOutputImageOnCB
 
@@ -67,9 +65,8 @@ class ImageGenerator():
         while True: #always leaving thread running, stop event below with time.sleep is our pause mechanism
             while self.processImage:
                 with lock:
-                    self.currentImg = self.picam2.Picamera2.capture_array()
-                    self.processedImg = self.imageProcessor.ProcessImage(self.currentImg)
-            
+                    self.currentImg = self.picam2.Picamera2.capture_array()                    
+                    self.processedImg = self.imageProcessor.ProcessImage(self.currentImg, self.picam2.imgSize)  
             time.sleep(1) #delay to ease processing use while not running
 
     def ModifyCameraControls(self, setting: str, value: Any):

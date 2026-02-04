@@ -18,9 +18,9 @@ function startJog(direction, speed){
     })
 }
 
-function stopMotors(){
+function stopAimMotors(){
     console.log("Stopping motors")
-    fetch("/stopMotors",{
+    fetch("/stopAimMotors",{
         method: 'GET'
     })
     .then(response => {

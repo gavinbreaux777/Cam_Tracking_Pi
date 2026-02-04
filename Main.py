@@ -17,7 +17,7 @@ io = ClassFactory.ReturnIO(config.ioConfig)
 ioControl = IOControl(io)
 
 #Create class to control all motors, aiming and projection
-motorControl = ClassFactory.ReturnMotorControl(ioControl, config.motorConfig)
+motorControl = ClassFactory.ReturnMotorControl(ioControl, config.motorConfig, config.systemConfig)
 
 try:
     #code start
@@ -26,7 +26,7 @@ try:
     detector.StartRecording()    
 
     #start Flask server with output from camera recording
-    server = FlaskServer(detector, motorControl)
+    server = FlaskServer(detector, motorControl, config)
 
     detector.RegisterObserver(motorControl)
     detector.RegisterObserver(server)
