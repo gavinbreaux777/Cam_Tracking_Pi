@@ -118,7 +118,7 @@
                     <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 10px; flex-grow: 1;">
                         <div style="display: flex; flex-direction: row; align-items: center; gap: 10px; margin: 5px;">
                             <div>Enable Motors</div>
-                            <input type="checkbox" id="enableDCMotorsCheckbox" checked onchange="enableDisableDCMotors(this.checked)" style="vertical-align: center;">
+                            <input type="checkbox" id="enableDCMotorsCheckbox" checked onchange="enableDisableMotor('Spool', this.checked)" style="vertical-align: center;">
                         </div>
                         <div style="display: flex; justify-content: center; align-items: center;">
                             <button style="padding: 10%" onmousedown="spoolID = setInterval(spoolDCMotors, 50)" 

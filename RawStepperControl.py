@@ -13,7 +13,6 @@ class RawStepperControl():
         self._stepsPerRev = stepsPerRev
         self._enabled = True
         self._enablePin = enablePin
-        print("enablePin = " + str(self._enablePin) + " " + str(enablePin))
         self.position = 0
 
     @property

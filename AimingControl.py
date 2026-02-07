@@ -9,6 +9,7 @@ class AimingControl():
     def __init__(self, panMotor: StepperMotorControl, tiltMotor: StepperMotorControl):
         self.panMotor = panMotor
         self.tiltMotor = tiltMotor
+        self.threadPool = futures.ThreadPoolExecutor()
 
     @property
     def motorPositions(self) -> dict[MotorEnum, float]:
@@ -30,12 +31,13 @@ class AimingControl():
         self.panMotor.speed = panTiltSpeeds[0]
         self.tiltMotor.speed = panTiltSpeeds[1]
 
-    def AimPanTiltRel(self, panDegrees: float, tiltDegrees: float):
+    def AimPanTiltRel(self, panDegrees: float, tiltDegrees: float) -> None:
         '''Move motors relative in x and y'''
-        threadPool = futures.ThreadPoolExecutor()
-        xMove = threadPool.submit(self.panMotor.RotateRel, panDegrees)
-        yMove = threadPool.submit(self.tiltMotor.RotateRel, tiltDegrees)
-        futures.wait([xMove, yMove])
+        xMove = self.threadPool.submit(self.panMotor.RotateRel, panDegrees)
+        yMove = self.threadPool.submit(self.tiltMotor.RotateRel, tiltDegrees)
+        
+        for f in futures.as_completed([xMove, yMove]):
+            f.result()
     
     def MoveMotorRel(self, motor: MotorEnum, degrees: float):
         match motor:

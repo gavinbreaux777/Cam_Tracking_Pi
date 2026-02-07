@@ -13,7 +13,7 @@ class StepperMotorControl(StepperMotorControlInterface):
         self._ioControl = ioControl
         self._ioControl.SetPinMode(config.stepPin, 1)
         self._ioControl.SetPinMode(config.dirPin, 1)
-        self.motor = RawStepperControl(ioControl, config.stepPin, config.dirPin, config.enablePin, config.stepMode, config.stepsPerRev) 
+        self.motor = RawStepperControl(ioControl, config.stepPin, config.dirPin, config.enablePin, config.stepMode, config.stepsPerRev)
         self.speed = config.speed
         self._stepMode = float(Fraction(config.stepMode))
         self.motorResolution = config.stepsPerRev

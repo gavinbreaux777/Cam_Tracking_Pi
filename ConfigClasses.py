@@ -29,7 +29,7 @@ class SingleAimMotorConfig:
     dirPin: int = 0
     enablePin: int = 0
     stepMode: str = "1"
-    speed: int = 50,
+    speed: int = 50
     stepsPerRev: int = 200
 
 @dataclass
@@ -45,7 +45,7 @@ class ChamberServoConfig:
     pwmPin: int = 0
     openAngle: float = 0.0
     closedAngle: float = 0.0
-    pulseFrequency: float = 50.0
+    pulseFrequency: int = 50
 
 @dataclass
 class IOConfig:

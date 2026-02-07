@@ -72,11 +72,11 @@ class MotorControl(DetectionObserver):
     def GetMotorPos(self, motorNum: MotorEnum) -> float:
         match motorNum:
             case MotorEnum.Pan | MotorEnum.Tilt:
-                self.aimingControl.motorPositions[motorNum]
+                return self.aimingControl.motorPositions[motorNum]
             case MotorEnum.Spool:
                 print("Invalid request: Unable to get position of dc motor")
             case MotorEnum.Chamber:
-                self.firingControl.motorPositions[motorNum]
+                return self.firingControl.motorPositions[motorNum]
             case _:
                 print("Unknown motor")
 #endregion
@@ -88,7 +88,9 @@ class MotorControl(DetectionObserver):
 
     def OnMotionFound(self, location, acknowledgeCallback):
         '''Start thread to handle firing so image generation/processing can continue'''
+        print("Motor control notified. Act on detection = " + str(self._config.actOnDetection))
         if(self._config.actOnDetection== True):
+            print("starting motion thread")
             searchAndDestroyThread = threading.Thread(target=lambda: self.FindAndFire(location, acknowledgeCallback))
             searchAndDestroyThread.start()
             searchAndDestroyThread.join()
@@ -100,14 +102,16 @@ class MotorControl(DetectionObserver):
         '''Aim motors, fire projectile, and finally call callback to notify Detector that we've finished the sequence'''
         #detector give location in terms of offset from center of camera frame, based on camera resolution
         #convert from these pixel offsets to motor movements
+        print("running find and fire")
         self.firingControl.SpoolMotors()
 
-        xAdjustment, yAdjustment = self.CalculateMotorAdjustments(location)        
+        xAdjustment, yAdjustment = self.CalculateMotorAdjustments(location)   
+        print("aiming motors: " + str(xAdjustment) + " degrees x, " + str(yAdjustment) + " degrees y")
         self.AimPanTiltRel(xAdjustment, yAdjustment)
-
+        print("Motors aimed, waiting for spool")
         while(not self.firingControl.motorsSpooled):
             pass
-        
+        print("Motors spooled, firing chamber servo")
         self.firingControl.ChamberSingle()
         time.sleep(0.2)
         self.firingControl.StopMotors()

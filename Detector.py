@@ -56,7 +56,9 @@ class Detector():
         newX = -location[0] #x motor is flipped from our x axis, reverse it
         newY = -location[1] #y motor is flipped from our y axis, reverse it
         self._detectedLocation = [newX, newY]
+        print("Setting detected location at "  + str(self._detectedLocation))
         self._notifyObservers()
+        print("Observers notified")
         #tell image process class to change behavior here (ie, stop detecting etc.) (or could have image process class do it directly)
         #then have motor control class inform detector here that firing sequence has completed
         self.processImage = False 
@@ -67,7 +69,7 @@ class Detector():
                 xRatio (float): percentage of detection point away from center. 1 = far right edge, -1 = far left edge
                 yRatio (float): percentage of detection point away from center. 1 = top edge, -1 = bottom edge
         "'''
-        self._setDetectedLocation(xRatio, yRatio)
+        self._setDetectedLocation((xRatio, yRatio))
 
     def _notifyObservers(self):
         '''Notify registered observers that motion has been detected with location. Once all observers have acknowledged the notification, restart image processing'''
