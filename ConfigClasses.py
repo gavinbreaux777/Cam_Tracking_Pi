@@ -1,7 +1,11 @@
 from dataclasses import dataclass
 @dataclass
-class SystemConfig:
-    pass
+class SystemConfig():
+    tiltDegreesPerCamPercentChange: float
+    panDegreesPerCamPercentChange: float
+    actOnDetection: bool
+    spoolTime: float
+    manualSpoolTimeout: float
 
 @dataclass
 class ClientConfig:
@@ -25,7 +29,7 @@ class SingleAimMotorConfig:
     dirPin: int = 0
     enablePin: int = 0
     stepMode: str = "1"
-    speed: int = 50,
+    speed: int = 50
     stepsPerRev: int = 200
 
 @dataclass
@@ -41,7 +45,7 @@ class ChamberServoConfig:
     pwmPin: int = 0
     openAngle: float = 0.0
     closedAngle: float = 0.0
-    pulseFrequency: float = 50.0
+    pulseFrequency: int = 50
 
 @dataclass
 class IOConfig:
@@ -50,3 +54,8 @@ class IOConfig:
 @dataclass
 class CameraConfig:
     mock: bool = False
+    imgSize: tuple[int, int] = (640,480)
+
+@dataclass
+class ImageProcessorConfig:
+    pass

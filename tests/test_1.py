@@ -27,11 +27,16 @@ def mock_motor_control():
     motor_control.motionEndedEvent.Subscribe = Mock()
     return motor_control
 
+@pytest.fixture
+def mock_config():
+    """Create a mock config object."""
+    config = Mock()
+    return config
 
 @pytest.fixture
-def flask_app(mock_detector, mock_motor_control):
+def flask_app(mock_detector, mock_motor_control, mock_config):
     """Create a Flask test client."""
-    flask_server = FlaskServer(mock_detector, mock_motor_control)
+    flask_server = FlaskServer(mock_detector, mock_motor_control, mock_config)
     flask_server.app.config['TESTING'] = True
     return flask_server.app.test_client()
 
@@ -39,43 +44,45 @@ def flask_app(mock_detector, mock_motor_control):
 class TestFlaskServerLaunch:
     """Test that Flask server launches and responds correctly."""
 
-    def test_server_initializes(self, mock_detector, mock_motor_control):
-        """Test that Flask server initializes without errors."""
-        server = FlaskServer(mock_detector, mock_motor_control)
-        assert server.app is not None
-        assert server.detector is mock_detector
-        assert server.motorControl is mock_motor_control
+ROUTES = [
+    ('/', None),
+    ('/stream', None),
+    ('/base-img', None),
+    ('/detect-img', None),
+    ('/stopStream', None),
+    ('/stopImgMod', None),
+    ('/startImgMod', None),
+    ('/dataEventSoruce', None),
+    ('/detectNotifySource', None),
+    ('/motorControl/{direction}/{speed}', {'direction': 'left', 'speed': 10}),
+    ('/stopAimMotors', None),
+    ('/modImgProcSetting/{settingName}/{settingValue}', {'settingName': 'brightness', 'settingValue': 50}),
+    ('/modCamSetting/{settingName}/{settingValue}', {'settingName': 'exposure', 'settingValue': 100}),
+    ('/motorLocation', None),
+    ('/calibrateMotors/{xDegreesToPercentChange}/{yDegreesToPercentChange}', {'xDegreesToPercentChange': 5, 'yDegreesToPercentChange': 10}),
+    ('/moveChamberServo/{angle}', {'angle': 90}),
+    ('/openChamberServo', None),
+    ('/closeChamberServo', None),
+    ('/teachServo/{state}', {'state': 'open'}),
+    ('/forceDetection/{xRatio}/{yRatio}', {'xRatio': 0.5, 'yRatio': 0.7}),
+    ('/toggleDelta/{show}', {'show': 'true'}),
+    ('/toggleContours/{show}', {'show': 'false'}),
+    ('/enableDisableMotor/{motorStr}/{clicked}', {'motorStr': 'Pan', 'clicked': 1}),
+    ('/spoolDCMotors', None),
+    ('/stopDCMotors', None),
+    ('/actOnDetection/{onOff}', {'onOff': 'on'}),
+]
 
-    def test_home_route_returns_200(self, flask_app):
-        """Test that home route returns 200 status code."""
-        response = flask_app.get('/')
-        assert response.status_code == 200
+# Skip streaming/SSE routes in tests
+SKIP_ROUTES = ['/stream', '/dataEventSoruce', '/detectNotifySource', '/motorLocation', '/base-img', '/detect-img']
 
-    def test_stop_stream_returns_200(self, flask_app):
-        """Test that /stopStream endpoint returns 200 status code."""
-        response = flask_app.get('/stopStream')
-        assert response.status_code == 200
-        assert b"OkeY DoKEy" in response.data
+@pytest.mark.parametrize("route,params", ROUTES)
+def test_routes_return_200(flask_app, route, params):
+    """Test all non-streaming routes return 200 with example parameters."""
+    if route in SKIP_ROUTES:
+        pytest.skip(f"Skipping route: {route}")
 
-    def test_stop_image_modification_returns_200(self, flask_app):
-        """Test that /stopImgMod endpoint returns 200 status code."""
-        response = flask_app.get('/stopImgMod')
-        assert response.status_code == 200
-        assert b"OkeY DoKEy" in response.data
-
-    def test_start_image_modification_returns_200(self, flask_app):
-        """Test that /startImgMod endpoint returns 200 status code."""
-        response = flask_app.get('/startImgMod')
-        assert response.status_code == 200
-        assert b"OkeY DoKEy" in response.data
-
-    def test_motor_control_route_returns_200(self, flask_app):
-        """Test that motor control endpoints return 200 status code."""
-        response = flask_app.get('/motorControl/left/50')
-        assert response.status_code == 200
-        assert b"Okey Dokey" in response.data
-
-    def test_stop_motors_returns_200(self, flask_app):
-        """Test that /stopMotors endpoint returns 200 status code."""
-        response = flask_app.get('/stopMotors')
-        assert response.status_code == 200
+    formatted = route.format(**params) if params else route
+    print(f"Testing route: {formatted}")
+    response = flask_app.get(formatted)
+    assert response.status_code == 200

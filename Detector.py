@@ -19,7 +19,6 @@ class Detector():
         self.output = StreamingOutput()
 
         self.observers: list[DetectionObserver] = []
-        self.actOnDetection = False
 
 
 
@@ -54,29 +53,23 @@ class Detector():
 
     def _setDetectedLocation(self, location: tuple[int, int]):
         '''Setter for self.detectedLocation. Notifies observers and stops image processing'''
-        newX = abs(self._imgGenerator.imageSize[0] - location[0]) #x motor is flipped from our x axis, reverse it
-        newY = abs(self._imgGenerator.imageSize[1] - location[1]) #y motor is flipped from our y axis, reverse it
-        newLocation = (newX, newY)
-        self._detectedLocation = newLocation
+        newX = -location[0] #x motor is flipped from our x axis, reverse it
+        newY = -location[1] #y motor is flipped from our y axis, reverse it
+        self._detectedLocation = [newX, newY]
+        print("Setting detected location at "  + str(self._detectedLocation))
         self._notifyObservers()
+        print("Observers notified")
         #tell image process class to change behavior here (ie, stop detecting etc.) (or could have image process class do it directly)
         #then have motor control class inform detector here that firing sequence has completed
         self.processImage = False 
 
     def setDetectedRatio(self, xRatio: float, yRatio: float):
-        '''Converts xRatio and yRatio to pixel offsets and calls "setDetectedLocation
+        '''Pushes x and y offset-from-center ratios to "setDetectedLocation" to create manual detection
             Args:
                 xRatio (float): percentage of detection point away from center. 1 = far right edge, -1 = far left edge
                 yRatio (float): percentage of detection point away from center. 1 = top edge, -1 = bottom edge
         "'''
-        xDistanceFromCenter = ((self._imgGenerator.imageSize[0] / 2) * xRatio)
-        xDetectLocation = xDistanceFromCenter + (self._imgGenerator.imageSize[0]/2)
-
-        yDistanceFromCenter = ((self._imgGenerator.imageSize[1] / 2) * yRatio)
-        yDetectLocation = yDistanceFromCenter + (self._imgGenerator.imageSize[1]/2)
-        print("XY ratio = " + str(xRatio) + " , " + str(yRatio))
-        print("XY detect location = " + str(xDetectLocation) + " , " + str(yDetectLocation))
-        self._setDetectedLocation((xDetectLocation, yDetectLocation))
+        self._setDetectedLocation((xRatio, yRatio))
 
     def _notifyObservers(self):
         '''Notify registered observers that motion has been detected with location. Once all observers have acknowledged the notification, restart image processing'''
@@ -90,7 +83,7 @@ class Detector():
                 #self.processImage = True #auto restart image processing
 
         for observer in self.observers:
-             threading.Thread(target=observer.OnMotionFound, args=(self._getDetectedLocation(), _observerDone, self.actOnDetection,)).start() 
+             threading.Thread(target=observer.OnMotionFound, args=(self._getDetectedLocation(), _observerDone,)).start() 
 
     def RegisterObserver(self, newObserver: DetectionObserver):
         '''Register new observer to be notified when motion has been detected'''

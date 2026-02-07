@@ -1,69 +1,96 @@
-from IOControl import IOControl
 from AimingControl import AimingControl
-from AmmoControl import AmmoControl
-from DCMotorControl import DCMotorControl
+from FiringControl import FiringControl
 from Observer import DetectionObserver
 import threading
 from typing import Tuple, Callable
-from Event import Event
 import time
-from ConfigClasses import MotorConfig
+from ConfigClasses import SystemConfig
+from MotorEnums import MotorEnum
+
 class MotorControl(DetectionObserver):
-    def __init__(self, ioControl: IOControl, motorConfig: MotorConfig):
-        self.ioControl = ioControl
-        self.aimingControl = AimingControl(self.ioControl, motorConfig.aimMotors)
-        self.servoControl = AmmoControl(self.ioControl, motorConfig.chamberServo)
-        self.dcMotorControl = DCMotorControl(self.ioControl, motorConfig.firingMotor)
-        self.xDegreesPerPercentChange = -50 #CalifFactor - degrees motor move per % pixel change (% pixel change = (detect location - center location) / center location
-        self.yDegreesPerPercentChange = 20
-        self.motionStartedEvent = Event()
-        self.motionEndedEvent = Event()
-        self.actOnDetection = False
+    def __init__(self, aimingControl: AimingControl, firingControl: FiringControl, config: SystemConfig):
+        self.aimingControl = aimingControl
+        self.firingControl = firingControl
+        self._config = config
 
-    @property
-    def xMotorEnabled(self) -> bool:
-        '''Enable or disable motor if enable pin defined. 0 = disable, 1 = enable'''
-        return self.aimingControl.xMotor.enabled
-    @xMotorEnabled.setter
-    def xMotorEnabled(self, value: bool):
-        self.aimingControl.xMotor.enabled = value
+#region universal commands
+    def StopMotor(self, motorNum: MotorEnum):
+        match motorNum:
+            case MotorEnum.Pan | MotorEnum.Tilt:
+                self.aimingControl.StopMotors()
+            case MotorEnum.Spool:
+                self.firingControl.StopMotors()
+            case MotorEnum.Chamber:
+                print("Stop not implemented for chamber servo")
+            case _:
+                print("Unknown motor")
+        
+    def MoveMotor(self, motorNum: MotorEnum, target: float):
+        match motorNum:
+            case MotorEnum.Pan:
+                self.aimingControl.MoveXRel(target)
+            case MotorEnum.Tilt:
+                self.aimingControl.MoveYRel(target)
+            case MotorEnum.Spool:
+                print("Unable to move dc motor to target. Use Spool command instead")
+            case MotorEnum.Chamber:
+                self.firingControl.SetChamberServoAngle(target)
+            case _:
+                print("Unknown motor")
 
-    @property
-    def yMotorEnabled(self) -> bool:
-        '''Enable or disable motor if enable pin defined. 0 = disable, 1 = enable'''
-        return self.aimingControl.yMotor.enabled
-    @yMotorEnabled.setter
-    def yMotorEnabled(self, value: bool):
-        self.aimingControl.yMotor.enabled = value
-
-    @property
-    def xPosition(self) -> float:
-        return self.aimingControl.xPosition
+    def JogMotor(self, motorNum: MotorEnum, speed: int, direction: bool):
+        match motorNum:
+            case MotorEnum.Pan:
+                self.aimingControl.Jog(speed, direction, MotorEnum.Pan)
+            case MotorEnum.Tilt:
+                self.aimingControl.Jog(speed, direction, MotorEnum.Tilt)
+            case MotorEnum.Spool:
+                print("Unable to jog dc motor. Use Spool command instead")
+            case MotorEnum.Chamber:
+                print("Jog not implemented for chamber servo")
+            case _:
+                print("Unknown motor")
     
-    @property
-    def yPosition(self) -> float:
-        return self.aimingControl.yPosition
-    
-    @property
-    def chamberServoPosition(self) -> float:
-        return self.servoControl.chamberServoPosition
+    def EnableMotor(self, motorNum: MotorEnum):
+        match motorNum:
+            case MotorEnum.Pan | MotorEnum.Tilt:
+                self.aimingControl.EnableMotor(motorNum)
+            case MotorEnum.Spool | MotorEnum.Chamber:
+                self.firingControl.EnableMotor(MotorEnum.Spool)
+            case _:
+                print("Unknown motor")
 
-    def AimXYRel(self, xDegrees: float, yDegrees: float):
-        self.aimingControl.AimXYRel(xDegrees, yDegrees)
+    def DisableMotor(self, motorNum: MotorEnum):
+        match motorNum:
+            case MotorEnum.Pan | MotorEnum.Tilt:
+                self.aimingControl.DisableMotor(motorNum)
+            case MotorEnum.Spool | MotorEnum.Chamber:
+                self.firingControl.DisableMotor(motorNum)
+            case _:
+                print("Unknown motor")
 
-    def JogX(self, speed: int, clockwise: bool):
-        '''Command motor to move at constant speed until timeout reached, unless another command is received. Speed in mm/s'''
-        self.aimingControl.Jog(speed, clockwise, 1)
+    def GetMotorPos(self, motorNum: MotorEnum) -> float:
+        match motorNum:
+            case MotorEnum.Pan | MotorEnum.Tilt:
+                return self.aimingControl.motorPositions[motorNum]
+            case MotorEnum.Spool:
+                print("Invalid request: Unable to get position of dc motor")
+            case MotorEnum.Chamber:
+                return self.firingControl.motorPositions[motorNum]
+            case _:
+                print("Unknown motor")
+#endregion
 
-    def JogY(self, speed: int, clockwise: bool):
-        self.aimingControl.Jog(speed, clockwise, 2)
 
-    def StopMotors(self):
-        self.aimingControl.StopMotors()
+#region aimingControl commands
+    def AimPanTiltRel(self, xDegrees: float, yDegrees: float):
+        self.aimingControl.AimPanTiltRel(xDegrees, yDegrees)
 
-    def OnMotionFound(self, location, acknowledgeCallback, actOnMotion: bool):
+    def OnMotionFound(self, location, acknowledgeCallback):
         '''Start thread to handle firing so image generation/processing can continue'''
-        if(actOnMotion == True):
+        print("Motor control notified. Act on detection = " + str(self._config.actOnDetection))
+        if(self._config.actOnDetection== True):
+            print("starting motion thread")
             searchAndDestroyThread = threading.Thread(target=lambda: self.FindAndFire(location, acknowledgeCallback))
             searchAndDestroyThread.start()
             searchAndDestroyThread.join()
@@ -73,27 +100,39 @@ class MotorControl(DetectionObserver):
 
     def FindAndFire(self, location: Tuple[int, int], callback: Callable[[bool], None]):
         '''Aim motors, fire projectile, and finally call callback to notify Detector that we've finished the sequence'''
-        self.dcMotorControl.SpoolMotors()
+        #detector give location in terms of offset from center of camera frame, based on camera resolution
+        #convert from these pixel offsets to motor movements
+        print("running find and fire")
+        self.firingControl.SpoolMotors()
 
-        #pixel distance from center
-        pixelXDistanceFromCenter = (640/2) - location[0]
-        pixelYDistanceFromCenter = (480/2) - location[1]
-
-        #Percent distance from center (far right, top = 1,1 ; far left and bottom = -1,-1)
-        percentXDistanceFromCenter = pixelXDistanceFromCenter / (640/2)
-        percentYDistanceFromCenter = pixelYDistanceFromCenter / (480/2)
+        xAdjustment, yAdjustment = self.CalculateMotorAdjustments(location)   
+        print("aiming motors: " + str(xAdjustment) + " degrees x, " + str(yAdjustment) + " degrees y")
+        self.AimPanTiltRel(xAdjustment, yAdjustment)
+        print("Motors aimed, waiting for spool")
+        while(not self.firingControl.motorsSpooled):
+            pass
+        print("Motors spooled, firing chamber servo")
+        self.firingControl.ChamberSingle()
+        time.sleep(0.2)
+        self.firingControl.StopMotors()
+    
+    def CalculateMotorAdjustments(self, percentFromCenter: Tuple[int, int]) -> Tuple[float, float]:
+        '''Convert from pixel offset-from-center of camera frame to motor degrees'''
 
         #Motor travel distance in degrees
-        xAdjustment = percentXDistanceFromCenter * self.xDegreesPerPercentChange
-        yAdjustment = percentYDistanceFromCenter * self.yDegreesPerPercentChange
-        self.AimXYRel(xAdjustment, yAdjustment)
-        while(not self.dcMotorControl.motorsSpooled):
-            pass
-        
-        self.servoControl.FireSingle()
-        time.sleep(0.2)
-        self.dcMotorControl.StopMotors()
+        xAdjustment = percentFromCenter[0] * self._config.panDegreesPerCamPercentChange
+        yAdjustment = percentFromCenter[1] * self._config.tiltDegreesPerCamPercentChange
+        return xAdjustment, yAdjustment
+#endregion
+    
 
+#region firingControl commands
+    def OpenChamberServo(self):
+        self.firingControl.OpenChamberServo()
 
-    def SetChamberServoAngle(self, angle: float):
-        self.servoControl.SetChamberServoAngle(angle)
+    def CloseChamberServo(self):
+        self.firingControl.CloseChamberServo()
+
+    def SpoolFiringMotors(self):
+        self.firingControl.SpoolMotors()
+#endregion

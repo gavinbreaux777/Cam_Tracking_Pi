@@ -2,7 +2,8 @@ from abc import ABC, abstractmethod
 
 class CameraInterface(ABC):  
     def __init__(self):
-        self.Picamera2 = CameraInterface.IPicamera2()
+        self.Picamera2 = CameraInterface.IPicamera2()        
+        self.imgSize = (640, 480)
 
     class IPicamera2():
         def __init__(self):

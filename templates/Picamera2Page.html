@@ -37,26 +37,26 @@
                         Stepper Control
                     </div>
                     <div class="mot-control-button-container" style="grid-row: 2; grid-column: 2;">
-                        <button class="mot-control-button" onmousedown="startJog('up', document.getElementById('speedInput').value)" onmouseup="stopMotors()">Up</button>
+                        <button class="mot-control-button" onmousedown="startJog('up', document.getElementById('speedInput').value)" onmouseup="stopAimMotors()">Up</button>
                     </div>
                     <div class="mot-control-button-container" style="grid-row: 4; grid-column: 2;">
-                        <button class="mot-control-button" onmousedown="startJog('down', document.getElementById('speedInput').value)" onmouseup="stopMotors()">Down</button>
+                        <button class="mot-control-button" onmousedown="startJog('down', document.getElementById('speedInput').value)" onmouseup="stopAimMotors()">Down</button>
                     </div>
                     <div class="mot-control-button-container" style="grid-row: 3; grid-column: 1;">
-                        <button class="mot-control-button" onmousedown="startJog('left', document.getElementById('speedInput').value)" onmouseup="stopMotors()">Left</button>
+                        <button class="mot-control-button" onmousedown="startJog('left', document.getElementById('speedInput').value)" onmouseup="stopAimMotors()">Left</button>
                     </div>
                     <div class="mot-control-button-container" style="grid-row: 3; grid-column: 3;">
-                        <button class="mot-control-button" onmousedown="startJog('right', document.getElementById('speedInput').value)" onmouseup="stopMotors()">Right</button>
+                        <button class="mot-control-button" onmousedown="startJog('right', document.getElementById('speedInput').value)" onmouseup="stopAimMotors()">Right</button>
                     </div>
                     <div class="mot-control-button-container" style="grid-row: 3; grid-column: 2; display: flex; justify-content: center; align-items: center;">
                         <label for="speedInput" style="margin-right: 10px;">Jog Speed</label>
                         <input type="text" id="speedInput" value="10" style="width: 50%;">
                     </div>
                     <div class="mot-control-button-container" style="grid-row: 4; grid-column: 1;">
-                        <input type="checkbox" id="enableXCheckbox" checked onchange="enableDisableMotor('x', this.checked)">
+                        <input type="checkbox" id="enableXCheckbox" checked onchange="enableDisableMotor('Pan', this.checked)">
                         <label for="enableXCheckbox">Enable X</label>
                         <br>
-                        <input type="checkbox" id="enableYCheckbox" checked onchange="enableDisableMotor('y', this.checked)">
+                        <input type="checkbox" id="enableYCheckbox" checked onchange="enableDisableMotor('Tilt', this.checked)">
                         <label for="enableYCheckbox">Enable Y</label>
                     </div>
                     <div style="grid-row: 2; grid-column: 1; display: flex; flex-direction: column; white-space: nowrap; align-self: center;">
@@ -118,7 +118,7 @@
                     <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 10px; flex-grow: 1;">
                         <div style="display: flex; flex-direction: row; align-items: center; gap: 10px; margin: 5px;">
                             <div>Enable Motors</div>
-                            <input type="checkbox" id="enableDCMotorsCheckbox" checked onchange="enableDisableDCMotors(this.checked)" style="vertical-align: center;">
+                            <input type="checkbox" id="enableDCMotorsCheckbox" checked onchange="enableDisableMotor('Spool', this.checked)" style="vertical-align: center;">
                         </div>
                         <div style="display: flex; justify-content: center; align-items: center;">
                             <button style="padding: 10%" onmousedown="spoolID = setInterval(spoolDCMotors, 50)" 
@@ -217,11 +217,12 @@
                 </div>
             </div>
         </div>
-        <script src="/static/js/utils.js"></script>
         <script src="/static/js/App.js"></script>
         <script src="/static/js/cameraControl.js"></script>
         <script src="/static/js/motorControl.js"></script>
         <script src="/static/js/uiComponents.js"></script>
         <script src="/static/js/calibration.js"></script>
+
+        
     </body>
 </html>

@@ -84,6 +84,8 @@ function hideDetectImg(){
     detectImg.style.display = "none";
 }
 
+document.getElementById("detect_img").onclick = hideDetectImg;
+
 function forceDetection(clickEvent, imgWidth, imgHeight){
     const xClickRatio = (clickEvent.offsetX - (imgWidth/2)) / (imgWidth/2);
     const yClickRatio = ((imgHeight/2) - clickEvent.offsetY) / (imgHeight/2);
