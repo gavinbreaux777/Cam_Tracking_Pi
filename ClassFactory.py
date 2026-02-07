@@ -1,6 +1,5 @@
 from config.AppConfig import *
 from unittest.mock import MagicMock
-from camera.CameraInterface import CameraInterface
 
 class ClassFactory():
     def __init__(self):
@@ -8,7 +7,7 @@ class ClassFactory():
 
     @staticmethod
     def ReturnCamera(config: CameraConfig):        
-        from CameraInterface import CameraInterface
+        from camera.CameraInterface import CameraInterface
         if(config.mock):
             import numpy as np
             mock_camera = MagicMock()
@@ -37,12 +36,12 @@ class ClassFactory():
     @staticmethod
     def ReturnMotorControl(ioControl, motorConfig: MotorConfig, systemConfig: SystemConfig):
         from motors.MotorControl import MotorControl
-        from AimingControl import AimingControl
-        from DCMotorControl import DCMotorControl
-        from RawServoControl import RawServoControl
-        from StepperMotorControl import StepperMotorControl
-        from FiringControl import FiringControl
-        from AmmoControl import AmmoControl
+        from motors.AimingControl import AimingControl
+        from motors.DCMotorControl import DCMotorControl
+        from motors.RawServoControl import RawServoControl
+        from motors.StepperMotorControl import StepperMotorControl
+        from motors.FiringControl import FiringControl
+        from motors.AmmoControl import AmmoControl
 
         #initialize individual motor classes and then pass to MotorControl
         panMotor = StepperMotorControl(ioControl, motorConfig.aimMotors.panMotor)

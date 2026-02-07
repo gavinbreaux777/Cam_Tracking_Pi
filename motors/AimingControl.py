@@ -1,9 +1,7 @@
 from concurrent import futures
 from typing import Tuple
-from i_o.IOControl import IOControl
 from .StepperMotorControl import StepperMotorControl
-from config.ConfigClasses import AimMotorsConfig
-from MotorEnums import MotorEnum
+from .MotorEnums import MotorEnum
 
 class AimingControl():
     def __init__(self, panMotor: StepperMotorControl, tiltMotor: StepperMotorControl):

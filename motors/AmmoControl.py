@@ -1,8 +1,6 @@
 import time
 from .RawServoControl import RawServoControl
-from i_o.IOControl import IOControl
-from config.ConfigClasses import ChamberServoConfig
-from MotorEnums import MotorEnum
+from .MotorEnums import MotorEnum
 
 class AmmoControl:
     def __init__(self, chamberServo: RawServoControl):

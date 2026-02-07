@@ -1,9 +1,10 @@
-from DCMotorControl import DCMotorControl
-from AmmoControl import AmmoControl
+from .DCMotorControl import DCMotorControl
+from .AmmoControl import AmmoControl
+from .MotorEnums import MotorEnum
+from config.ConfigClasses import SystemConfig
 from threading import Timer
-from MotorEnums import MotorEnum
-from ConfigClasses import SystemConfig
 import threading
+
 class FiringControl:
     def __init__(self, ammoControl: AmmoControl, spoolMotors: DCMotorControl, config: SystemConfig):
         self.ammoControl = ammoControl

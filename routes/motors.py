@@ -1,7 +1,7 @@
 from flask import Blueprint
-from MotorEnums import MotorEnum
-from MotorControl import MotorControl
-from ConfigClasses import MotorConfig
+from motors.MotorEnums import MotorEnum
+from motors.MotorControl import MotorControl
+from config.ConfigClasses import MotorConfig
 
 def create_motors_blueprint(motorControl: "MotorControl", motorConfig: "MotorConfig"):
 

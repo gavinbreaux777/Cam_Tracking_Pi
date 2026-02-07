@@ -1,7 +1,7 @@
 from flask import Blueprint
 from typing import Any
-from ProcessImage import ProcessImage
-from Detector import Detector
+from camera.ProcessImage import ProcessImage
+from camera.Detector import Detector
 
 def create_imageProcessing_blueprint(detector: "Detector", imageProcessor: "ProcessImage"):
 
