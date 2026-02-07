@@ -1,7 +1,7 @@
 import time
 from fractions import Fraction
-from StepMode import StepMode
-from IOControl import IOControl
+from .StepMode import StepMode
+from i_o.IOControl import IOControl
 class RawStepperControl():
 
     def __init__(self, ioControl: IOControl, stepPin: int, directionPin: int = None, enablePin: int = None, stepMode: StepMode = StepMode.Full, stepsPerRev: int = 200):

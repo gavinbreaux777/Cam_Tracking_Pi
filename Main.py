@@ -1,9 +1,9 @@
 from ClassFactory import ClassFactory
-from AppConfig import AppConfig
+from config.AppConfig import AppConfig
 
 from FlaskServer import FlaskServer
-from Detector import Detector
-from IOControl import IOControl
+from camera.Detector import Detector
+from i_o.IOControl import IOControl
 
 #load config values
 config = AppConfig("config/")

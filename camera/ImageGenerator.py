@@ -1,10 +1,11 @@
 import numpy
 import threading
-import StreamingOutput
-from ProcessImage import ProcessImage
 import time
 from typing import Any
-from CameraInterface import CameraInterface
+import camera.StreamingOutput as StreamingOutput
+from .ProcessImage import ProcessImage
+
+from .CameraInterface import CameraInterface
 
 class ImageGenerator():
     ''''''

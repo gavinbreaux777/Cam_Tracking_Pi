@@ -1,4 +1,4 @@
-from ConfigClasses import *
+from .ConfigClasses import *
 import json
 from dacite import from_dict
 class AppConfig:    

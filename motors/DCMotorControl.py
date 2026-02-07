@@ -1,6 +1,6 @@
-from IOControl import IOControl
 import threading
-from ConfigClasses import FiringMotorConfig
+from i_o.IOControl import IOControl
+from config.ConfigClasses import FiringMotorConfig
 
 class DCMotorControl:
     def __init__(self, ioControl: IOControl, config: FiringMotorConfig):

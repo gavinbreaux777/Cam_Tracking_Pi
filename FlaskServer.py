@@ -1,9 +1,9 @@
 import flask
 from flask import json
 import threading
-from MotorControl import MotorControl
-from Detector import Detector
-from Observer import DetectionObserver
+from motors.MotorControl import MotorControl
+from camera.Detector import Detector
+from helpers.Observer import DetectionObserver
 import time
 from typing import Callable
 from PIL import Image

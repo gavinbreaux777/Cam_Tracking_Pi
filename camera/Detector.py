@@ -1,11 +1,10 @@
-from CameraInterface import CameraInterface
-import threading
-from StreamingOutput import StreamingOutput
-from ProcessImage import ProcessImage
-from Observer import DetectionObserver
 from typing import Any
-
-from ImageGenerator import ImageGenerator
+import threading
+from .CameraInterface import CameraInterface
+from .StreamingOutput import StreamingOutput
+from .ProcessImage import ProcessImage
+from helpers.Observer import DetectionObserver
+from .ImageGenerator import ImageGenerator
 
 '''This class contains camera and image processing control - together they output detection results'''
 class Detector():

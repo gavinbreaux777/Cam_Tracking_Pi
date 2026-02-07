@@ -1,8 +1,8 @@
-from StepperMotorControl import StepperMotorControl
 from concurrent import futures
 from typing import Tuple
-from IOControl import IOControl
-from ConfigClasses import AimMotorsConfig
+from i_o.IOControl import IOControl
+from .StepperMotorControl import StepperMotorControl
+from config.ConfigClasses import AimMotorsConfig
 from MotorEnums import MotorEnum
 
 class AimingControl():

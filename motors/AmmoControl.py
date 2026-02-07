@@ -1,7 +1,7 @@
-from RawServoControl import RawServoControl
-from IOControl import IOControl
 import time
-from ConfigClasses import ChamberServoConfig
+from .RawServoControl import RawServoControl
+from i_o.IOControl import IOControl
+from config.ConfigClasses import ChamberServoConfig
 from MotorEnums import MotorEnum
 
 class AmmoControl:

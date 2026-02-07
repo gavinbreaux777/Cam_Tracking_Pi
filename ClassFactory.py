@@ -1,5 +1,6 @@
-from AppConfig import *
+from config.AppConfig import *
 from unittest.mock import MagicMock
+from camera.CameraInterface import CameraInterface
 
 class ClassFactory():
     def __init__(self):
@@ -35,7 +36,7 @@ class ClassFactory():
         
     @staticmethod
     def ReturnMotorControl(ioControl, motorConfig: MotorConfig, systemConfig: SystemConfig):
-        from MotorControl import MotorControl
+        from motors.MotorControl import MotorControl
         from AimingControl import AimingControl
         from DCMotorControl import DCMotorControl
         from RawServoControl import RawServoControl

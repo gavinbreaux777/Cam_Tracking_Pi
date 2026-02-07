@@ -1,12 +1,13 @@
-from AimingControl import AimingControl
-from FiringControl import FiringControl
-from Observer import DetectionObserver
+from i_o.IOControl import IOControl
+from .AimingControl import AimingControl
+from .AmmoControl import AmmoControl
+from .DCMotorControl import DCMotorControl
+from helpers.Observer import DetectionObserver
 import threading
 from typing import Tuple, Callable
+from helpers.Event import Event
 import time
-from ConfigClasses import SystemConfig
-from MotorEnums import MotorEnum
-
+from config.ConfigClasses import MotorConfig
 class MotorControl(DetectionObserver):
     def __init__(self, aimingControl: AimingControl, firingControl: FiringControl, config: SystemConfig):
         self.aimingControl = aimingControl
