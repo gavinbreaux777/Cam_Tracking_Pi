@@ -1,5 +1,5 @@
 def test_config():
-    from AppConfig import AppConfig
+    from config.AppConfig import AppConfig
     config = AppConfig("config/")
     assert config.systemConfig is not None
     assert config.clientConfig is not None

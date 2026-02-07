@@ -1,5 +1,5 @@
-from IOControl import IOControl
-from ConfigClasses import ChamberServoConfig
+from i_o.IOControl import IOControl
+from config.ConfigClasses import ChamberServoConfig
 
 class RawServoControl():
     def __init__(self, ioControl: IOControl, config: ChamberServoConfig):

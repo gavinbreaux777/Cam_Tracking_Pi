@@ -1,11 +1,10 @@
 from fractions import Fraction
 import concurrent.futures 
-from StepperMotorControlInterface import StepperMotorControlInterface
 import threading
-from RawStepperControl import RawStepperControl
-from StepMode import StepMode
-from IOControl import IOControl
-from ConfigClasses import SingleAimMotorConfig
+from .StepperMotorControlInterface import StepperMotorControlInterface
+from .RawStepperControl import RawStepperControl
+from i_o.IOControl import IOControl
+from config.ConfigClasses import SingleAimMotorConfig
 
 class StepperMotorControl(StepperMotorControlInterface):
     def __init__(self, ioControl: IOControl, config: SingleAimMotorConfig):

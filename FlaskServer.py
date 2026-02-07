@@ -1,15 +1,15 @@
 import flask
 from flask import json
 import threading
-from MotorControl import MotorControl
-from Detector import Detector
-from Observer import DetectionObserver
+from motors.MotorControl import MotorControl
+from camera.Detector import Detector
+from helpers.Observer import DetectionObserver
 import time
 from typing import Callable
 from PIL import Image
 from io import BytesIO
-from MotorEnums import MotorEnum
-from AppConfig import AppConfig
+from motors.MotorEnums import MotorEnum
+from config.AppConfig import AppConfig
 from routes.motors import create_motors_blueprint
 from routes.imageProcessing import create_imageProcessing_blueprint
 
