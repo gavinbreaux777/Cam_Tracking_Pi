@@ -68,7 +68,6 @@ ROUTES = [
     ('/toggleDelta/{show}', {'show': 'true'}),
     ('/toggleContours/{show}', {'show': 'false'}),
     ('/enableDisableMotor/{motorStr}/{clicked}', {'motorStr': 'Pan', 'clicked': 1}),
-    ('/enableDisableDCMotor/{clicked}', {'clicked': 1}),
     ('/spoolDCMotors', None),
     ('/stopDCMotors', None),
     ('/actOnDetection/{onOff}', {'onOff': 'on'}),

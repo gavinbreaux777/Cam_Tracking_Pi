@@ -99,7 +99,7 @@ def create_motors_blueprint(motorControl: "MotorControl", motorConfig: "MotorCon
         return "OKeY DOKey", 200
 
     @motors_bp.route('/calibrateMotors/<xDegreesToPercentChange>/<yDegreesToPercentChange>')
-    def CalibrateMotors(self, xDegreesToPercentChange: float, yDegreesToPercentChange: float):
+    def CalibrateMotors(xDegreesToPercentChange: float, yDegreesToPercentChange: float):
         motorConfig.aimMotors.panMotor = float(xDegreesToPercentChange)
         motorConfig.aimMotors.tiltMotor = float(yDegreesToPercentChange)
         print(str(xDegreesToPercentChange) + " , " + str(yDegreesToPercentChange))
