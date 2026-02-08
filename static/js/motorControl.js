@@ -1,5 +1,4 @@
-// Motor control functions (steppers and servos)
-
+// Motor control functions (steppers, servos, and dc motors)
 function startJog(direction, speed){
     console.log("Starting jog")
     fetch(`/motorControl/${direction}/${speed}`, {
@@ -174,3 +173,114 @@ function stopSpoolingDCMotors(){
         console.error(error)
     })
 }
+
+document.addEventListener('DOMContentLoaded', initializeMotorControlButtons);
+const motorControlButtons = document.querySelectorAll(".mot-ctrl-item[data-action]");
+function initializeMotorControlButtons(){
+    motorControlButtons.forEach(button => {
+        button.addEventListener("click", () => {
+            const action = button.getAttribute("data-action");            
+            console.log("Motor control button clicked with action: " + action);
+            switch(action){            
+                case "set-upper":
+                    RecordUpperTiltLimit(window.serverData.yStepperPosition);   
+                    break;         
+                case "set-lower":
+                    RecordLowerTiltLimit(window.serverData.yStepperPosition);
+                    break;
+                case "reset-limits":
+                    ResetTiltLimits();
+                    break;
+                case "set-home":
+                    SetAimMotorsHome()
+                    break;
+                case "move-home":
+                    MoveAimMotorsHome()
+                    break;
+                case "toggle-extra":
+                    ToggleExtraStepperControl(button)
+                    break;
+                default:
+                    console.log("Unknown motor control action: " + action);
+            }})
+    })
+}
+
+function RecordUpperTiltLimit(limit){
+    fetch(`/setTiltLimit/upper/${limit}`, {
+        method: 'GET'
+    })
+    .then(response => {
+        if(response.status == 200){
+            console.log("Upper limit set successfully.");
+        }
+    })
+    .catch(error => {
+        console.error(error)
+    })
+}
+
+function RecordLowerTiltLimit(limit){
+    fetch(`/setTiltLimit/lower/${limit}`, {
+        method: 'GET'
+    })
+    .then(response => {
+        if(response.status == 200){
+            console.log("Lower limit set successfully.");
+        }
+    })
+    .catch(error => {
+        console.error(error)
+    })
+}
+
+function SetAimMotorsHome(){
+    fetch('/setAimMotorsHome', {
+        method: 'GET'
+    })
+    .then(response => {
+        if(response.status == 200){
+            console.log("Aim motors home set successfully.");
+            const limitButtons = [...motorControlButtons].filter(
+            btn => btn.dataset.action === 'set-upper' || btn.dataset.action === 'set-lower' || btn.dataset.action == "move-home"
+            );
+            limitButtons.forEach(btn => btn.removeAttribute("disabled"));
+        }
+    })
+    .catch(error => {
+        console.error(error)
+    })
+}
+
+function MoveAimMotorsHome(){
+    fetch('/moveAimMotorsHome', {
+        method: 'GET'
+    })
+    .then(response => {
+        if(response.status == 200){
+            console.log("Aim motors moved to home position.");
+        }
+    })
+    .catch(error => {
+        console.error(error)
+    })
+}
+
+function ResetTiltLimits(){
+    RecordLowerTiltLimit(-999);
+    RecordUpperTiltLimit(999);    
+}
+
+function ToggleExtraStepperControl(toggleButton){
+    extraRow = document.querySelector(".mot-ctrl-item[data-item=extra]");
+    //get computed style here because display=none set by css shows as <empty string> in js
+    if(getComputedStyle(extraRow).display == "none") {
+        extraRow.style.display = "flex";
+         toggleButton.textContent = "Show Less";
+    }
+    else{
+        extraRow.style.display = "none";
+        toggleButton.textContent = "Show More";
+    }
+}
+

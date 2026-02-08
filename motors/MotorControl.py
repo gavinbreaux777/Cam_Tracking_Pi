@@ -24,12 +24,25 @@ class MotorControl(DetectionObserver):
             case _:
                 print("Unknown motor")
         
-    def MoveMotor(self, motorNum: MotorEnum, target: float):
+    def MoveMotorRel(self, motorNum: MotorEnum, target: float):
         match motorNum:
             case MotorEnum.Pan:
                 self.aimingControl.MoveXRel(target)
             case MotorEnum.Tilt:
                 self.aimingControl.MoveYRel(target)
+            case MotorEnum.Spool:
+                print("Unable to move dc motor to target. Use Spool command instead")
+            case MotorEnum.Chamber:
+                print("Relative move not implemented for servos. Use absolute move")
+            case _:
+                print("Unknown motor")
+
+    def MoveMotorAbs(self, motorNum: MotorEnum, target: float):
+        match motorNum:
+            case MotorEnum.Pan:
+                self.aimingControl.MovePanAbs(target)
+            case MotorEnum.Tilt:
+                self.aimingControl.MoveTiltAbs(target)
             case MotorEnum.Spool:
                 print("Unable to move dc motor to target. Use Spool command instead")
             case MotorEnum.Chamber:
@@ -122,6 +135,37 @@ class MotorControl(DetectionObserver):
         xAdjustment = percentFromCenter[0] * self._config.panDegreesPerCamPercentChange
         yAdjustment = percentFromCenter[1] * self._config.tiltDegreesPerCamPercentChange
         return xAdjustment, yAdjustment
+
+    def SetTiltLimits(self, limits: Tuple[float, float]):
+        """
+        Set CW and CCW limits for tilt motor in degrees
+
+        Args:
+            limits: position limits in degrees (CW limit, CCW limit)
+        """
+        self.aimingControl.SetTiltMotorLimits(limits)
+
+    def SetTiltLimit(self, limit: float, isUpper: bool):
+        """
+        Set either upper or lower limit for tilt motor in degrees
+
+        Args:
+            limit: position limit in degrees
+            isUpper: true if setting upper limit, false if setting lower limit
+        """
+        self.aimingControl.SetTiltMotorLimit(limit, isUpper)
+
+    def GetTiltLimits(self) -> Tuple[float, float]:
+        '''Returns tilt motor limits in degrees (cw limit, ccw limit)'''
+        return self.aimingControl.GetTiltLimits()
+
+    def SetHomeReference(self):
+        '''Set current position of motors as home reference point (0,0)'''
+        self.aimingControl.SetHomeReference()
+
+    def GetAimMotorsHomedStatus(self) -> bool:
+        '''Return true if both aim motors have been homed since startup, false if not'''
+        return self.aimingControl.hasBeenHomed
 #endregion
     
 

@@ -5,6 +5,7 @@ from .StreamingOutput import StreamingOutput
 from .ProcessImage import ProcessImage
 from helpers.Observer import DetectionObserver
 from .ImageGenerator import ImageGenerator
+import time
 
 '''This class contains camera and image processing control - together they output detection results'''
 class Detector():
@@ -14,7 +15,7 @@ class Detector():
 
         self._imgProcessor = ProcessImage(self._setDetectedLocation)
         self._imgGenerator = ImageGenerator(picam2, self._imgProcessor)
-
+    
         self.output = StreamingOutput()
 
         self.observers: list[DetectionObserver] = []

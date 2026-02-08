@@ -30,44 +30,93 @@
                 </div>
             </div>
             <!--Stepper Control-->
-            <div class="tabcontent bottom-center bottom-style" data-tabs="motor_control,calibration">
+            <div class="tabcontent bottom-center bottom-style active" data-tabs="motor_control,calibration">
                 <div id="stepper-control" class="mot-control-grid">
-                    <div id="stepper-control-title" style="grid-row: 1; grid-column: 1/5;
-                    text-align: center; font-size: 20px; font-weight: bold;">
+                    <div id="stepper-control-title" class="mot-ctrl-item" data-item="title" style="text-align: center; font-size: 20px; font-weight: bold;">
                         Stepper Control
                     </div>
-                    <div class="mot-control-button-container" style="grid-row: 2; grid-column: 2;">
+                    <div class="mot-control-button-container mot-ctrl-item" data-item="up">
                         <button class="mot-control-button" onmousedown="startJog('up', document.getElementById('speedInput').value)" onmouseup="stopAimMotors()">Up</button>
                     </div>
-                    <div class="mot-control-button-container" style="grid-row: 4; grid-column: 2;">
+                    <div class="mot-control-button-container mot-ctrl-item" data-item="down">
                         <button class="mot-control-button" onmousedown="startJog('down', document.getElementById('speedInput').value)" onmouseup="stopAimMotors()">Down</button>
                     </div>
-                    <div class="mot-control-button-container" style="grid-row: 3; grid-column: 1;">
+                    <div class="mot-control-button-container mot-ctrl-item" data-item="left">
                         <button class="mot-control-button" onmousedown="startJog('left', document.getElementById('speedInput').value)" onmouseup="stopAimMotors()">Left</button>
                     </div>
-                    <div class="mot-control-button-container" style="grid-row: 3; grid-column: 3;">
+                    <div class="mot-control-button-container mot-ctrl-item" data-item="right">
                         <button class="mot-control-button" onmousedown="startJog('right', document.getElementById('speedInput').value)" onmouseup="stopAimMotors()">Right</button>
                     </div>
-                    <div class="mot-control-button-container" style="grid-row: 3; grid-column: 2; display: flex; justify-content: center; align-items: center;">
+                    <div class="mot-control-button-container mot-ctrl-item" data-item="center">
                         <label for="speedInput" style="margin-right: 10px;">Jog Speed</label>
                         <input type="text" id="speedInput" value="10" style="width: 50%;">
                     </div>
-                    <div class="mot-control-button-container" style="grid-row: 4; grid-column: 1;">
-                        <input type="checkbox" id="enableXCheckbox" checked onchange="enableDisableMotor('Pan', this.checked)">
-                        <label for="enableXCheckbox">Enable X</label>
-                        <br>
-                        <input type="checkbox" id="enableYCheckbox" checked onchange="enableDisableMotor('Tilt', this.checked)">
-                        <label for="enableYCheckbox">Enable Y</label>
-                    </div>
-                    <div style="grid-row: 2; grid-column: 1; display: flex; flex-direction: column; white-space: nowrap; align-self: center;">
+                    
+                    <div class="mot-ctrl-item" data-item="cur-pos" style="display: flex; flex-direction: column; white-space: nowrap; align-self: center;">
                         <div style="display: flex; flex-direction: row; margin-left: 2%">
-                            <span>X Position:</span>
+                            <span>Pan Position:</span>
                             <Span id="x_stepper_pos" style="margin-left: 1%;"></Span>
                         </div>
                         <div style="display: flex; flex-direction: row; margin-left: 2%">
-                            <span>Y Position:</span>
+                            <span>Tilt Position:</span>
                             <Span id="y_stepper_pos" style="margin-left: 1%;"></Span>
                         </div>
+                    </div>
+                    <div class="mot-control-button-container">
+                        <button class=" mot-ctrl-item" data-item="more-btn" data-action="toggle-extra">
+                            Show More
+                        </button>
+                    </div>
+                    <div class="mot-ctrl-item" data-item="extra" style="display: flex;">
+                        <div class="flex-col" style="display: flex; flex-direction: column; margin-right: 2rem;">
+                            <input type="checkbox" id="enableXCheckbox" checked onchange="enableDisableMotor('Pan', this.checked)">
+                            <label for="enableXCheckbox">Enable Pan</label>
+                            <br>
+                            <input type="checkbox" id="enableYCheckbox" checked onchange="enableDisableMotor('Tilt', this.checked)">
+                            <label for="enableYCheckbox">Enable Tilt</label>
+                        </div>
+                        <div class="flex-col no-wrap">
+                            <div>
+                                Tilt Homing / Limits
+                            </div>
+                            <div class="flex-row">
+                                <div class="flex-col">
+                                    <button class="mot-ctrl-item no-wrap" data-action="set-home">
+                                        Set Home
+                                    </button>
+                                </div>
+                                <div class="flex-col align-start no-wrap">
+                                    <div class="flex-row">
+                                        <div class="btn-disabled-wrapper" data-tooltip="Motor home must be set first">
+                                            <button class="mot-ctrl-item" data-action="set-upper" disabled>
+                                                Set Upper
+                                            </button>
+                                        </div>                                        
+                                        <div id="tilt-upper-limit">
+                                            -
+                                        </div>
+                                    </div>
+                                    <div class="flex-row">
+                                        <div class="btn-disabled-wrapper" data-tooltip="Motor home must be set first">
+                                            <button class="mot-ctrl-item" data-action="set-lower" disabled>
+                                                Set Lower
+                                            </button>
+                                        </div>                                            
+                                        <div id="tilt-lower-limit">
+                                            -
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="mot-ctrl-item" data-action="reset-limits">
+                                    Reset Limits
+                                </button>
+                            </div>          
+                            <div class="btn-disabled-wrapper full-width-centered" data-tooltip="Motor home must be set first">
+                                <button class="mot-ctrl-item" data-action="move-home" disabled>
+                                    Move Home
+                                </button>
+                            </div>
+                        </div>                        
                     </div>
                 </div>
             </div>
@@ -217,7 +266,7 @@
                 </div>
             </div>
         </div>
-        <script src="/static/js/App.js"></script>
+        <script type="module" src="/static/js/App.js"></script>
         <script src="/static/js/cameraControl.js"></script>
         <script src="/static/js/motorControl.js"></script>
         <script src="/static/js/uiComponents.js"></script>

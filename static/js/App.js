@@ -1,5 +1,5 @@
 // Global server data state
-let serverData = {
+window.serverData = {
     xStepperPosition: 0,
     yStepperPosition: 0,
     servoPosition: 0,
@@ -9,7 +9,9 @@ let serverData = {
     runMode: 0,
     xDegreesPerPercent: 0,
     yDegreesPerPercent: 0,
-    streaming: false
+    streaming: false,
+    tiltLowerLimit: null,
+    tiltUpperLimit: null
 }
 
 // Cache DOM elements for quick access
@@ -37,7 +39,9 @@ const motorElements = {
     yStepperPos_Element: document.getElementById("y_stepper_pos"),
     servoPos_Element: document.getElementById("servo-pos"),
     taughtOpen_Element: document.getElementById("taughtOpenVal"),
-    taughtClosed_Element: document.getElementById("taughtClosedVal")
+    taughtClosed_Element: document.getElementById("taughtClosedVal"),
+    tiltLowerLimit_Element: document.getElementById("tilt-lower-limit"),
+    tiltUpperLimit_Element: document.getElementById("tilt-upper-limit")
 }
 
 // Initialize event sources on page load
@@ -76,12 +80,15 @@ function initializeEventSources() {
         serverData.servoPosition = eventData.servoPosition?.toFixed(2) ?? "--";
         serverData.taughtOpen = eventData.taughtOpen?.toFixed(2) ?? "--";
         serverData.taughtClosed = eventData.taughtClosed?.toFixed(2) ?? "--";
-        
+        serverData.tiltLowerLimit = eventData.tiltLowerLimit?.toFixed(2) ?? "--";
+        serverData.tiltUpperLimit = eventData.tiltUpperLimit?.toFixed(2) ?? "--";
         motorElements.xStepperPos_Element.textContent = serverData.xStepperPosition;
         motorElements.yStepperPos_Element.textContent = serverData.yStepperPosition;
         motorElements.servoPos_Element.textContent = serverData.servoPosition;
         motorElements.taughtOpen_Element.textContent = serverData.taughtOpen;
         motorElements.taughtClosed_Element.textContent = serverData.taughtClosed;
+        motorElements.tiltLowerLimit_Element.textContent = serverData.tiltLowerLimit;
+        motorElements.tiltUpperLimit_Element.textContent = serverData.tiltUpperLimit;
     }
 }
 

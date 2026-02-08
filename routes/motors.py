@@ -62,7 +62,7 @@ def create_motors_blueprint(motorControl: "MotorControl", motorConfig: "MotorCon
     def moveChamberServo(angle: str):
         angleInt = float(angle)
         print("moving servo")
-        motorControl.MoveMotor(MotorEnum.Chamber, angleInt)
+        motorControl.MoveMotorAbs(MotorEnum.Chamber, angleInt)
         return "okeY DOkey", 200
 
     @motors_bp.route('/enableDisableMotor/<motorStr>/<clicked>')
@@ -104,5 +104,31 @@ def create_motors_blueprint(motorControl: "MotorControl", motorConfig: "MotorCon
         motorConfig.aimMotors.tiltMotor = float(yDegreesToPercentChange)
         print(str(xDegreesToPercentChange) + " , " + str(yDegreesToPercentChange))
         return "Okey Dokey", 200
+
+    @motors_bp.route('/setTiltLimit/<limit>/<value>')
+    def SetTiltLimit(limit: str, value: str):
+        try:
+            valueInt = float(value)
+        except(ValueError):
+            return "Invalid value parameter", 400
+        match limit:
+            case "upper":
+                motorControl.SetTiltLimit(valueInt, True)
+            case "lower":
+                motorControl.SetTiltLimit(valueInt, False)
+            case _:
+                return "Invalid limit parameter", 400
+        return "OK", 200
     
+    @motors_bp.route('/setAimMotorsHome')
+    def SetAimMotorsHome():
+        motorControl.SetHomeReference()
+        return "OK", 200
+    
+    @motors_bp.route('/moveAimMotorsHome')
+    def MoveAimMotorsHome():
+        motorControl.MoveMotorAbs(MotorEnum.Pan, 0)
+        motorControl.MoveMotorAbs(MotorEnum.Tilt, 0)
+        return "OK", 200
+
     return motors_bp
