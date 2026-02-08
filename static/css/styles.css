@@ -97,11 +97,29 @@ h1 {
 /*Motor control layout*/
 .mot-control-grid{
     display: grid;
+    grid-template-areas:
+        "title title title"
+        "cur-pos up more-btn"
+        "left center right"
+        "enable-checkboxes down ."
+        "extra extra extra";
     height: 100%;
     width: 100%;
     grid-template-columns: 1fr 1fr 1fr;
-    grid-template-rows: 15% 1fr 1fr 1fr;
+    grid-template-rows: 15% 1fr 1fr 1fr auto;
 }
+
+.mot-ctrl-item[data-item="title"] { grid-area: title; }
+.mot-ctrl-item[data-item="up"] { grid-area: up; }
+.mot-ctrl-item[data-item="down"] { grid-area: down; }
+.mot-ctrl-item[data-item="left"] { grid-area: left; }
+.mot-ctrl-item[data-item="right"] { grid-area: right; }
+.mot-ctrl-item[data-item="center"] { grid-area: center; }
+.mot-ctrl-item[data-item="enable-checkboxes"] { grid-area: enable-checkboxes; }
+.mot-ctrl-item[data-item="cur-pos"] { grid-area: cur-pos; }
+.mot-ctrl-item[data-item="extra"] { grid-area: extra; display: none;
+     flex-direction: row; padding: 1rem; 
+     border-top: 1px dashed gray; align-items: center; justify-content: space-evenly;}
 
 .mot-control-button{
     height: 80%;
@@ -113,6 +131,66 @@ h1 {
     justify-content: center; 
     align-items: center;
     height: 100%;
+}
+
+.flex-row{
+    display: flex; flex-direction: row; align-items: center; gap: 0.5rem; 
+}
+
+.flex-col{
+    display: flex; flex-direction: column; align-items: center; gap: 0.2rem; 
+}
+
+.flex-col button {
+    flex: 1;
+    display: flex;
+    padding: 0.2rem;
+}
+
+.flex-col.align-start{
+    align-items: flex-start;
+}
+
+.no-wrap {
+    white-space: nowrap;
+}
+
+.btn-disabled-wrapper{
+    display: inline-block;
+    position: relative;
+}
+
+.btn-disabled-wrapper::after{    
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(10%) translateY(1rem);
+    content: attr(data-tooltip);
+    color: black;
+    background-color: white;
+    opacity: 0;
+    transition: opacity 0.5s;    
+    pointer-events: none;
+    display: flex;
+}
+
+.btn-disabled-wrapper:hover::after{
+    opacity: 1;
+}
+
+.full-width-centered {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    position: relative; 
+}
+
+.full-width-centered button{
+    display: flex;
+    width: 65%; 
+    justify-content: 
+    center; 
+    flex: 0 0 auto;
 }
 
 .servo-control-grid{

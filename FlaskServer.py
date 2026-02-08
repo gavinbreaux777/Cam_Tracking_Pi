@@ -133,16 +133,20 @@ class FlaskServer(DetectionObserver):
 
     def generate_data(self):
         while True:
-            data = {
-                'time': time.ctime(),
-                'streaming': not self._stopStreamEvent.is_set(),
-                'moddingImage': self._detector.processImage,
-                'actOnDetection': self._systemConfig.actOnDetection,
-                'xDegreesPerPercent': self._systemConfig.panDegreesPerCamPercentChange,
-                'yDegreesPerPercent': self._systemConfig.tiltDegreesPerCamPercentChange
-            }
-            json_data = json.dumps(data)
-            yield f"data: {json_data}\n\n"
+            try:
+                data = {
+                    'time': time.ctime(),
+                    'streaming': not self._stopStreamEvent.is_set(),
+                    'moddingImage': self._detector.processImage,
+                    'actOnDetection': self._systemConfig.actOnDetection,
+                    'xDegreesPerPercent': self._systemConfig.panDegreesPerCamPercentChange,
+                    'yDegreesPerPercent': self._systemConfig.tiltDegreesPerCamPercentChange
+                }
+                json_data = json.dumps(data)
+                yield f"data: {json_data}\n\n"                
+            except Exception as e:
+                print(f"Error in generate_data: {e}")
+                yield f"data: {{'error': 'Error generating data'}}\n\n"
             time.sleep(1)
 
     def detectionNotificationStream(self):
@@ -159,9 +163,12 @@ class FlaskServer(DetectionObserver):
             data = {
                 'xPosition': self._motorControl.GetMotorPos(MotorEnum.Pan),
                 'yPosition': self._motorControl.GetMotorPos(MotorEnum.Tilt),
+                'tiltLowerLimit': self._motorControl.GetTiltLimits()[0],
+                'tiltUpperLimit': self._motorControl.GetTiltLimits()[1],
                 'servoPosition': self._motorControl.GetMotorPos(MotorEnum.Chamber),
                 'taughtOpen': self._motorConfig.chamberServo.openAngle,
-                'taughtClosed': self._motorConfig.chamberServo.closedAngle
+                'taughtClosed': self._motorConfig.chamberServo.closedAngle,
+                'aimMotorsHomed': self._motorControl.GetAimMotorsHomedStatus()
             }
             json_data = json.dumps(data)
             yield f"data: {json_data}\n\n"

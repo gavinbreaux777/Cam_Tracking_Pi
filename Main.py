@@ -24,13 +24,13 @@ try:
     
     #Start the camera recording
     detector.StartRecording()    
-
+    
     #start Flask server with output from camera recording
     server = FlaskServer(detector, motorControl, config)
 
     detector.RegisterObserver(motorControl)
     detector.RegisterObserver(server)
-
+    
     server.startServer()
 
 finally:

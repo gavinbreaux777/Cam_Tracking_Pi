@@ -1,5 +1,6 @@
 from config.AppConfig import *
 from unittest.mock import MagicMock
+import time
 
 class ClassFactory():
     def __init__(self):
@@ -11,9 +12,14 @@ class ClassFactory():
         if(config.mock):
             import numpy as np
             mock_camera = MagicMock()
-            mock_camera.Picamera2.capture_array.return_value = np.zeros((480, 640, 3), dtype=np.uint8) 
+
+            def fake_capture():
+                time.sleep(0.01)
+                return np.zeros((480, 640, 3), dtype=np.uint8)
+            mock_camera.Picamera2.capture_array.side_effect = fake_capture            
             
             return mock_camera
+        
         else:
             import picamera2
             picamFromLib = picamera2
@@ -39,7 +45,7 @@ class ClassFactory():
         from motors.AimingControl import AimingControl
         from motors.DCMotorControl import DCMotorControl
         from motors.RawServoControl import RawServoControl
-        from motors.StepperMotorControl import StepperMotorControl
+        from motors.stepper_control.StepperMotorControl import StepperMotorControl
         from motors.FiringControl import FiringControl
         from motors.AmmoControl import AmmoControl
 
