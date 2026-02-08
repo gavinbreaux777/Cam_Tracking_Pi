@@ -167,7 +167,8 @@ class FlaskServer(DetectionObserver):
                 'tiltUpperLimit': self._motorControl.GetTiltLimits()[1],
                 'servoPosition': self._motorControl.GetMotorPos(MotorEnum.Chamber),
                 'taughtOpen': self._motorConfig.chamberServo.openAngle,
-                'taughtClosed': self._motorConfig.chamberServo.closedAngle
+                'taughtClosed': self._motorConfig.chamberServo.closedAngle,
+                'aimMotorsHomed': self._motorControl.GetAimMotorsHomedStatus()
             }
             json_data = json.dumps(data)
             yield f"data: {json_data}\n\n"

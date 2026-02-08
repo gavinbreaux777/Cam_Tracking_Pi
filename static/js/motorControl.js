@@ -241,15 +241,11 @@ function SetAimMotorsHome(){
     .then(response => {
         if(response.status == 200){
             console.log("Aim motors home set successfully.");
-            const limitButtons = [...motorControlButtons].filter(
-            btn => btn.dataset.action === 'set-upper' || btn.dataset.action === 'set-lower' || btn.dataset.action == "move-home"
-            );
-            limitButtons.forEach(btn => btn.removeAttribute("disabled"));
         }
     })
     .catch(error => {
         console.error(error)
-    })
+    })    
 }
 
 function MoveAimMotorsHome(){

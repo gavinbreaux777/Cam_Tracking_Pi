@@ -164,7 +164,7 @@ class MotorControl(DetectionObserver):
         self.aimingControl.SetHomeReference()
 
     def GetAimMotorsHomedStatus(self) -> bool:
-        '''Return true if both aim motors have been homed since startup, false if not'''
+        '''Return true if tilt motor has been homed since startup, false if not'''
         return self.aimingControl.hasBeenHomed
 #endregion
     

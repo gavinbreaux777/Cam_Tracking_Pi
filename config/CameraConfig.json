@@ -1,4 +1,4 @@
 {
-    "mock": true,
+    "mock": false,
     "imageSize": [640, 480]
 }

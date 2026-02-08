@@ -11,7 +11,8 @@ window.serverData = {
     yDegreesPerPercent: 0,
     streaming: false,
     tiltLowerLimit: null,
-    tiltUpperLimit: null
+    tiltUpperLimit: null,
+    aimMotorsHomed: null
 }
 
 // Cache DOM elements for quick access
@@ -41,7 +42,9 @@ const motorElements = {
     taughtOpen_Element: document.getElementById("taughtOpenVal"),
     taughtClosed_Element: document.getElementById("taughtClosedVal"),
     tiltLowerLimit_Element: document.getElementById("tilt-lower-limit"),
-    tiltUpperLimit_Element: document.getElementById("tilt-upper-limit")
+    tiltUpperLimit_Element: document.getElementById("tilt-upper-limit"),
+    disabledWrappers: document.querySelectorAll(".mot-ctrl-item[data-item=extra] .btn-disabled-wrapper"),
+    disabledLimitButtons: document.querySelectorAll(".mot-ctrl-item[data-item=extra] .btn-disabled-wrapper button")
 }
 
 // Initialize event sources on page load
@@ -55,7 +58,7 @@ function initializeEventSources() {
         serverData.streaming = JSON.parse(event.data).streaming;
         serverData.actOnDetection = JSON.parse(event.data).actOnDetection;
         serverData.xDegreesPerPercent = JSON.parse(event.data).xDegreesPerPercent;
-        serverData.yDegreesPerPercent = JSON.parse(event.data).yDegreesPerPercent;
+        serverData.yDegreesPerPercent = JSON.parse(event.data).yDegreesPerPercent;        
         updateStaticHTML();
     };
     dataEventSource.onerror = function() {
@@ -82,6 +85,7 @@ function initializeEventSources() {
         serverData.taughtClosed = eventData.taughtClosed?.toFixed(2) ?? "--";
         serverData.tiltLowerLimit = eventData.tiltLowerLimit?.toFixed(2) ?? "--";
         serverData.tiltUpperLimit = eventData.tiltUpperLimit?.toFixed(2) ?? "--";
+        serverData.aimMotorsHomed = eventData.aimMotorsHomed ?? false;
         motorElements.xStepperPos_Element.textContent = serverData.xStepperPosition;
         motorElements.yStepperPos_Element.textContent = serverData.yStepperPosition;
         motorElements.servoPos_Element.textContent = serverData.servoPosition;
@@ -109,4 +113,21 @@ function updateStaticHTML(){
 
     calibrationElements.xDegreesPerPercent_Element.innerHTML = Number(serverData.xDegreesPerPercent).toFixed(2);
     calibrationElements.yDegreesPerPercent_Element.innerHTML = Number(serverData.yDegreesPerPercent).toFixed(2);
+
+    motorElements.disabledWrappers.forEach(btn => {
+        if(serverData.aimMotorsHomed == true) {
+            btn.classList.remove("btn-disabled-wrapper");
+        }
+        else{
+            btn.classList.add("btn-disabled-wrapper");
+        }
+    })
+    motorElements.disabledLimitButtons.forEach(btn => {
+        if(serverData.aimMotorsHomed == true){
+            btn.disabled = false;
+        }
+        else{
+            btn.disabled = true;
+        }
+    })
 }

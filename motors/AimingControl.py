@@ -32,7 +32,7 @@ class AimingControl():
     @property
     def hasBeenHomed(self) -> bool:
         '''true if both motors (pan and tilt) report they have been homed'''
-        return self.panMotor.hasBeenHomed and self.tiltMotor.hasBeenHomed
+        return self.tiltMotor.hasBeenHomed
 
     def AimPanTiltRel(self, panDegrees: float, tiltDegrees: float) -> None:
         '''Move motors relative in x and y'''

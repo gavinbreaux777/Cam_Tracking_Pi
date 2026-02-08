@@ -178,17 +178,19 @@ h1 {
     opacity: 1;
 }
 
-.btn-disabled-wrapper.full-width-centered {
+.full-width-centered {
     display: flex;
     justify-content: center;
     width: 100%;
     position: relative; 
 }
 
-.btn-disabled-wrapper.full-width-centered button{
+.full-width-centered button{
+    display: flex;
     width: 65%; 
     justify-content: 
-    center; flex: 0 0 auto;
+    center; 
+    flex: 0 0 auto;
 }
 
 .servo-control-grid{
