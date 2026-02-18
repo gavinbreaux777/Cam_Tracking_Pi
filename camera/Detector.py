@@ -6,6 +6,9 @@ from .ProcessImage import ProcessImage
 from helpers.Observer import DetectionObserver
 from .ImageGenerator import ImageGenerator
 import time
+from LoggerSetup import LoggerSetup
+
+logger = LoggerSetup.get_logger("Detector")
 
 '''This class contains camera and image processing control - together they output detection results'''
 class Detector():
@@ -56,9 +59,9 @@ class Detector():
         newX = -location[0] #x motor is flipped from our x axis, reverse it
         newY = -location[1] #y motor is flipped from our y axis, reverse it
         self._detectedLocation = [newX, newY]
-        print("Setting detected location at "  + str(self._detectedLocation))
+        logger.info(f"Detection found at location: X={newX}, Y={newY}")
         self._notifyObservers()
-        print("Observers notified")
+        logger.debug("Observers notified of detection")
         #tell image process class to change behavior here (ie, stop detecting etc.) (or could have image process class do it directly)
         #then have motor control class inform detector here that firing sequence has completed
         self.processImage = False 
@@ -87,13 +90,18 @@ class Detector():
 
     def RegisterObserver(self, newObserver: DetectionObserver):
         '''Register new observer to be notified when motion has been detected'''
+        logger.debug(f"Registering observer: {newObserver.__class__.__name__}")
         self.observers.append(newObserver)
 
     def StartRecording(self) -> None:
+        logger.info("Starting camera recording")
         self._imgGenerator.StartRecording(self.output)
+        logger.info("Camera recording started")
 
     def StopRecording(self) -> None:
+        logger.info("Stopping camera recording")
         self._imgGenerator.Stop()
+        logger.info("Camera recording stopped")
 
     def ModifyImageProcessorSetting(self, settingName: str, settingValue: Any) -> None:
         if(settingName == "requiredObjectSize"):

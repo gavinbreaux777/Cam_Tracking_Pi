@@ -12,6 +12,7 @@ from motors.MotorEnums import MotorEnum
 from config.AppConfig import AppConfig
 from routes.motors import create_motors_blueprint
 from routes.imageProcessing import create_imageProcessing_blueprint
+from LoggerSetup import LoggerSetup, log_user_action
 
 class FlaskServer(DetectionObserver):    
     '''Handles serving pages and image streams via Flask'''
@@ -24,6 +25,9 @@ class FlaskServer(DetectionObserver):
             stopProcessingImagesEvent (threading.Event): Event to raise when client requests stop of image processing
             motorControl (MotorControl): Class to pass client motor-control commands to
         '''
+        self.logger = LoggerSetup.get_logger("FlaskServer")
+        self.logger.debug("Initializing FlaskServer...")
+        
         self.app = flask.Flask(__name__)
         self._detector = detector
         self._imageSource = self._detector.output
@@ -38,6 +42,8 @@ class FlaskServer(DetectionObserver):
         self._stopStreamEvent = threading.Event()
         self._newDetectedImageAvailable = threading.Event() #set this event to notify webpage that a new detection has occured (so it can detect new detection image)
         self._define_routes()
+        
+        self.logger.debug("FlaskServer initialization complete")
 
 
 
@@ -64,48 +70,67 @@ class FlaskServer(DetectionObserver):
 
 
     def serve_page(self):
+        self.logger.info("User accessed main page")
         return flask.render_template("Picamera2Page.html")
     
     #Stream control
+    @log_user_action("User started camera stream")
     def startStream(self):
-        print("Starting stream")
+        self.logger.debug("Starting stream")
         self._stopStreamEvent.clear()
         return flask.Response(self.gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
     
+    @log_user_action("User stopped camera stream")
     def stopStream(self):
         """Stop streaming frames"""
-        print("setting stop event")
+        self.logger.debug("Setting stop event for stream")
         self._stopStreamEvent.set()
         return "OkeY DoKEy", 200
     
+    @log_user_action("User requested base image")
     def returnBaseImg(self):
-        pilImg = Image.fromarray(self._detector._imgProcessor._baseImg)
-        ioImg = BytesIO()
-        pilImg.save(ioImg, 'JPEG')
-        ioImg.seek(0)
-        return flask.send_file(ioImg, mimetype='image/jpeg')
+        try:
+            pilImg = Image.fromarray(self._detector._imgProcessor._baseImg)
+            ioImg = BytesIO()
+            pilImg.save(ioImg, 'JPEG')
+            ioImg.seek(0)
+            self.logger.debug("Base image sent successfully")
+            return flask.send_file(ioImg, mimetype='image/jpeg')
+        except Exception as e:
+            self.logger.error(f"Error returning base image: {e}", exc_info=True)
+            return "Error retrieving image", 500
     
+    @log_user_action("User requested detection image")
     def returnDetectImg(self):
-        print(self._detector._imgProcessor.detectImg.shape)
-        pilImg = Image.fromarray(self._detector._imgProcessor.detectImg)
-        ioImg = BytesIO()
-        pilImg.save(ioImg, 'JPEG')
-        ioImg.seek(0)
-        return flask.send_file(ioImg, mimetype='image/jpeg')
+        try:
+            self.logger.debug(f"Detection image shape: {self._detector._imgProcessor.detectImg.shape}")
+            pilImg = Image.fromarray(self._detector._imgProcessor.detectImg)
+            ioImg = BytesIO()
+            pilImg.save(ioImg, 'JPEG')
+            ioImg.seek(0)
+            return flask.send_file(ioImg, mimetype='image/jpeg')
+        except Exception as e:
+            self.logger.error(f"Error returning detection image: {e}", exc_info=True)
+            return "Error retrieving image", 500
     
     #system control
+    @log_user_action("User forced manual detection")
     def forceDetection(self, xRatio: str, yRatio: str):
         #clicked x ratio is backwards from camera detected x ratio, so reverse it before sending to detector
         xRatio = -1 * float(xRatio)
         yRatio = float(yRatio)
+        self.logger.info(f"Manual detection forced at position: X={xRatio}, Y={yRatio}")
         self._detector.setDetectedRatio(float(xRatio), float(yRatio))
         return "okey DOKEY", 200
 
+    @log_user_action("User toggled action-on-detection")
     def actOnDetection(self, onOff: str):
         if(onOff == "true"):
             self._systemConfig.actOnDetection = True
+            self.logger.info("Action-on-detection ENABLED")
         else:
             self._systemConfig.actOnDetection = False
+            self.logger.info("Action-on-detection DISABLED")
         return "okeY DoKEy", 200
     
 
@@ -145,7 +170,7 @@ class FlaskServer(DetectionObserver):
                 json_data = json.dumps(data)
                 yield f"data: {json_data}\n\n"                
             except Exception as e:
-                print(f"Error in generate_data: {e}")
+                self.logger.error(f"Error in generate_data: {e}", exc_info=True)
                 yield f"data: {{'error': 'Error generating data'}}\n\n"
             time.sleep(1)
 
@@ -183,4 +208,7 @@ class FlaskServer(DetectionObserver):
     def startServer(self):
         """Run the Flask server."""
         #access page via 10.0.0.40:5000, localhost:5000, 127.0.0.1:5000
+        self.logger.info("=" * 60)
+        self.logger.info("STARTING FLASK SERVER ON 0.0.0.0:5000")
+        self.logger.info("=" * 60)
         self.app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False)

@@ -1,5 +1,8 @@
 from i_o.IOControl import IOControl
 from config.ConfigClasses import ChamberServoConfig
+from LoggerSetup import LoggerSetup
+
+logger = LoggerSetup.get_logger("RawServoControl")
 
 class RawServoControl():
     def __init__(self, ioControl: IOControl, config: ChamberServoConfig):
@@ -18,7 +21,7 @@ class RawServoControl():
 
     def SetAngle(self, angle: float):
         if(angle < self._minAngle or angle > self._maxAngle):
-            print(f"Angle out of range. Range = {self._minAngle} - {self._maxAngle}")
+            logger.error(f"Angle out of range. Range = {self._minAngle} - {self._maxAngle}")
             return
         dutyCycle = int(500 + (angle * self._dutyCyclePerDegree))
         self.ioControl.SetPWMDutyCycle(self._pwmPin, dutyCycle)

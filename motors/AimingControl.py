@@ -2,6 +2,9 @@ from concurrent import futures
 from typing import Tuple
 from .stepper_control.StepperMotorControl import StepperMotorControl
 from .MotorEnums import MotorEnum
+from LoggerSetup import LoggerSetup
+
+logger = LoggerSetup.get_logger("AimingControl")
 
 class AimingControl():
     def __init__(self, panMotor: StepperMotorControl, tiltMotor: StepperMotorControl):
@@ -49,7 +52,7 @@ class AimingControl():
             case MotorEnum.Tilt:
                 self.tiltMotor.RotateRel(degrees)
             case _:
-                print("Unknown motor")
+                logger.error(f"Unknown motor: {motor}")
 
     def MoveXRel(self, degrees: float) -> bool:
         madePosition = self.panMotor.RotateRel(degrees)
@@ -74,7 +77,7 @@ class AimingControl():
             case MotorEnum.Tilt:
                 self.tiltMotor.enabled = True
             case _:
-                print("Unknown motor")
+                logger.error(f"Unknown motor: {motor}")
 
     def DisableMotor(self, motor: MotorEnum):
         match motor:
@@ -83,7 +86,7 @@ class AimingControl():
             case MotorEnum.Tilt:
                 self.tiltMotor.enabled = False
             case _:
-                print("Unknown motor")
+                logger.error(f"Unknown motor: {motor}")
 
     def Jog(self, speed: int, cw: bool, motor: MotorEnum):
         '''Start motor rotating at specified speed until timeout
@@ -98,7 +101,7 @@ class AimingControl():
         elif(motor == MotorEnum.Tilt):
             self.tiltMotor.Jog(speed, cw)
         else:
-            print("Error: Invalid parameter received for 'motor' argument of AimingControl.Jog")
+            logger.error(f"Invalid motor parameter in Jog: {motor}")
 
     def StopMotors(self):
         self.panMotor.Stop()

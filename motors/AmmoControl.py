@@ -1,6 +1,9 @@
 import time
 from .RawServoControl import RawServoControl
 from .MotorEnums import MotorEnum
+from LoggerSetup import LoggerSetup
+
+logger = LoggerSetup.get_logger("AmmoControl")
 
 class AmmoControl:
     def __init__(self, chamberServo: RawServoControl):
@@ -81,7 +84,7 @@ class AmmoInletTrio():
     def ReduceActiveAmmoCount(self):
         '''Reduce active ammo count by 1. If active ammo count is 0, set next inlet active'''
         self.activeAmmoCount -= 1
-        print("Active ammo count: ", self.activeAmmoCount)
+        logger.info(f"Active ammo count: {self.activeAmmoCount}")
         if(self.activeAmmoCount <= 0):
             self.SetNextInletActive()
     
@@ -100,7 +103,7 @@ class AmmoInletTrio():
         if(inlet > 2 or inlet < 0):
             raise ValueError("Invalid inlet number. Must be 0, 1, or 2.")
         else:
-            print(f"Setting inlet {inlet} active")
+            logger.debug(f"Setting inlet {inlet} active")
             self.activeInlet = inlet
             self.activeAmmoCount = self.inlets[inlet].currentCount
             self.activeOpenServoAngle = self.inlets[inlet].openServoAngle

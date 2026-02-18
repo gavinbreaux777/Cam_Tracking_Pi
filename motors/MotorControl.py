@@ -6,6 +6,9 @@ from config.ConfigClasses import SystemConfig
 import threading
 from typing import Tuple, Callable
 import time
+from LoggerSetup import LoggerSetup, log_function_call
+
+logger = LoggerSetup.get_logger("MotorControl")
 class MotorControl(DetectionObserver):
     def __init__(self, aimingControl: AimingControl, firingControl: FiringControl, config: SystemConfig):
         self.aimingControl = aimingControl
@@ -16,81 +19,111 @@ class MotorControl(DetectionObserver):
     def StopMotor(self, motorNum: MotorEnum):
         match motorNum:
             case MotorEnum.Pan | MotorEnum.Tilt:
+                logger.info(f"Stopping aiming motors")
                 self.aimingControl.StopMotors()
+                time.sleep(0.1)  # Brief delay for motors to settle
+                logger.info(f"Pan position: {self.aimingControl.motorPositions[MotorEnum.Pan]:.2f}deg, Tilt position: {self.aimingControl.motorPositions[MotorEnum.Tilt]:.2f}deg")
             case MotorEnum.Spool:
+                logger.info("Stopping firing motor (spool)")
                 self.firingControl.StopMotors()
             case MotorEnum.Chamber:
-                print("Stop not implemented for chamber servo")
+                logger.debug("Stop not implemented for chamber servo")
             case _:
-                print("Unknown motor")
+                logger.error("Unknown motor")
         
     def MoveMotorRel(self, motorNum: MotorEnum, target: float):
         match motorNum:
             case MotorEnum.Pan:
+                old_pos = self.aimingControl.motorPositions[MotorEnum.Pan]
+                logger.info(f"Moving Pan motor relatively by {target}deg (from {old_pos:.2f}deg)")
                 self.aimingControl.MoveXRel(target)
+                new_pos = self.aimingControl.motorPositions[MotorEnum.Pan]
+                logger.info(f"Pan motor moved to {new_pos:.2f}deg")
             case MotorEnum.Tilt:
+                old_pos = self.aimingControl.motorPositions[MotorEnum.Tilt]
+                logger.info(f"Moving Tilt motor relatively by {target}deg (from {old_pos:.2f}deg)")
                 self.aimingControl.MoveYRel(target)
+                new_pos = self.aimingControl.motorPositions[MotorEnum.Tilt]
+                logger.info(f"Tilt motor moved to {new_pos:.2f}deg")
             case MotorEnum.Spool:
-                print("Unable to move dc motor to target. Use Spool command instead")
+                logger.error("Unable to move dc motor to target. Use Spool command instead")
             case MotorEnum.Chamber:
-                print("Relative move not implemented for servos. Use absolute move")
+                logger.error("Relative move not implemented for servos. Use absolute move")
             case _:
-                print("Unknown motor")
+                logger.error("Unknown motor")
 
     def MoveMotorAbs(self, motorNum: MotorEnum, target: float):
         match motorNum:
             case MotorEnum.Pan:
+                logger.info(f"Moving Pan motor to {target:.2f}deg")
                 self.aimingControl.MovePanAbs(target)
+                final_pos = self.aimingControl.motorPositions[MotorEnum.Pan]
+                logger.info(f"Pan motor is now at {final_pos:.2f}deg")
             case MotorEnum.Tilt:
+                logger.info(f"Moving Tilt motor to {target:.2f}deg")
                 self.aimingControl.MoveTiltAbs(target)
+                final_pos = self.aimingControl.motorPositions[MotorEnum.Tilt]
+                logger.info(f"Tilt motor is now at {final_pos:.2f}deg")
             case MotorEnum.Spool:
-                print("Unable to move dc motor to target. Use Spool command instead")
+                logger.error("Unable to move dc motor to target. Use Spool command instead")
             case MotorEnum.Chamber:
+                logger.info(f"Moving Chamber servo to {target:.2f}deg")
                 self.firingControl.SetChamberServoAngle(target)
+                final_pos = self.firingControl.motorPositions[MotorEnum.Chamber]
+                logger.info(f"Chamber servo is now at {final_pos:.2f}deg")
             case _:
-                print("Unknown motor")
+                logger.error("Unknown motor")
 
     def JogMotor(self, motorNum: MotorEnum, speed: int, direction: bool):
+        direction_str = "forward" if direction else "reverse"
         match motorNum:
             case MotorEnum.Pan:
+                logger.info(f"Jogging Pan motor {direction_str} at speed {speed}")
                 self.aimingControl.Jog(speed, direction, MotorEnum.Pan)
             case MotorEnum.Tilt:
+                logger.info(f"Jogging Tilt motor {direction_str} at speed {speed}")
                 self.aimingControl.Jog(speed, direction, MotorEnum.Tilt)
             case MotorEnum.Spool:
-                print("Unable to jog dc motor. Use Spool command instead")
+                logger.error("Unable to jog dc motor. Use Spool command instead")
             case MotorEnum.Chamber:
-                print("Jog not implemented for chamber servo")
+                logger.error("Jog not implemented for chamber servo")
             case _:
-                print("Unknown motor")
+                logger.error("Unknown motor")
     
     def EnableMotor(self, motorNum: MotorEnum):
         match motorNum:
             case MotorEnum.Pan | MotorEnum.Tilt:
+                logger.info(f"Enabling aiming motor: {motorNum}")
                 self.aimingControl.EnableMotor(motorNum)
             case MotorEnum.Spool | MotorEnum.Chamber:
+                logger.info(f"Enabling firing motor: {motorNum}")
                 self.firingControl.EnableMotor(MotorEnum.Spool)
             case _:
-                print("Unknown motor")
+                logger.error("Unknown motor")
 
     def DisableMotor(self, motorNum: MotorEnum):
         match motorNum:
             case MotorEnum.Pan | MotorEnum.Tilt:
+                logger.info(f"Disabling aiming motor: {motorNum}")
                 self.aimingControl.DisableMotor(motorNum)
             case MotorEnum.Spool | MotorEnum.Chamber:
+                logger.info(f"Disabling firing motor: {motorNum}")
                 self.firingControl.DisableMotor(motorNum)
             case _:
-                print("Unknown motor")
+                logger.error("Unknown motor")
 
     def GetMotorPos(self, motorNum: MotorEnum) -> float:
         match motorNum:
             case MotorEnum.Pan | MotorEnum.Tilt:
-                return self.aimingControl.motorPositions[motorNum]
+                pos = self.aimingControl.motorPositions[motorNum]
+                return pos
             case MotorEnum.Spool:
-                print("Invalid request: Unable to get position of dc motor")
+                logger.error("Invalid request: Unable to get position of dc motor")
             case MotorEnum.Chamber:
-                return self.firingControl.motorPositions[motorNum]
+                pos = self.firingControl.motorPositions[motorNum]
+                return pos
             case _:
-                print("Unknown motor")
+                logger.error("Unknown motor")
 #endregion
 
 
@@ -100,9 +133,9 @@ class MotorControl(DetectionObserver):
 
     def OnMotionFound(self, location, acknowledgeCallback):
         '''Start thread to handle firing so image generation/processing can continue'''
-        print("Motor control notified. Act on detection = " + str(self._config.actOnDetection))
-        if(self._config.actOnDetection== True):
-            print("starting motion thread")
+        logger.info(f"Motion detected at location {location}. Act on detection = {self._config.actOnDetection}")
+        if(self._config.actOnDetection == True):
+            logger.info("Starting firing sequence thread")
             searchAndDestroyThread = threading.Thread(target=lambda: self.FindAndFire(location, acknowledgeCallback))
             searchAndDestroyThread.start()
             searchAndDestroyThread.join()
@@ -114,19 +147,20 @@ class MotorControl(DetectionObserver):
         '''Aim motors, fire projectile, and finally call callback to notify Detector that we've finished the sequence'''
         #detector give location in terms of offset from center of camera frame, based on camera resolution
         #convert from these pixel offsets to motor movements
-        print("running find and fire")
+        logger.info("Starting Find and Fire sequence")
         self.firingControl.SpoolMotors()
 
         xAdjustment, yAdjustment = self.CalculateMotorAdjustments(location)   
-        print("aiming motors: " + str(xAdjustment) + " degrees x, " + str(yAdjustment) + " degrees y")
+        logger.info(f"Calculated motor adjustments - Pan: {xAdjustment} degrees, Tilt: {yAdjustment} degrees")
         self.AimPanTiltRel(xAdjustment, yAdjustment)
-        print("Motors aimed, waiting for spool")
+        logger.debug("Motors aimed, waiting for spool")
         while(not self.firingControl.motorsSpooled):
             pass
-        print("Motors spooled, firing chamber servo")
+        logger.info("Motors spooled, firing chamber servo")
         self.firingControl.ChamberSingle()
         time.sleep(0.2)
         self.firingControl.StopMotors()
+        logger.info("Find and Fire sequence complete")
     
     def CalculateMotorAdjustments(self, percentFromCenter: Tuple[int, int]) -> Tuple[float, float]:
         '''Convert from pixel offset-from-center of camera frame to motor degrees'''

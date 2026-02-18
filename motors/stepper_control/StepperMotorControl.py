@@ -8,6 +8,9 @@ from .RawStepperControl import RawStepperControl
 from i_o.IOControl import IOControl
 from config.ConfigClasses import SingleAimMotorConfig
 from .Limits import Limits
+from LoggerSetup import LoggerSetup
+
+logger = LoggerSetup.get_logger("StepperMotorControl")
 
 class StepperMotorControl(StepperMotorControlInterface):
     '''
@@ -65,7 +68,7 @@ class StepperMotorControl(StepperMotorControlInterface):
     
     @speed.setter
     def speed(self, degPerSec):
-        print("Setting speed in StepeprMotorControl")
+        logger.debug(f"Setting motor speed to {degPerSec} degrees/sec")
         self._speed = degPerSec
 
     @property
@@ -153,7 +156,7 @@ class StepperMotorControl(StepperMotorControlInterface):
             isUpper: true if setting upper limit, false if setting lower limit
         '''        
         stepLimit = self.ConvertDegreesToSteps(limit)
-        print("Converted stepLimit = " + str(stepLimit))
+        logger.debug(f"Converted degree limit {limit} to step limit {stepLimit}")
         self.motor.SetLimit(stepLimit, isUpper)
         if isUpper:
             self._limits.upper = limit
@@ -167,7 +170,7 @@ class StepperMotorControl(StepperMotorControlInterface):
         Args:
             limits: position limits in degrees (lower, upper)
         '''
-        print("Shouldnt be here")
+        logger.warning("SetLimits called - this code path is not normally executed")
         cwStepLimit = self.ConvertDegreesToSteps(limits[0])
         ccwStepLimit = self.ConvertDegreesToSteps(limits[1])
         

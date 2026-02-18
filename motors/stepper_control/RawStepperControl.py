@@ -4,6 +4,9 @@ from typing import Tuple
 from .StepMode import StepMode
 from i_o.IOControl import IOControl
 from .Limits import Limits
+from LoggerSetup import LoggerSetup
+
+logger = LoggerSetup.get_logger("RawStepperControl")
 class RawStepperControl():
     '''
     Low level stepper control class that deals in terms of steps and step timing. 
@@ -30,7 +33,7 @@ class RawStepperControl():
     def enabled(self, value: bool):
         self._enabled = value
         if(self._enablePin == None):
-            print("Enable pin not defined")
+            logger.warning("Enable pin not defined")
             return
         if(value == True):
             self._ioControl.SetOutput(self._enablePin, 0)
@@ -68,7 +71,7 @@ class RawStepperControl():
             return True
                 
         except Exception as ex:
-            print("exception in RawStepperControl: " + str(ex))
+            logger.error(f"Exception in RawStepperControl: {ex}")
             self.StopMotor()
 
     def StopMotor(self):
@@ -100,12 +103,12 @@ class RawStepperControl():
 
     def AtLimits(self) -> bool:
         '''Check if current position is at or beyond limits'''
-        print("curPos = " + str(self.position) + " limits are: " + str(self._limits.lower) + " " + str(self._limits.upper))
+        logger.debug(f"Position check: {self.position}, Limits: lower={self._limits.lower}, upper={self._limits.upper}")
         if(self._limits.lower is not None and self.position <= self._limits.lower):
-            print("At limits: " + str(self.position) + " degrees. Limits are: " + str(self._limits))
+            logger.debug(f"At lower limit: {self.position} degrees. Limits: {self._limits}")
             return True
         elif(self._limits.upper is not None and self.position >= self._limits.upper):
-            print("At limits: " + str(self.position) + " degrees. Limits are: " + str(self._limits))
+            logger.debug(f"At upper limit: {self.position} degrees. Limits: {self._limits}")
             return True
         else:
             return False

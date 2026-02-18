@@ -1,4 +1,8 @@
 from typing import Tuple, Callable
+from LoggerSetup import LoggerSetup
+
+logger = LoggerSetup.get_logger("Observer")
+
 class DetectionObserver:
     '''
         Observer of detection class, contains notifications to detection events
@@ -12,4 +16,4 @@ class DetectionObserver:
             
             acknowledgeNotification: (Callable[bool]: Callback to call to acknowledge the motion notification. Call once done and processing can start again)
         '''
-        print("OnMotionFound method not implemented. Motion found at " + str(location))
+        logger.warning("OnMotionFound method not implemented. Motion found at " + str(location))

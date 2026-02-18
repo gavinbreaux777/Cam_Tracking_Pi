@@ -4,6 +4,9 @@ from .MotorEnums import MotorEnum
 from config.ConfigClasses import SystemConfig
 from threading import Timer
 import threading
+from LoggerSetup import LoggerSetup
+
+logger = LoggerSetup.get_logger("FiringControl")
 
 class FiringControl:
     def __init__(self, ammoControl: AmmoControl, spoolMotors: DCMotorControl, config: SystemConfig):
@@ -51,18 +54,18 @@ class FiringControl:
             case MotorEnum.Spool:
                 self.spoolMotors.DisableMotor()
             case MotorEnum.Chamber:
-                print("Enable/Disable of chamber motor not supported")
+                logger.error("Enable/Disable of chamber motor not supported")
             case _:
-                print("Unknown motor")
+                logger.error(f"Unknown motor: {motorNum}")
 
     def EnableMotor(self, motorNum: MotorEnum):
         match motorNum:
             case MotorEnum.Spool:
                 self.spoolMotors.EnableMotor()
             case MotorEnum.Chamber:
-                print("Enable/Disable of chamber motor not supported")
+                logger.error("Enable/Disable of chamber motor not supported")
             case _:
-                print("Unknown motor")
+                logger.error(f"Unknown motor: {motorNum}")
 
     def _RestartManSpoolTimer(self):
         '''Cancels current timeout timer if active and starts a new one for the timeout duration'''

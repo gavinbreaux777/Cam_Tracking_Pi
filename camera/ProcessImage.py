@@ -2,6 +2,9 @@ import time
 import cv2
 import numpy
 from typing import Callable
+from LoggerSetup import LoggerSetup
+
+logger = LoggerSetup.get_logger("ProcessImage")
 
 class ProcessImage():
     '''Initialize image processing class.
@@ -85,16 +88,16 @@ class ProcessImage():
                     self._consecutiveDetections = 0
                     #report detected location
                     #Y axis is flipped from what we want (here, positive Y is bottom edge). Flip it to have positive y = top of image
-                    print("shape = " + str(grayed.shape[0]))
-                    print("original y = " + str(yCenter))
+                    logger.debug(f"Image height (shape[0]): {grayed.shape[0]}")
+                    logger.debug(f"Original y center: {yCenter}")
                     yCenter = abs(grayed.shape[0] - yCenter)
-                    print("new y = " + str(yCenter))
+                    logger.debug(f"Flipped y center: {yCenter}")
 
                     #convert pixels to percentage-from-center
                     xPercentOffset, yPercentOffset = self.CalculatePercentOffset([xCenter, yCenter], imgSize)
 
                     self._setDetectedLocation([xPercentOffset, yPercentOffset])
-                    print(f"Detected center at %offset = {xCenter, yCenter}")
+                    logger.info(f"Object detected at pixel coordinates: x={xCenter}, y={yCenter}")
                     #after reporting detected location, clear base image so a new one will be created on next round of detection (after aim and fire sequence)
                     self._baseImg = numpy.array([], dtype=numpy.uint8)
                     self.detectImg = selectedImage
