@@ -5,14 +5,16 @@
             "stepPin": 18,
             "dirPin": 17,
             "enablePin": 19,
-            "stepMode": "1/16"
+            "stepMode": "1/16",
+            "backlashCompensationDegrees": 0.0
         },
         "tiltMotor": {
             "mock": false,
             "stepPin": 23,
             "dirPin": 22,
             "enablePin": 24,
-            "stepMode": "1/16"
+            "stepMode": "1/16",
+            "backlashCompensationDegrees": 0.0
         }
     },
     "firingMotor": {

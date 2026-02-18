@@ -19,6 +19,8 @@ class StepperMotorControl(StepperMotorControlInterface):
         self.speed = config.speed
         self._stepMode = float(Fraction(config.stepMode))
         self.motorResolution = config.stepsPerRev
+        self._backlashCompensationSteps = abs(self.ConvertDegreesToSteps(config.backlashCompensationDegrees))
+        self._lastMoveClockwise = None
         self.timeout = 10 #setting really high right now because we're not using rn. (client *should resend jog command before shorter timeout but currently only sending 1 start and 1 stop command from client)
         self._jogTimer = threading.Timer(self.timeout, self.StopMotors)
         self._hasBeenHomed = False
@@ -100,8 +102,14 @@ class StepperMotorControl(StepperMotorControlInterface):
         else: 
             cw = True
         stepsToTake = abs(self.ConvertDegreesToSteps(degrees))
+        if(stepsToTake == 0):
+            return True
+
+        if(not self._ApplyBacklashCompensationIfNeeded(cw)):
+            return False
 
         madePosition = self.motor.MotorRotate(cw, stepsToTake, self._delayBetweenSteps)
+        self._lastMoveClockwise = cw
         return madePosition
 
     def RotateAbs(self, targetDegrees: float):
@@ -118,9 +126,32 @@ class StepperMotorControl(StepperMotorControlInterface):
         else:
             cw = True            
         stepsToTake = abs(self.ConvertDegreesToSteps(degreeChange))
+        if(stepsToTake == 0):
+            return True
+
+        if(not self._ApplyBacklashCompensationIfNeeded(cw)):
+            return False
 
         madePosition = self.motor.MotorRotate(cw, stepsToTake, self._delayBetweenSteps)
+        self._lastMoveClockwise = cw
         return madePosition
+
+    def _ApplyBacklashCompensationIfNeeded(self, clockwise: bool) -> bool:
+        if(self._backlashCompensationSteps == 0):
+            return True
+        if(self._lastMoveClockwise is None):
+            return True
+        if(self._lastMoveClockwise == clockwise):
+            return True
+
+        compensationMade = self.motor.MotorRotate(clockwise, self._backlashCompensationSteps, self._delayBetweenSteps)
+        if(compensationMade):
+            # Keep logical position unchanged for backlash take-up steps.
+            if(clockwise):
+                self.motor.position -= self._backlashCompensationSteps
+            else:
+                self.motor.position += self._backlashCompensationSteps
+        return compensationMade
 
     def Stop(self):
         self.motor.StopMotor()
