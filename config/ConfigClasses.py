@@ -31,6 +31,7 @@ class SingleAimMotorConfig:
     stepMode: str = "1"
     speed: int = 50
     stepsPerRev: int = 200
+    backlashCompensationDegrees: float = 0.0
 
 @dataclass
 class FiringMotorConfig:
