@@ -203,7 +203,16 @@
             </div>
             <!--Settings tab-->
             <div class="tabcontent center-page" data-tabs="settings">
-                
+                <table id="settings-table">
+                    <tr class="table-header-row">
+                        <td>Setting</td>
+                        <td>Value</td>
+                    </tr>
+                    <tr>
+                        <td>Pan/Tilt Speed</td>
+                        <td><input type="number" step="1" id="pan-tilt-speed">deg/s</td>
+                    </tr>
+                    </table>
             </div>
             <!--Settings right strip-->
             <div class="right-strip">
@@ -271,6 +280,7 @@
         <script src="/static/js/motorControl.js"></script>
         <script src="/static/js/uiComponents.js"></script>
         <script src="/static/js/calibration.js"></script>
+        <script src="/static/js/settings.js"></script>
 
         
     </body>

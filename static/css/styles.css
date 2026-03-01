@@ -193,6 +193,25 @@ h1 {
     flex: 0 0 auto;
 }
 
+table { 
+    border-collapse: collapse; 
+    font-family: sans-serif; 
+} 
+td {
+    padding: 8px 12px; 
+    border-bottom: 1px solid #ddd; 
+} 
+td:first-child { 
+    width: 200px; 
+} 
+table.input { 
+    width: 120px; 
+} 
+
+.table-header-row{
+    font-weight: bold;
+}
+
 .servo-control-grid{
     display: grid;
     height: 100%;

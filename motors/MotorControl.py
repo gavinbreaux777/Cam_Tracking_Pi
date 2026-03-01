@@ -125,7 +125,7 @@ class MotorControl(DetectionObserver):
             pass
         print("Motors spooled, firing chamber servo")
         self.firingControl.ChamberSingle()
-        time.sleep(0.2)
+        time.sleep(0.5)
         self.firingControl.StopMotors()
     
     def CalculateMotorAdjustments(self, percentFromCenter: Tuple[int, int]) -> Tuple[float, float]:
@@ -133,7 +133,7 @@ class MotorControl(DetectionObserver):
 
         #Motor travel distance in degrees
         xAdjustment = percentFromCenter[0] * self._config.panDegreesPerCamPercentChange
-        yAdjustment = percentFromCenter[1] * self._config.tiltDegreesPerCamPercentChange
+        yAdjustment = -1 * percentFromCenter[1] * self._config.tiltDegreesPerCamPercentChange
         return xAdjustment, yAdjustment
 
     def SetTiltLimits(self, limits: Tuple[float, float]):

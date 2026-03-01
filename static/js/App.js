@@ -22,7 +22,7 @@ const pageButtons = {
     actOnDetectionButton: document.getElementById("toggle_act_on_detection")
 }
 
-const calibrationElements = {
+window.calibrationElements = {
     workingCalibrationData_Element: document.getElementById("working_calibration_data"),
     xDegreesPerPercent_Element: document.getElementById("x_degrees_per"),
     yDegreesPerPercent_Element: document.getElementById("y_degrees_per"),

@@ -5,16 +5,15 @@ from config.ConfigClasses import FiringMotorConfig
 class DCMotorControl:
     def __init__(self, ioControl: IOControl, config: FiringMotorConfig):
         self._ioControl = ioControl
+        self._config = config
         self._relayOnPin = config.onPin
         self._ioControl.SetPinMode(self._relayOnPin, 1)
         self._enabled = True
 
-        self._manualSpoolTimeout = config.manSpoolTimeout
-        self._manSpoolTimer = threading.Timer(self._manualSpoolTimeout, self.StopMotors)
+        self._manSpoolTimer = threading.Timer(self._config.manSpoolTimeout, self.StopMotors)
 
-        self._minSpoolTime = config.minSpoolTime
         self.motorsSpooled = False
-        self._motorsSpooledTimer = threading.Timer(self._minSpoolTime, self._MarkMotorsSpooled)
+        self._motorsSpooledTimer = threading.Timer(self._config.minSpoolTime, self._MarkMotorsSpooled)
 
     def SpoolMotors(self):
         '''Spins up dc motors. Sets property motorsSpooled to true after minSpoolTime has elapsed'''

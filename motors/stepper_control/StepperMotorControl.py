@@ -16,13 +16,11 @@ class StepperMotorControl(StepperMotorControlInterface):
     '''
     def __init__(self, ioControl: IOControl, config: SingleAimMotorConfig):
         self.motor = RawStepperControl(ioControl, config.stepPin, config.dirPin, config.enablePin, config.stepMode, config.stepsPerRev)
-        self.speed = config.speed
-        self._stepMode = float(Fraction(config.stepMode))
-        self.motorResolution = config.stepsPerRev
         self.timeout = 10 #setting really high right now because we're not using rn. (client *should resend jog command before shorter timeout but currently only sending 1 start and 1 stop command from client)
         self._jogTimer = threading.Timer(self.timeout, self.StopMotors)
         self._hasBeenHomed = False
         self._limits = Limits()
+        self._config = config
 
     @property
     def hasBeenHomed(self) -> bool:
@@ -52,11 +50,11 @@ class StepperMotorControl(StepperMotorControlInterface):
     @property
     def _stepsPerRevoluton(self):
         ''''''
-        return self.motorResolution / self._stepMode
+        return self._config.stepsPerRev / self._config.stepMode
 
     @property
     def _stepsPerDegree(self):
-        return self._stepsPerRevoluton / 360 
+        return self._config.stepsPerRev / 360 
     
     @property
     def speed(self) -> float:
@@ -71,7 +69,7 @@ class StepperMotorControl(StepperMotorControlInterface):
     @property
     def _delayBetweenSteps(self):
         '''Time in seconds between consecutive step pulses'''
-        return self.CalculateDelayBetweenSteps(self.speed)
+        return self.CalculateDelayBetweenSteps(self._config.speed)
     
     @property
     def accel(self, degreesPerSecondSquared: float):
