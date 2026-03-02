@@ -48,22 +48,3 @@ function actOnDetection(){
         console.error(error)
     })
 }
-
-function changeImgProcSetting(settingName, settingValue){
-    fetch(`/modImgProcSetting/${settingName}/${settingValue}`, {
-        method: 'GET'
-    })
-    .then(response => {
-        if (response.status == 200){
-            console.log("Server is modifying setting. Response: " + response.text());
-        }
-        else{
-            console.log("Error while requesting setting modification. Response: " + response.status);
-        }
-    })
-    .catch(error => {
-        console.error(error)
-    })
-
-    changeImgProcSetting("requiredObj")
-}

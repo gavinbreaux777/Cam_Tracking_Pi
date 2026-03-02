@@ -6,14 +6,15 @@ from .ProcessImage import ProcessImage
 from helpers.Observer import DetectionObserver
 from .ImageGenerator import ImageGenerator
 import time
+from config.ConfigClasses import ImageProcessorConfig
 
 '''This class contains camera and image processing control - together they output detection results'''
 class Detector():
     '''Init detector objects'''
-    def __init__(self, picam2: CameraInterface):
+    def __init__(self, picam2: CameraInterface, imgProcConfig: ImageProcessorConfig):
         self.detectedLocation = property(self._getDetectedLocation, self._setDetectedLocation) #Creating property this way so we can pass it as argument to ProcessImage class
 
-        self._imgProcessor = ProcessImage(self._setDetectedLocation)
+        self._imgProcessor = ProcessImage(self._setDetectedLocation, imgProcConfig)
         self._imgGenerator = ImageGenerator(picam2, self._imgProcessor)
     
         self.output = StreamingOutput()

@@ -1,9 +1,9 @@
 from flask import Blueprint
 from typing import Any
-from camera.ProcessImage import ProcessImage
 from camera.Detector import Detector
+from config.ConfigClasses import CameraConfig, ImageProcessorConfig
 
-def create_imageProcessing_blueprint(detector: "Detector", imageProcessor: "ProcessImage"):
+def create_imageProcessing_blueprint(detector: "Detector", imageProcessorConfig: "ImageProcessorConfig", camConfig: "CameraConfig"):
 
     imageProcessing_bp = Blueprint('imageProcessing', __name__)
 
@@ -17,12 +17,6 @@ def create_imageProcessing_blueprint(detector: "Detector", imageProcessor: "Proc
         detector.processImage = True
         return "OkeY DoKEy", 200
     
-    @imageProcessing_bp.route('/modImgProcSetting/<settingName>/<settingValue>')
-    def setImageProcessSetting(settingName: str, settingValue: Any):
-        setattr(imageProcessor.config, settingName, settingValue)
-        #_detector.ModifyImageProcessorSetting(settingName, settingValue)
-        return "okey dokey then", 200
-
     @imageProcessing_bp.route('/toggleDelta/<show>')
     def toggleDelta(show):
         if(show == "true"):
@@ -41,7 +35,16 @@ def create_imageProcessing_blueprint(detector: "Detector", imageProcessor: "Proc
     
     @imageProcessing_bp.route('/modCamSetting/<settingName>/<settingValue>')
     def setCameraSetting(settingName: str, settingValue: Any):
-        detector.ModifyCameraSetting(settingName, settingValue)
+        setattr(camConfig, settingName, settingValue)
+        #detector.ModifyCameraSetting(settingName, settingValue)
         return "oKeY DoKEy thEN", 200
+    
+    @imageProcessing_bp.route('/modImgProcSetting/<settingName>/<settingValue>')
+    def setImageProcessSetting(settingName: str, settingValue: Any):
+        print("Settomg ma,e = "+ settingName)
+        print("preval = "+ str(getattr(imageProcessorConfig, settingName)))
+        setattr(imageProcessorConfig, settingName, settingValue)
+        print(getattr(imageProcessorConfig, settingName))
+        return "okey dokey then", 200
     
     return imageProcessing_bp

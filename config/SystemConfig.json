@@ -1,6 +1,6 @@
 {
-    "tiltDegreesPerCamPercentChange": -50,
-    "panDegreesPerCamPercentChange": 20,
+    "tiltDegreesPerCamPercentChange": 555,
+    "panDegreesPerCamPercentChange": 270,
     "actOnDetection": true,
     "spoolTime": 0.5,
     "manualSpoolTimeout": 0.5

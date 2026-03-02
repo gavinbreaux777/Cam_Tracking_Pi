@@ -10,7 +10,7 @@ config = AppConfig("config/")
 
 #Create class to handle camera and image processing
 picam2 = ClassFactory.ReturnCamera(config.cameraConfig)
-detector = Detector(picam2)
+detector = Detector(picam2, config.imageProcessorConfig)
 
 #Create class to handle IO
 io = ClassFactory.ReturnIO(config.ioConfig)

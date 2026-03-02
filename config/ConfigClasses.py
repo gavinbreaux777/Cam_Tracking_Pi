@@ -58,4 +58,5 @@ class CameraConfig:
 
 @dataclass
 class ImageProcessorConfig:
+    requiredObjectSize: int = 10000
     pass
