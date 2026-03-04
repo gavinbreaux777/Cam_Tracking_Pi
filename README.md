@@ -9,11 +9,12 @@ Raspberry Pi version
 &nbsp;	This project began back in 2023 in the midst of my first post-college job and my initial attempt was using an ESP32 microcontroller based system with the goal of creating an extremely cheap system with minimal external libraries/resources see other repo, (Cam\_Tracking\_ESP). This proved to be difficult as I learned a lot and ultimately decided I needed a more powerful controller with a some amount of pre-built architecture. I then took a hiatus from this project and returned to it at the beginning of 2025 with a new architecture and plan that is this repo. Documentation/images are lacking in different areas as this wasn't originally intended to be shared but just a fun project
 
 <p align="center">
-  <img src="Images/CAD/V1/Main_Assembly_Img1.PNG" alt="System Image" width="400"/>
-  <img src="Images/CAD/V4/Main_Assembly_Img3.PNG" alt="System Image" width="400"/>
-  <img src="Images/Physical_System/Direct_Drive_System_Img2.jpg" alt="System Image" width="400"/>
-  <img src="Images/PCB/PCB_V2.jpg" alt="System Image" width="400"/>
-  <img src="Images/GUI/GUI_MainPage_Img2.jpeg" alt="System Image" width="400"/>
+  <img src="not_code/Images/CAD/V1/Main_Assembly_Img1.PNG" alt="System Image" width="400"/>
+  <img src="not_code/Images/CAD/V4/Main_Assembly_Img3.PNG" alt="System Image" width="400"/>
+  <img src="not_code/Images/Physical_System/Direct_Drive_System_Img2.jpg" alt="System Image" width="400"/>
+  <img src="not_code/Images/PCB/PCB_V2.jpg" alt="System Image" width="400"/>
+  <img src="not_code/Images/GUI/GUI_MainPage_Img2.jpeg" alt="System Image" width="400"/>
+  <img src="not_code/Images/Physical_System/Geared_Tall_Stack_Img2.jpg" alt="System Image" width="400"/>
 </p>
 
 
