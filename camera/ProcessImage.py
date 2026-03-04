@@ -2,6 +2,7 @@ import time
 import cv2
 import numpy
 from typing import Callable
+from config.ConfigClasses import ImageProcessorConfig
 
 class ProcessImage():
     '''Initialize image processing class.
@@ -9,11 +10,11 @@ class ProcessImage():
         args:
             updateDetectLocationFunc: (Callable[bool]: function to call when motion is detected)
     '''
-    def __init__(self, updateDetectedLocationFunc: Callable[[tuple[int,int]], None]):
+    def __init__(self, updateDetectedLocationFunc: Callable[[tuple[int,int]], None], config: ImageProcessorConfig):
         self._baseImg = numpy.array([], dtype=numpy.uint8)
         self.detectImg = numpy.array([], dtype=numpy.uint8)
         self._setDetectedLocation = updateDetectedLocationFunc
-        self.requiredObjectSize = 10000
+        self._config = config
         self._baseRenewImageDelay = 0
         self._consecutiveDetections = 0
         self.showDelta = False #Return binary image representing pixels different than base past the threshold
@@ -49,7 +50,7 @@ class ProcessImage():
         selected_contours = []
         #process each contour
         for contour in contours:
-            if cv2.contourArea(contour) < self.requiredObjectSize:
+            if cv2.contourArea(contour) < float(self._config.requiredObjectSize):
                 continue
             #Find bounding box for this contour and add to list of contours to reference later
             rotRect = cv2.minAreaRect(contour)

@@ -63,11 +63,11 @@ class Calibration {
         }
     
         //update calibration data display
-        calibrationElements.xClickRatio_Element.innerHTML = Number(this.items.xClickRatio).toFixed(2);
-        calibrationElements.yClickRatio_Element.innerHTML = Number(this.items.yClickRatio).toFixed(2);
-        calibrationElements.xMotorStartPos_Element.innerHTML = Number(this.items.motorCalibrationStartX).toFixed(2);
-        calibrationElements.yMotorStartPos_Element.innerHTML = Number(this.items.motorCalibrationStartY).toFixed(2);
-        calibrationElements.workingCalibrationData_Element.classList.add("active");
+        window.calibrationElements.xClickRatio_Element.innerHTML = Number(this.items.xClickRatio).toFixed(2);
+        window.calibrationElements.yClickRatio_Element.innerHTML = Number(this.items.yClickRatio).toFixed(2);
+        window.calibrationElements.xMotorStartPos_Element.innerHTML = Number(this.items.motorCalibrationStartX).toFixed(2);
+        window.calibrationElements.yMotorStartPos_Element.innerHTML = Number(this.items.motorCalibrationStartY).toFixed(2);
+        window.calibrationElements.workingCalibrationData_Element.classList.add("active");
     }
 
     //calculate deltas from new motor positions and initial positions, compute calibration factors and send to server

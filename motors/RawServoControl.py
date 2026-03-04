@@ -10,7 +10,6 @@ class RawServoControl():
         self._minDutyCycle = 500
         self._maxDutyCycle = 2500
         self._dutyCyclePerDegree = (self._maxDutyCycle - self._minDutyCycle) / (self._maxAngle - self._minAngle)
-        self.position = 0
 
         self.ioControl.SetPinMode(self._pwmPin, 1)
         self.ioControl.SetPWMFrequency(self._pwmPin, config.pulseFrequency)

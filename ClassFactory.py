@@ -55,7 +55,7 @@ class ClassFactory():
         aimingControl = AimingControl(panMotor, tiltMotor)
 
         chamberServo = RawServoControl(ioControl, motorConfig.chamberServo)
-        ammoControl = AmmoControl(chamberServo)
+        ammoControl = AmmoControl(chamberServo, motorConfig.chamberServo)
         spoolMotors = DCMotorControl(ioControl, motorConfig.firingMotor)
         firingControl = FiringControl(ammoControl, spoolMotors, systemConfig)
 

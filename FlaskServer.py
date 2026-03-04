@@ -43,8 +43,8 @@ class FlaskServer(DetectionObserver):
 
     def _define_routes(self):
         """Define Flask routes using add_url_rule."""
-        self.app.register_blueprint(create_motors_blueprint(self._motorControl, self._motorConfig))
-        self.app.register_blueprint(create_imageProcessing_blueprint(self._detector, self._detector._imgProcessor))
+        self.app.register_blueprint(create_motors_blueprint(self._motorControl, self._motorConfig, self._systemConfig))
+        self.app.register_blueprint(create_imageProcessing_blueprint(self._detector, self._imageProcessorConfig, self._cameraConfig))
 
         self.app.add_url_rule('/', 'serve_page', self.serve_page)
         #stream control

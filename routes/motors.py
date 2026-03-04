@@ -1,9 +1,9 @@
 from flask import Blueprint
 from motors.MotorEnums import MotorEnum
 from motors.MotorControl import MotorControl
-from config.ConfigClasses import MotorConfig
+from config.ConfigClasses import MotorConfig, SystemConfig
 
-def create_motors_blueprint(motorControl: "MotorControl", motorConfig: "MotorConfig"):
+def create_motors_blueprint(motorControl: "MotorControl", motorConfig: "MotorConfig", systemConfig: "SystemConfig"):
 
     motors_bp = Blueprint('motors', __name__)
 
@@ -12,9 +12,9 @@ def create_motors_blueprint(motorControl: "MotorControl", motorConfig: "MotorCon
         speedInt = int(speed)
         match direction:
             case "left":
-                motorControl.JogMotor(MotorEnum.Pan, speedInt, True)
-            case "right":
                 motorControl.JogMotor(MotorEnum.Pan, speedInt, False)
+            case "right":
+                motorControl.JogMotor(MotorEnum.Pan, speedInt, True)
             case "up":
                 motorControl.JogMotor(MotorEnum.Tilt, speedInt, True)
             case "down":
@@ -23,6 +23,12 @@ def create_motors_blueprint(motorControl: "MotorControl", motorConfig: "MotorCon
                 print("Invalid direction parameter received: " + direction)
                 return "Invalid direction parameter", 400
         return "Okey Dokey", 200
+
+    @motors_bp.route('/setPanTiltSpeed/<speed>')
+    def setPanTiltSpeeds(speed: str):
+        motorConfig.aimMotors.panMotor.speed = int(speed)
+        motorConfig.aimMotors.tiltMotor.speed = int(speed)
+        return "oKEy DOKey", 200
 
     @motors_bp.route('/stopAimMotors')
     def stopAimMotors():
@@ -98,11 +104,11 @@ def create_motors_blueprint(motorControl: "MotorControl", motorConfig: "MotorCon
         motorControl.StopMotor(MotorEnum.Spool)
         return "OKeY DOKey", 200
 
-    @motors_bp.route('/calibrateMotors/<xDegreesToPercentChange>/<yDegreesToPercentChange>')
-    def CalibrateMotors(xDegreesToPercentChange: float, yDegreesToPercentChange: float):
-        motorConfig.aimMotors.panMotor = float(xDegreesToPercentChange)
-        motorConfig.aimMotors.tiltMotor = float(yDegreesToPercentChange)
-        print(str(xDegreesToPercentChange) + " , " + str(yDegreesToPercentChange))
+    @motors_bp.route('/calibrateMotors/<panDegreesToPercentChange>/<tiltDegreesToPercentChange>')
+    def CalibrateMotors(panDegreesToPercentChange: float, tiltDegreesToPercentChange: float):
+        systemConfig.panDegreesPerCamPercentChange = float(panDegreesToPercentChange)
+        systemConfig.tiltDegreesPerCamPercentChange = float(tiltDegreesToPercentChange)
+        print(str(panDegreesToPercentChange) + " , " + str(tiltDegreesToPercentChange))
         return "Okey Dokey", 200
 
     @motors_bp.route('/setTiltLimit/<limit>/<value>')

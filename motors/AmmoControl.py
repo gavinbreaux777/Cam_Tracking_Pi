@@ -1,9 +1,10 @@
 import time
 from .RawServoControl import RawServoControl
 from .MotorEnums import MotorEnum
+from config.ConfigClasses import ChamberServoConfig
 
 class AmmoControl:
-    def __init__(self, chamberServo: RawServoControl):
+    def __init__(self, chamberServo: RawServoControl, config: ChamberServoConfig):
         #self.triInletServo = RawServoControl(ioControl, -1, 50)
         self.chamberServo = chamberServo
         self.activeInlet = 1
@@ -12,8 +13,8 @@ class AmmoControl:
             AmmoInletSingle(3, 3, 115, 125),
             AmmoInletSingle(3, 3, 65, 75)
         )
-        self.chamberServoOpenAngle = 115
-        self.chamberServoClosedAngle = 100
+        self._config = config
+        self.OpenChamberServo()
         #self.CloseTriInletServo()
 
     @property
@@ -25,11 +26,11 @@ class AmmoControl:
     # region chamberServo Control
     def OpenChamberServo(self):
         '''Allow ball into chamber'''
-        self.chamberServo.SetAngle(self.chamberServoOpenAngle)
+        self.chamberServo.SetAngle(self._config.openAngle)
     
     def CloseChamberServo(self):
         '''Closes chamber servo, forcing a ball into firing wheels, if present'''
-        self.chamberServo.SetAngle(self.chamberServoClosedAngle)
+        self.chamberServo.SetAngle(self._config.closedAngle)
         
     def SetChamberServoAngle(self, angle: float):
         self.chamberServo.SetAngle(angle)
@@ -37,7 +38,7 @@ class AmmoControl:
     def FireSingle(self):
         '''Force single ball through chamber into wheels. Motors should be spooled already'''
         self.CloseChamberServo()
-        time.sleep(0.1) 
+        time.sleep(0.3) 
         self.OpenChamberServo()
     #endregion
 
@@ -76,7 +77,7 @@ class AmmoInletTrio():
         self.activeInlet = 0
         self.activeAmmoCount = self.inlets[0].currentCount
         self.activeOpenServoAngle = self.inlets[0].openServoAngle
-        self.activeClosedServoAngle = self.inlets[0].closedServoAngle\
+        self.activeClosedServoAngle = self.inlets[0].closedServoAngle
 
     def ReduceActiveAmmoCount(self):
         '''Reduce active ammo count by 1. If active ammo count is 0, set next inlet active'''
