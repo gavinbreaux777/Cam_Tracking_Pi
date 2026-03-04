@@ -12,9 +12,9 @@ def create_motors_blueprint(motorControl: "MotorControl", motorConfig: "MotorCon
         speedInt = int(speed)
         match direction:
             case "left":
-                motorControl.JogMotor(MotorEnum.Pan, speedInt, True)
-            case "right":
                 motorControl.JogMotor(MotorEnum.Pan, speedInt, False)
+            case "right":
+                motorControl.JogMotor(MotorEnum.Pan, speedInt, True)
             case "up":
                 motorControl.JogMotor(MotorEnum.Tilt, speedInt, True)
             case "down":
